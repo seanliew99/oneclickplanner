@@ -197,97 +197,150 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const planForm = document.getElementById('plan-form');
-      const currentPlanAlert = document.getElementById('current-plan-alert');
-      const planDestination = document.getElementById('plan-destination');
-      const planDates = document.getElementById('plan-dates');
-      const clearPlanBtn = document.getElementById('clear-plan-btn');
+  const planForm = document.getElementById('plan-form');
+  const currentPlanAlert = document.getElementById('current-plan-alert');
+  const planDestination = document.getElementById('plan-destination');
+  const planDates = document.getElementById('plan-dates');
+  const clearPlanBtn = document.getElementById('clear-plan-btn');
+  const startDateInput = document.getElementById('start-date');
+  const endDateInput = document.getElementById('end-date');
 
-      // Format dates for display
-      function formatDateRange(startDate, endDate) {
-        if (!startDate && !endDate) return 'dates not specified';
-        if (!startDate) return `until ${new Date(endDate).toLocaleDateString()}`;
-        if (!endDate) return `starting ${new Date(startDate).toLocaleDateString()}`;
-        
-        return `${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}`;
+  // Set min date for start date (today)
+  const today = new Date().toISOString().split('T')[0];
+  startDateInput.setAttribute('min', today);
+  
+  // Disable end date until start date is selected
+  endDateInput.setAttribute('disabled', true);
+  
+  // When start date changes, update end date constraints
+  startDateInput.addEventListener('change', function() {
+    if (startDateInput.value) {
+      // Enable end date input
+      endDateInput.removeAttribute('disabled');
+      
+      // Set minimum date for end date input (should be the start date)
+      endDateInput.setAttribute('min', startDateInput.value);
+      
+      // If end date is before start date, reset it
+      if (endDateInput.value && endDateInput.value < startDateInput.value) {
+        endDateInput.value = '';
       }
+    } else {
+      // If start date is cleared, disable end date
+      endDateInput.setAttribute('disabled', true);
+      endDateInput.value = '';
+    }
+  });
 
-      // Check if there's an existing plan
-      fetch('/api/plan')
-        .then(response => response.json())
-        .then(data => {
-          if (data.plan) {
-            // Pre-fill the form
-            document.getElementById('destination').value = data.plan.destination || '';
-            document.getElementById('start-date').value = data.plan.startDate || '';
-            document.getElementById('end-date').value = data.plan.endDate || '';
-            
-            // Show current plan alert
-            planDestination.textContent = data.plan.destination;
-            planDates.textContent = formatDateRange(data.plan.startDate, data.plan.endDate);
-            currentPlanAlert.style.display = 'block';
-          }
-        })
-        .catch(error => console.error('Error loading plan:', error));
+  // Format dates for display
+  function formatDateRange(startDate, endDate) {
+    if (!startDate && !endDate) return 'dates not specified';
+    if (!startDate) return `until ${new Date(endDate).toLocaleDateString()}`;
+    if (!endDate) return `starting ${new Date(startDate).toLocaleDateString()}`;
+    
+    return `${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}`;
+  }
 
-      // Handle form submission
-      planForm.addEventListener('submit', function(e) {
-        e.preventDefault();
+  // Check if there's an existing plan
+  fetch('/api/plan')
+    .then(response => response.json())
+    .then(data => {
+      if (data.plan) {
+        // Pre-fill the form
+        document.getElementById('destination').value = data.plan.destination || '';
         
-        const destination = document.getElementById('destination').value;
-        const startDate = document.getElementById('start-date').value;
-        const endDate = document.getElementById('end-date').value;
-        
-        fetch('/api/plan', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            destination,
-            startDate,
-            endDate
-          }),
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            // Update current plan display
-            planDestination.textContent = destination;
-            planDates.textContent = formatDateRange(startDate, endDate);
-            currentPlanAlert.style.display = 'block';
-            
-            // Optional: redirect to attractions page
-            window.location.href = '/attractions';
-          }
-        })
-        .catch(error => console.error('Error saving plan:', error));
-      });
-
-      // Handle clear plan button
-      clearPlanBtn.addEventListener('click', function() {
-        if (confirm('Are you sure you want to clear your current trip plan?')) {
-          fetch('/api/plan', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              destination: '',
-              startDate: '',
-              endDate: ''
-            }),
-          })
-          .then(() => {
-            // Reset form
-            planForm.reset();
-            // Hide current plan alert
-            currentPlanAlert.style.display = 'none';
-          })
-          .catch(error => console.error('Error clearing plan:', error));
+        // Set start date if it exists
+        if (data.plan.startDate) {
+          startDateInput.value = data.plan.startDate;
+          // Enable end date if start date exists
+          endDateInput.removeAttribute('disabled');
+          endDateInput.setAttribute('min', startDateInput.value);
         }
-      });
-    });
+        
+        // Set end date if it exists
+        if (data.plan.endDate) {
+          endDateInput.value = data.plan.endDate;
+        }
+        
+        // Show current plan alert
+        planDestination.textContent = data.plan.destination;
+        planDates.textContent = formatDateRange(data.plan.startDate, data.plan.endDate);
+        currentPlanAlert.style.display = 'block';
+      }
+    })
+    .catch(error => console.error('Error loading plan:', error));
+
+  // Handle form submission
+  planForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const destination = document.getElementById('destination').value;
+    const startDate = startDateInput.value;
+    const endDate = endDateInput.value;
+    
+    // Validate dates
+    if (endDate && !startDate) {
+      alert('Please select a start date before selecting an end date.');
+      return;
+    }
+    
+    if (endDate && startDate && new Date(endDate) < new Date(startDate)) {
+      alert('End date cannot be before start date.');
+      return;
+    }
+    
+    fetch('/api/plan', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        destination,
+        startDate,
+        endDate
+      }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Update current plan display
+        planDestination.textContent = destination;
+        planDates.textContent = formatDateRange(startDate, endDate);
+        currentPlanAlert.style.display = 'block';
+        
+        // Optional: redirect to attractions page
+        window.location.href = '/attractions';
+      }
+    })
+    .catch(error => console.error('Error saving plan:', error));
+  });
+
+  // Handle clear plan button
+  clearPlanBtn.addEventListener('click', function() {
+    if (confirm('Are you sure you want to clear your current trip plan?')) {
+      fetch('/api/plan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          destination: '',
+          startDate: '',
+          endDate: ''
+        }),
+      })
+      .then(() => {
+        // Reset form
+        planForm.reset();
+        // Reset date inputs
+        endDateInput.setAttribute('disabled', true);
+        // Hide current plan alert
+        currentPlanAlert.style.display = 'none';
+      })
+      .catch(error => console.error('Error clearing plan:', error));
+    }
+  });
+});
   </script>
 </body>
 </html>
