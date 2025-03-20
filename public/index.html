@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Travel Planner</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-color: #f8f9fa;
+    }
+    
+    .main-content {
+      flex: 1;
+    }
+    
+    .navbar-brand {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    
+    .hero-section {
+      background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://source.unsplash.com/1600x900/?travel,landmark');
+      background-size: cover;
+      background-position: center;
+      color: white;
+      padding: 80px 0;
+      margin-bottom: 30px;
+    }
+    
+    .planning-card {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      margin-bottom: 30px;
+    }
+    
+    .feature-card {
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+      height: 100%;
+    }
+    
+    .feature-card:hover {
+      transform: translateY(-5px);
+    }
+    
+    .feature-icon {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+      color: #0d6efd;
+    }
+    
+    .btn-primary {
+      padding: 10px 20px;
+      font-weight: 600;
+    }
+    
+    .current-plan-alert {
+      margin-top: 30px;
+    }
+    
+    footer {
+      background-color: #343a40;
+      color: white;
+      padding: 20px 0;
+      margin-top: auto;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" href="/">Travel Planner</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link active" href="/">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/attractions">Attractions</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/restaurants">Restaurants</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/itinerary">My Itinerary</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Hero Section -->
+    <section class="hero-section text-center">
+      <div class="container">
+        <h1 class="display-4">Plan Your Perfect Trip</h1>
+        <p class="lead">Discover amazing places to visit and restaurants to try at your next destination.</p>
+      </div>
+    </section>
+
+    <!-- Planning Form Section -->
+    <section class="container mb-5">
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+          <div class="planning-card">
+            <h2 class="text-center mb-4">Create Your Trip Plan</h2>
+            <form id="plan-form">
+              <div class="mb-3">
+                <label for="destination" class="form-label">Where are you going?</label>
+                <input type="text" class="form-control" id="destination" placeholder="Enter city, country..." required>
+              </div>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="start-date" class="form-label">Start Date</label>
+                  <input type="date" class="form-control" id="start-date">
+                </div>
+                <div class="col-md-6">
+                  <label for="end-date" class="form-label">End Date</label>
+                  <input type="date" class="form-control" id="end-date">
+                </div>
+              </div>
+              <div class="text-center">
+                <button type="submit" class="btn btn-primary btn-lg px-4">Start Planning</button>
+              </div>
+            </form>
+          </div>
+          
+          <!-- Current Plan Alert (hidden by default) -->
+          <div id="current-plan-alert" class="alert alert-success current-plan-alert" role="alert" style="display: none;">
+            <h4 class="alert-heading">Your current trip plan:</h4>
+            <p id="current-plan-details">You're planning a trip to <span id="plan-destination"></span> from <span id="plan-dates"></span>.</p>
+            <hr>
+            <div class="d-flex justify-content-between">
+              <a href="/itinerary" class="btn btn-outline-success">View Itinerary</a>
+              <button id="clear-plan-btn" class="btn btn-outline-danger">Clear Plan</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="container mb-5">
+      <h2 class="text-center mb-4">Plan Your Trip With Ease</h2>
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="card feature-card text-center p-4">
+            <div class="card-body">
+              <div class="feature-icon">🏛️</div>
+              <h3 class="card-title">Find Attractions</h3>
+              <p class="card-text">Discover the best tourist spots, landmarks, museums, and more at your destination.</p>
+              <a href="/attractions" class="btn btn-outline-primary">Explore Attractions</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card feature-card text-center p-4">
+            <div class="feature-icon">🍽️</div>
+            <h3 class="card-title">Discover Restaurants</h3>
+            <p class="card-text">Find the best local cuisine, popular eateries, and hidden gems to satisfy your taste buds.</p>
+            <a href="/restaurants" class="btn btn-outline-primary">Find Restaurants</a>
+            </div>
+          </div>
+        <div class="col-md-4">
+          <div class="card feature-card text-center p-4">
+            <div class="feature-icon">📝</div>
+            <h3 class="card-title">Create Itinerary</h3>
+            <p class="card-text">Organize your trip by saving attractions and restaurants to your personalized itinerary.</p>
+            <a href="/itinerary" class="btn btn-outline-primary">View Itinerary</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Footer -->
+  <footer class="text-center py-4">
+    <div class="container">
+      <p class="mb-0">© 2025 Travel Planner. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const planForm = document.getElementById('plan-form');
+      const currentPlanAlert = document.getElementById('current-plan-alert');
+      const planDestination = document.getElementById('plan-destination');
+      const planDates = document.getElementById('plan-dates');
+      const clearPlanBtn = document.getElementById('clear-plan-btn');
+
+      // Format dates for display
+      function formatDateRange(startDate, endDate) {
+        if (!startDate && !endDate) return 'dates not specified';
+        if (!startDate) return `until ${new Date(endDate).toLocaleDateString()}`;
+        if (!endDate) return `starting ${new Date(startDate).toLocaleDateString()}`;
+        
+        return `${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}`;
+      }
+
+      // Check if there's an existing plan
+      fetch('/api/plan')
+        .then(response => response.json())
+        .then(data => {
+          if (data.plan) {
+            // Pre-fill the form
+            document.getElementById('destination').value = data.plan.destination || '';
+            document.getElementById('start-date').value = data.plan.startDate || '';
+            document.getElementById('end-date').value = data.plan.endDate || '';
+            
+            // Show current plan alert
+            planDestination.textContent = data.plan.destination;
+            planDates.textContent = formatDateRange(data.plan.startDate, data.plan.endDate);
+            currentPlanAlert.style.display = 'block';
+          }
+        })
+        .catch(error => console.error('Error loading plan:', error));
+
+      // Handle form submission
+      planForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const destination = document.getElementById('destination').value;
+        const startDate = document.getElementById('start-date').value;
+        const endDate = document.getElementById('end-date').value;
+        
+        fetch('/api/plan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            destination,
+            startDate,
+            endDate
+          }),
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Update current plan display
+            planDestination.textContent = destination;
+            planDates.textContent = formatDateRange(startDate, endDate);
+            currentPlanAlert.style.display = 'block';
+            
+            // Optional: redirect to attractions page
+            window.location.href = '/attractions';
+          }
+        })
+        .catch(error => console.error('Error saving plan:', error));
+      });
+
+      // Handle clear plan button
+      clearPlanBtn.addEventListener('click', function() {
+        if (confirm('Are you sure you want to clear your current trip plan?')) {
+          fetch('/api/plan', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              destination: '',
+              startDate: '',
+              endDate: ''
+            }),
+          })
+          .then(() => {
+            // Reset form
+            planForm.reset();
+            // Hide current plan alert
+            currentPlanAlert.style.display = 'none';
+          })
+          .catch(error => console.error('Error clearing plan:', error));
+        }
+      });
+    });
+  </script>
+</body>
+</html>

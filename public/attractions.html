@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attractions - Travel Planner</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-color: #f8f9fa;
+    }
+    
+    .main-content {
+      flex: 1;
+    }
+    
+    .navbar-brand {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    
+    .page-header {
+      background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://source.unsplash.com/1600x900/?landmark,attraction');
+      background-size: cover;
+      background-position: center;
+      color: white;
+      padding: 60px 0;
+      margin-bottom: 30px;
+    }
+    
+    .search-container {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+    
+    #map {
+      height: 400px;
+      width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .attraction-card {
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease;
+      margin-bottom: 20px;
+      overflow: hidden;
+      height: 100%;
+    }
+    
+    .attraction-card:hover {
+      transform: translateY(-5px);
+    }
+    
+    .attraction-image {
+      height: 180px;
+      background-color: #dee2e6;
+      background-size: cover;
+      background-position: center;
+    }
+    
+    .rating {
+      color: #ffc107;
+    }
+    
+    .no-plan-alert {
+      margin-bottom: 30px;
+    }
+    
+    .modal-body {
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    
+    .place-photo {
+      width: 100%;
+      border-radius: 5px;
+      margin-bottom: 15px;
+    }
+    
+    footer {
+      background-color: #343a40;
+      color: white;
+      padding: 20px 0;
+      margin-top: auto;
+    }
+    
+    .result-count {
+      font-weight: 600;
+      color: #6c757d;
+      margin-bottom: 20px;
+    }
+    
+    /* Loading spinner */
+    .spinner-container {
+      display: flex;
+      justify-content: center;
+      margin: 50px 0;
+    }
+    
+    .btn-save {
+      background-color: #28a745;
+      color: white;
+    }
+    
+    .btn-save:hover {
+      background-color: #218838;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" href="/">Travel Planner</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="/attractions">Attractions</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/restaurants">Restaurants</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/itinerary">My Itinerary</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Page Header -->
+    <header class="page-header text-center">
+      <div class="container">
+        <h1 class="display-4">Discover Attractions</h1>
+        <p class="lead">Find the best places to visit at your destination</p>
+      </div>
+    </header>
+
+    <div class="container">
+      <!-- No Plan Alert (Hidden by default) -->
+      <div id="no-plan-alert" class="alert alert-warning no-plan-alert" role="alert" style="display: none;">
+        <h4 class="alert-heading">No destination selected!</h4>
+        <p>It looks like you haven't set a destination for your trip yet.</p>
+        <hr>
+        <p class="mb-0">
+          <a href="/" class="btn btn-warning">Create a Trip Plan</a>
+        </p>
+      </div>
+
+      <!-- Current Plan Info -->
+      <div id="current-plan-info" class="mb-4" style="display: none;">
+        <h2>Finding Attractions in <span id="destination-display"></span></h2>
+        <p id="date-display" class="text-muted"></p>
+      </div>
+
+      <!-- Search Container -->
+      <div class="search-container mb-4">
+        <form id="search-form" class="row g-3 align-items-end">
+          <div class="col-md-8">
+            <label for="keyword" class="form-label">Search Attractions</label>
+            <input type="text" class="form-control form-control-lg" id="keyword" placeholder="Museum, park, landmark, etc.">
+          </div>
+          <div class="col-md-4">
+            <button type="submit" class="btn btn-primary btn-lg w-100">Search</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Map and Results Container -->
+      <div class="row">
+        <!-- Map Column -->
+        <div class="col-lg-6 mb-4">
+          <div id="map"></div>
+        </div>
+        
+        <!-- Results Column -->
+        <div class="col-lg-6">
+          <!-- Results Count -->
+          <div id="result-count" class="result-count"></div>
+          
+          <!-- Loading Spinner (Hidden by default) -->
+          <div id="spinner" class="spinner-container" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+          
+          <!-- Results List -->
+          <div id="results-container"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Attraction Details Modal -->
+  <div class="modal fade" id="attractionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modal-title">Attraction Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="modal-body">
+          <!-- Content will be dynamically inserted here -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-save" id="save-attraction-btn">Add to Itinerary</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="text-center py-4">
+    <div class="container">
+      <p class="mb-0">© 2025 Travel Planner. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let map;
+    let markers = [];
+    let currentPlan = null;
+    let selectedPlace = null;
+    const attractionModal = new bootstrap.Modal(document.getElementById('attractionModal'));
+    
+    // Format dates for display
+    function formatDateRange(startDate, endDate) {
+      if (!startDate && !endDate) return 'Dates not specified';
+      if (!startDate) return `Until ${new Date(endDate).toLocaleDateString()}`;
+      if (!endDate) return `From ${new Date(startDate).toLocaleDateString()}`;
+      
+      return `${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}`;
+    }
+    
+    // Initialize the map
+    function initMap() {
+      // Default to Tokyo coordinates
+      const defaultLocation = { lat: 35.6762, lng: 139.6503 };
+      
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: defaultLocation,
+        zoom: 12,
+        mapTypeControl: false,
+        fullscreenControl: true,
+        streetViewControl: false
+      });
+      
+      // Load current plan and perform initial search
+      loadCurrentPlan();
+    }
+    
+    // Load current plan
+    function loadCurrentPlan() {
+      fetch('/api/plan')
+        .then(response => response.json())
+        .then(data => {
+          if (data.plan && data.plan.destination) {
+            currentPlan = data.plan;
+            
+            // Update UI
+            document.getElementById('destination-display').textContent = currentPlan.destination;
+            document.getElementById('date-display').textContent = formatDateRange(currentPlan.startDate, currentPlan.endDate);
+            document.getElementById('current-plan-info').style.display = 'block';
+            document.getElementById('no-plan-alert').style.display = 'none';
+            
+            // Perform initial search
+            searchAttractions('');
+          } else {
+            // No plan exists
+            document.getElementById('no-plan-alert').style.display = 'block';
+            document.getElementById('current-plan-info').style.display = 'none';
+          }
+        })
+        .catch(error => {
+          console.error('Error loading plan:', error);
+          document.getElementById('no-plan-alert').style.display = 'block';
+        });
+    }
+    
+    // Search for attractions
+    function searchAttractions(keyword) {
+      if (!currentPlan || !currentPlan.destination) {
+        return;
+      }
+      
+      // Show loading spinner
+      document.getElementById('spinner').style.display = 'flex';
+      document.getElementById('results-container').innerHTML = '';
+      document.getElementById('result-count').textContent = '';
+      
+      // Clear existing markers
+      clearMarkers();
+      
+      // Call the API
+      fetch(`/api/places?location=${encodeURIComponent(currentPlan.destination)}&type=attraction&keyword=${encodeURIComponent(keyword)}`)
+        .then(response => response.json())
+        .then(data => {
+          // Hide spinner
+          document.getElementById('spinner').style.display = 'none';
+          
+          if (data.status === 'OK' && data.results && data.results.length > 0) {
+            // Update result count
+            document.getElementById('result-count').textContent = `Found ${data.results.length} attractions`;
+            
+            // Display results
+            displayResults(data.results);
+            
+            // Fit map to show all markers
+            const bounds = new google.maps.LatLngBounds();
+            markers.forEach(marker => bounds.extend(marker.getPosition()));
+            map.fitBounds(bounds);
+          } else {
+            document.getElementById('results-container').innerHTML = `
+              <div class="alert alert-info">
+                No attractions found. Try a different search term.
+              </div>
+            `;
+          }
+        })
+        .catch(error => {
+          console.error('Error searching attractions:', error);
+          document.getElementById('spinner').style.display = 'none';
+          document.getElementById('results-container').innerHTML = `
+            <div class="alert alert-danger">
+              Error searching for attractions. Please try again later.
+            </div>
+          `;
+        });
+    }
+    
+    // Display search results
+    function displayResults(places) {
+      const resultsContainer = document.getElementById('results-container');
+      resultsContainer.innerHTML = '';
+      
+      // Create results list
+      places.forEach((place, index) => {
+        // Create marker
+        const marker = new google.maps.Marker({
+          position: place.geometry.location,
+          map: map,
+          title: place.name,
+          animation: google.maps.Animation.DROP
+        });
+        
+        // Add to markers array
+        markers.push(marker);
+        
+        // Add click listener
+        marker.addListener('click', () => showPlaceDetails(place));
+        
+        // Create result card
+        const card = document.createElement('div');
+        card.className = 'card attraction-card';
+        card.innerHTML = `
+          <div class="attraction-image" style="background-image: url('https://source.unsplash.com/300x200/?${encodeURIComponent(place.name)}')"></div>
+          <div class="card-body">
+            <h5 class="card-title">${place.name}</h5>
+            <p class="card-text">
+              ${place.rating ? `<span class="rating">★ ${place.rating}</span>` : ''}
+            </p>
+            <p class="card-text text-truncate">${place.formatted_address || ''}</p>
+            <button class="btn btn-sm btn-outline-primary view-details-btn">View Details</button>
+          </div>
+        `;
+        
+        // Add click event to the button
+        card.querySelector('.view-details-btn').addEventListener('click', () => {
+          showPlaceDetails(place);
+        });
+        
+        resultsContainer.appendChild(card);
+      });
+    }
+    
+    // Show place details in modal
+    function showPlaceDetails(place) {
+      selectedPlace = place;
+      
+      // Update modal title
+      document.getElementById('modal-title').textContent = place.name;
+      
+      // Show loading in modal
+      document.getElementById('modal-body').innerHTML = `
+        <div class="text-center my-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-2">Loading details...</p>
+        </div>
+      `;
+      
+      // Show modal
+      attractionModal.show();
+      
+      // Fetch place details
+      fetch(`/api/places/${place.place_id}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'OK' && data.result) {
+            const details = data.result;
+            
+            // Update modal content
+            document.getElementById('modal-body').innerHTML = `
+              <div class="place-photo" style="background-image: url('https://source.unsplash.com/600x400/?${encodeURIComponent(place.name)}'); height: 200px; background-size: cover; background-position: center;"></div>
+              
+              <div class="mb-4">
+                <h4>${details.name}</h4>
+                <p>
+                  ${details.rating ? `<span class="rating">★ ${details.rating}</span>` : ''}
+                </p>
+                <p>${details.formatted_address || ''}</p>
+                ${details.formatted_phone_number ? `<p><strong>Phone:</strong> ${details.formatted_phone_number}</p>` : ''}
+                ${details.website ? `<p><strong>Website:</strong> <a href="${details.website}" target="_blank">${details.website}</a></p>` : ''}
+              </div>
+              
+              ${details.description ? `
+                <div class="mb-4">
+                  <h5>About</h5>
+                  <p>${details.description}</p>
+                </div>
+              ` : ''}
+              
+              ${details.opening_hours && details.opening_hours.weekday_text ? `
+                <div class="mb-4">
+                  <h5>Opening Hours</h5>
+                  <ul class="list-unstyled">
+                    ${details.opening_hours.weekday_text.map(day => `<li>${day}</li>`).join('')}
+                  </ul>
+                </div>
+              ` : ''}
+              
+              <div class="mb-3">
+                <h5>Add Notes</h5>
+                <textarea id="place-notes" class="form-control" rows="3" placeholder="Add any notes about this place..."></textarea>
+              </div>
+            `;
+          } else {
+            document.getElementById('modal-body').innerHTML = `
+              <div class="alert alert-warning">
+                Could not load detailed information for this place.
+              </div>
+              <div class="place-photo" style="background-image: url('https://source.unsplash.com/600x400/?${encodeURIComponent(place.name)}'); height: 200px; background-size: cover; background-position: center;"></div>
+              <div class="mb-3">
+                <h4>${place.name}</h4>
+                <p>${place.formatted_address || ''}</p>
+              </div>
+              <div class="mb-3">
+                <h5>Add Notes</h5>
+                <textarea id="place-notes" class="form-control" rows="3" placeholder="Add any notes about this place..."></textarea>
+              </div>
+            `;
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching place details:', error);
+          document.getElementById('modal-body').innerHTML = `
+            <div class="alert alert-danger">
+              Error loading place details. Please try again later.
+            </div>
+          `;
+        });
+    }
+    
+    // Clear all markers from the map
+    function clearMarkers() {
+      markers.forEach(marker => marker.setMap(null));
+      markers = [];
+    }
+    
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      // Form submission
+      document.getElementById('search-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const keyword = document.getElementById('keyword').value;
+        searchAttractions(keyword);
+      });
+      
+      // Save attraction button
+      document.getElementById('save-attraction-btn').addEventListener('click', function() {
+        if (!selectedPlace) return;
+        
+        const notes = document.getElementById('place-notes').value;
+        
+        fetch('/api/plan/places', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            placeId: selectedPlace.place_id,
+            name: selectedPlace.name,
+            address: selectedPlace.formatted_address,
+            category: 'attraction',
+            notes: notes
+          }),
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Close modal
+            attractionModal.hide();
+            
+            // Show success message
+            alert('Attraction added to your itinerary!');
+          }
+        })
+        .catch(error => {
+          console.error('Error saving attraction:', error);
+          alert('Error saving to itinerary. Please try again.');
+        });
+      });
+    });
+  </script>
+  
+  <!-- Load Google Maps API -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA50XLfiUNfyrpqF_iRrCT1mcNzRJyePFg&callback=initMap" async defer></script>
+</body>
+</html>
