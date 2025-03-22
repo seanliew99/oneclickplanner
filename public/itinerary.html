@@ -829,7 +829,8 @@ function renderSmartItinerary(itinerary, blockForecast = {}) {
 
   Object.entries(itinerary).forEach(([date, blocks]) => {
     const card = document.createElement('div');
-    card.className = 'card mb-4 shadow border-0';
+card.className = 'card mb-4 shadow border-0';
+card.id = `itinerary-${date}`; // 👈 Adds ID for scroll-to-target
 
     const readableDate = new Date(date).toLocaleDateString(undefined, {
       weekday: 'long',
@@ -890,6 +891,31 @@ function getWeatherIconLabel(type) {
     default: return '🌡️ Mixed';
   }
 }
+
+// Wait until itinerary is fully rendered before scrolling
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const date = params.get('date');
+  if (!date) return;
+
+  // Poll for the element to exist
+  const scrollToSection = () => {
+    const target = document.getElementById('itinerary-' + date);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      target.classList.add('border', 'border-primary', 'rounded');
+      setTimeout(() => {
+        target.classList.remove('border', 'border-primary', 'rounded');
+      }, 2000);
+    } else {
+      // Retry after short delay (max 2 seconds)
+      setTimeout(scrollToSection, 100);
+    }
+  };
+
+  scrollToSection();
+});
+
 
 
 </script>
