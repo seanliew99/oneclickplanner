@@ -403,6 +403,8 @@
       </div>
     </header>
 
+
+      
     <div class="container">
       <!-- No Plan Alert (Hidden by default) -->
       <div id="no-plan-alert" class="no-plan-alert" role="alert" style="display: none;">
@@ -417,6 +419,8 @@
           </div>
         </div>
       </div>
+
+
 
       <!-- Trip Info -->
       <div id="trip-info" style="display: none;">
@@ -490,6 +494,15 @@
             </div>
           </div>
         </div>
+
+
+
+         <!-- Smart Planner Recommendation -->
+         <div class="container mt-5">
+          <h2 class="text-center mb-4 fw-bold">🧭 Recommended Plan</h2>
+          <div id="itinerary-container" class="mt-4"></div>
+        </div>
+        
         
         <!-- Export Options -->
         <div class="export-card">
@@ -724,8 +737,163 @@
     function exportEmail() {
       alert('Email export functionality will be implemented soon.');
     }
+
+
+
   </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<script>
+  let currentPlan = null;
+  let rainDays = [];
+
+  // Load plan, then weather, then saved attractions, then render smart itinerary
+  fetch('/api/plan')
+    .then(res => res.json())
+    .then(planData => {
+      currentPlan = planData.plan;
+
+      return fetch(`/api/weather?city=${encodeURIComponent(currentPlan.destination)}`);
+    })
+    .then(res => res.json())
+    .then(weather => {
+      rainDays = weather.rainDays || [];
+
+      const dailyWeather = weather.dailyWeather || {};
+      const blockForecast = weather.blockForecast || {};
+      const savedAttractions = currentPlan.attractions || [];
+
+      const smartPlan = planSmartItinerary(
+        savedAttractions,
+        currentPlan.startDate,
+        currentPlan.endDate,
+        blockForecast // ✅ use time-block-based forecast
+      );
+
+renderSmartItinerary(smartPlan, blockForecast); // ✅ show block-based weather
+
+      ;
+    })
+    .catch(err => {
+      console.error('Failed to load itinerary:', err);
+    });
+
+  // 👇 Add the two helper functions below this
+  function planSmartItinerary(attractions, startDate, endDate, blockForecast) {
+  const itinerary = {};
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const days = [];
+
+  while (start <= end) {
+    const dateStr = start.toISOString().split('T')[0];
+    days.push(dateStr);
+    start.setDate(start.getDate() + 1);
+  }
+
+  // Split attractions into indoor/outdoor
+  const indoor = attractions.filter(place =>
+    /museum|gallery|aquarium|mall|library|cinema|theater|shopping|exhibit/i.test(place.name)
+  );
+  const outdoor = attractions.filter(place => !indoor.includes(place));
+
+  // For each day and time block, assign attractions
+  days.forEach(date => {
+    itinerary[date] = {};
+
+    const blocks = ['morning', 'afternoon', 'evening'];
+    blocks.forEach(block => {
+      const weather = (blockForecast[date] && blockForecast[date][block]) || 'clear';
+
+      let pick = null;
+
+      if (weather === 'rain' || weather === 'storm') {
+        pick = indoor.shift();
+      } else {
+        pick = outdoor.shift() || indoor.shift();
+      }
+
+      if (pick) {
+        itinerary[date][block] = pick;
+      }
+    });
+  });
+
+  return itinerary;
+}
+
+function renderSmartItinerary(itinerary, blockForecast = {}) {
+  const container = document.getElementById('itinerary-container');
+  container.innerHTML = '';
+
+  Object.entries(itinerary).forEach(([date, blocks]) => {
+    const card = document.createElement('div');
+    card.className = 'card mb-4 shadow border-0';
+
+    const readableDate = new Date(date).toLocaleDateString(undefined, {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    card.innerHTML = `
+      <div class="card-header bg-dark text-white fw-bold fs-5">
+        ${readableDate}
+      </div>
+      <ul class="list-group list-group-flush"></ul>
+    `;
+
+    const list = card.querySelector('ul');
+
+    const blockLabels = {
+      morning: '☀️ Morning',
+      afternoon: '🌤️ Afternoon',
+      evening: '🌙 Evening'
+    };
+
+    ['morning', 'afternoon', 'evening'].forEach(block => {
+      const place = blocks[block];
+      const weather = blockForecast[date]?.[block] || 'clear';
+      const weatherIcon = getWeatherIconLabel(weather);
+
+      const item = document.createElement('li');
+      item.className = 'list-group-item d-flex flex-column align-items-start';
+
+      item.innerHTML = `
+        <div class="fw-semibold text-primary mb-1">${blockLabels[block]} <span class="text-muted ms-2">${weatherIcon}</span></div>
+        ${
+          place
+            ? `<div><strong class="fs-6">${place.name}</strong><br><small class="text-muted">${place.address || ''}</small></div>`
+            : `<em class="text-muted">No activity planned for this block.</em>`
+        }
+      `;
+
+      list.appendChild(item);
+    });
+
+    container.appendChild(card);
+  });
+}
+
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function getWeatherIconLabel(type) {
+  switch (type) {
+    case 'rain': return '🌧️ Rain';
+    case 'clear': return '☀️ Clear';
+    case 'cloudy': return '☁️ Cloudy';
+    case 'storm': return '⛈️ Storm';
+    default: return '🌡️ Mixed';
+  }
+}
+
+
+</script>
+
 
 
   <!-- Weather Stuff-->

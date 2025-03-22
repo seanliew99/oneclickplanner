@@ -37,7 +37,10 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       padding: 20px;
       margin-bottom: 30px;
+
+      
     }
+    
     
     #map {
       height: 400px;
@@ -171,18 +174,27 @@
         <p id="date-display" class="text-muted"></p>
       </div>
 
-      <!-- Search Container -->
-      <div class="search-container mb-4">
-        <form id="search-form" class="row g-3 align-items-end">
-          <div class="col-md-8">
-            <label for="keyword" class="form-label">Search Attractions</label>
-            <input type="text" class="form-control form-control-lg" id="keyword" placeholder="Museum, park, landmark, etc.">
-          </div>
-          <div class="col-md-4">
-            <button type="submit" class="btn btn-primary btn-lg w-100">Search</button>
-          </div>
-        </form>
-      </div>
+     <!-- Search Container -->
+<div class="search-container mb-4">
+  <form id="search-form" class="row g-3 align-items-end">
+    <div class="col-md-8">
+      <label for="keyword" class="form-label">Search Attractions</label>
+      <input type="text" class="form-control form-control-lg" id="keyword" placeholder="Museum, park, landmark, etc.">
+    </div>
+    <div class="col-md-4">
+      <button type="submit" class="btn btn-primary btn-lg w-100">Search</button>
+    </div>
+  </form>
+
+  <!-- Weather-based filter toggle -->
+  <div class="form-check mt-3">
+    <input class="form-check-input" type="checkbox" id="indoor-toggle">
+    <label class="form-check-label" for="indoor-toggle">
+      Show indoor attractions only if it's going to rain ☔
+    </label>
+  </div>
+</div>
+
 
       <!-- Map and Results Container -->
       <div class="row">
@@ -242,6 +254,8 @@
     let markers = [];
     let currentPlan = null;
     let selectedPlace = null;
+    let rainDays = [];
+
     const attractionModal = new bootstrap.Modal(document.getElementById('attractionModal'));
     
     // Format dates for display
@@ -272,31 +286,47 @@
     
     // Load current plan
     function loadCurrentPlan() {
-      fetch('/api/plan')
-        .then(response => response.json())
-        .then(data => {
-          if (data.plan && data.plan.destination) {
-            currentPlan = data.plan;
-            
-            // Update UI
-            document.getElementById('destination-display').textContent = currentPlan.destination;
-            document.getElementById('date-display').textContent = formatDateRange(currentPlan.startDate, currentPlan.endDate);
-            document.getElementById('current-plan-info').style.display = 'block';
-            document.getElementById('no-plan-alert').style.display = 'none';
-            
-            // Perform initial search
+  fetch('/api/plan')
+    .then(response => response.json())
+    .then(data => {
+      if (data.plan && data.plan.destination) {
+        currentPlan = data.plan;
+
+        // Update UI
+        document.getElementById('destination-display').textContent = currentPlan.destination;
+        document.getElementById('date-display').textContent = formatDateRange(currentPlan.startDate, currentPlan.endDate);
+        document.getElementById('current-plan-info').style.display = 'block';
+        document.getElementById('no-plan-alert').style.display = 'none';
+
+        // 🔥 NEW: Get rainDays from weather API
+        fetch(`/api/weather?city=${encodeURIComponent(currentPlan.destination)}`)
+          .then(res => res.json())
+          .then(weather => {
+            rainDays = weather.rainDays || [];
+
+            // Optionally log them for debugging
+            console.log('Rainy days during trip:', rainDays);
+
+            // Now that we have weather + plan, search attractions
             searchAttractions('');
-          } else {
-            // No plan exists
-            document.getElementById('no-plan-alert').style.display = 'block';
-            document.getElementById('current-plan-info').style.display = 'none';
-          }
-        })
-        .catch(error => {
-          console.error('Error loading plan:', error);
-          document.getElementById('no-plan-alert').style.display = 'block';
-        });
-    }
+          })
+          .catch(err => {
+            console.error('Failed to fetch weather:', err);
+            searchAttractions(''); // Fallback: still search
+          });
+
+      } else {
+        // No plan exists
+        document.getElementById('no-plan-alert').style.display = 'block';
+        document.getElementById('current-plan-info').style.display = 'none';
+      }
+    })
+    .catch(error => {
+      console.error('Error loading plan:', error);
+      document.getElementById('no-plan-alert').style.display = 'block';
+    });
+}
+
     
     // Search for attractions
     function searchAttractions(keyword) {
@@ -323,8 +353,10 @@
             // Update result count
             document.getElementById('result-count').textContent = `Found ${data.results.length} attractions`;
             
-            // Display results
-            displayResults(data.results);
+            const filteredResults = filterByWeather(data.results);
+            document.getElementById('result-count').textContent = `Showing ${filteredResults.length} attractions`;
+            displayResults(filteredResults);
+
             
             // Fit map to show all markers
             const bounds = new google.maps.LatLngBounds();
@@ -529,10 +561,16 @@
         })
         .catch(error => {
           console.error('Error saving attraction:', error);
-          alert('Error saving to itinerary. Please try again.');
+          alert('Error saving to itinerary. Please try again.'); 
         });
       });
     });
+
+    document.getElementById('indoor-toggle').addEventListener('change', () => {
+  const keyword = document.getElementById('keyword').value;
+  searchAttractions(keyword);
+});
+
   </script>
   
   
@@ -561,6 +599,36 @@
 </script>
 
 
+<script>
+function filterByWeather(places) {
+  const indoorToggle = document.getElementById('indoor-toggle');
+  if (!indoorToggle || !indoorToggle.checked) return places;
+
+  if (!currentPlan || !currentPlan.startDate || !currentPlan.endDate) return places;
+
+// Check if any date in the user's trip is a rainy day
+const start = new Date(currentPlan.startDate);
+const end = new Date(currentPlan.endDate);
+let rainExpected = false;
+
+while (start <= end) {
+  const dateStr = start.toISOString().split('T')[0];
+  if (rainDays.includes(dateStr)) {
+    rainExpected = true;
+    break;
+  }
+  start.setDate(start.getDate() + 1);
+}
+
+if (!rainExpected) return places;
+
+
+  return places.filter(place => {
+    const name = place.name.toLowerCase();
+    return /museum|gallery|aquarium|mall|shopping|library|indoor|cinema|theater/.test(name);
+  });
+}
+</script>
 
 
 </body>

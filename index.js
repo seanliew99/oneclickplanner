@@ -70,20 +70,87 @@ app.get('/api/weather', async (req, res) => {
       `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(city)}&units=metric&appid=${apiKey}`
     );
 
-    // Send all entries (rainy or not)
     const forecast = response.data.list.map(entry => ({
       datetime: entry.dt_txt,
       rainVolume: entry.rain?.['3h'] || 0,
       temp: entry.main.temp,
-      weather: entry.weather[0].description
+      weather: entry.weather[0].description.toLowerCase()
     }));
 
-    res.json({ city: response.data.city.name, forecast });
+    const blockWeather = {};
+    const blocks = {
+      morning: [6, 12],
+      afternoon: [12, 17],
+      evening: [17, 22]
+    };
+
+    forecast.forEach(entry => {
+      const [dateStr, timeStr] = entry.datetime.split(' ');
+      const hour = parseInt(timeStr.split(':')[0]);
+
+      for (const [block, [start, end]] of Object.entries(blocks)) {
+        if (hour >= start && hour < end) {
+          if (!blockWeather[dateStr]) blockWeather[dateStr] = {};
+          if (!blockWeather[dateStr][block]) {
+            blockWeather[dateStr][block] = {
+              rainVolume: 0,
+              weatherCount: {}
+            };
+          }
+
+          blockWeather[dateStr][block].rainVolume += entry.rainVolume;
+
+          const condition = entry.weather.includes('rain') ? 'rain'
+            : entry.weather.includes('cloud') ? 'cloudy'
+            : entry.weather.includes('clear') ? 'clear'
+            : entry.weather.includes('storm') ? 'storm'
+            : 'other';
+
+          blockWeather[dateStr][block].weatherCount[condition] =
+            (blockWeather[dateStr][block].weatherCount[condition] || 0) + 1;
+        }
+      }
+    });
+
+    const blockForecast = {};
+    for (const [date, blocks] of Object.entries(blockWeather)) {
+      blockForecast[date] = {};
+      for (const [block, data] of Object.entries(blocks)) {
+        const dominant = Object.entries(data.weatherCount)
+          .reduce((a, b) => a[1] > b[1] ? a : b)[0];
+        blockForecast[date][block] = dominant;
+      }
+    }
+
+    // Old format (optional)
+    const dailyWeather = {};
+    const rainDays = [];
+
+    for (const [date, blockMap] of Object.entries(blockForecast)) {
+      const values = Object.values(blockMap);
+      const summary = values.includes('rain') ? 'rain'
+        : values.includes('storm') ? 'storm'
+        : values.includes('cloudy') ? 'cloudy'
+        : values.includes('clear') ? 'clear' : 'other';
+
+      dailyWeather[date] = summary;
+      if (values.includes('rain')) rainDays.push(date);
+    }
+
+    res.json({
+      forecast,
+      rainDays,
+      dailyWeather,
+      blockForecast // ✅ NEW: weather per time block per day
+    });
+
   } catch (err) {
     console.error('Weather API error:', err.response?.data || err.message);
     res.status(500).json({ error: 'Failed to fetch weather forecast' });
   }
 });
+
+
 
 
 
