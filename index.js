@@ -51,8 +51,42 @@ app.post('/api/plan', (req, res) => {
     restaurants: req.session.plan?.restaurants || []
   };
   
-  res.json({ success: true, plan: req.session.plan });
+  res.json({ success: true,  n: req.session.plan });
 });
+
+
+
+//Weather related stuff
+app.get('/api/weather', async (req, res) => {
+  const city = req.query.city;
+  const apiKey = process.env.WEATHER_API_KEY;
+
+  if (!city) {
+    return res.status(400).json({ error: 'City is required' });
+  }
+
+  try {
+    const response = await axios.get(
+      `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(city)}&units=metric&appid=${apiKey}`
+    );
+
+    // Send all entries (rainy or not)
+    const forecast = response.data.list.map(entry => ({
+      datetime: entry.dt_txt,
+      rainVolume: entry.rain?.['3h'] || 0,
+      temp: entry.main.temp,
+      weather: entry.weather[0].description
+    }));
+
+    res.json({ city: response.data.city.name, forecast });
+  } catch (err) {
+    console.error('Weather API error:', err.response?.data || err.message);
+    res.status(500).json({ error: 'Failed to fetch weather forecast' });
+  }
+});
+
+
+
 
 // Get current travel plan
 app.get('/api/plan', (req, res) => {

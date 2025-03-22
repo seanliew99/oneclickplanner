@@ -1143,5 +1143,30 @@ document.addEventListener('DOMContentLoaded', function() {
   
   <!-- Load Google Maps API -->
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA50XLfiUNfyrpqF_iRrCT1mcNzRJyePFg&callback=initMap" async defer></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+
+    <!-- Weather Stuff-->
+  <script src="/js/weather.js"></script>
+<script>
+  // Fetch current plan
+  fetch('/api/plan')
+    .then(res => res.json())
+    .then(data => {
+      if (data.plan && data.plan.destination) {
+        const { destination, startDate, endDate } = data.plan;
+        fetch(`/api/weather?city=${encodeURIComponent(destination)}`)
+          .then(res => res.json())
+          .then(weatherData => {
+            showWeatherForDateRange(weatherData.forecast, startDate, endDate, '.main-content');
+          });
+      }
+    })
+    .catch(err => console.error('Weather load error:', err));
+</script>
+
+
 </body>
 </html>

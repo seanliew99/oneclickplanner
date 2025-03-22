@@ -187,6 +187,19 @@
     </section>
   </div>
 
+    <!-- Weather Section -->
+
+  <section class="container mb-5">
+    <h2 class="text-center mb-4">Weather Forecast (Rainy Days)</h2>
+    <div class="input-group mb-3">
+      <input type="text" id="weather-city" class="form-control" placeholder="Enter a city..." />
+      <button id="get-weather-btn" class="btn btn-primary">Check Rain Forecast</button>
+    </div>
+    <ul id="weather-results" class="list-group"></ul>
+  </section>
+
+
+  
   <!-- Footer -->
   <footer class="text-center py-4">
     <div class="container">
@@ -240,6 +253,43 @@
     
     return `${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}`;
   }
+
+  function showWeatherForDateRange(forecast, startDate, endDate) {
+  const weatherSection = document.createElement('section');
+  weatherSection.className = 'container mb-5';
+  weatherSection.innerHTML = `
+    <h2 class="text-center mb-4">Rain Forecast During Your Trip</h2>
+    <ul id="weather-results" class="list-group"></ul>
+  `;
+  document.querySelector('.main-content').appendChild(weatherSection);
+
+  const resultList = document.getElementById('weather-results');
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  const entries = forecast.filter(entry => {
+    const entryDate = new Date(entry.datetime);
+    return entryDate >= start && entryDate <= end;
+  });
+
+  if (entries.length === 0) {
+    resultList.innerHTML = '<li class="list-group-item">No rain forecasted during your trip dates 🎉</li>';
+    return;
+  }
+
+  entries.forEach(entry => {
+    const item = document.createElement('li');
+    item.className = 'list-group-item';
+    item.innerHTML = `
+      <strong>${new Date(entry.datetime).toLocaleString()}</strong><br>
+      ☔ <strong>Rain:</strong> ${entry.rainVolume} mm<br>
+      🌡️ <strong>Temp:</strong> ${entry.temp}°C<br>
+      🌤️ <strong>Forecast:</strong> ${entry.weather}
+    `;
+    resultList.appendChild(item);
+  });
+}
+
 
   // Check if there's an existing plan
   fetch('/api/plan')
@@ -308,6 +358,14 @@
         planDates.textContent = formatDateRange(startDate, endDate);
         currentPlanAlert.style.display = 'block';
         
+          // Fetch weather forecast
+      fetch(`/api/weather?city=${encodeURIComponent(destination)}`)
+        .then(res => res.json())
+        .then(weatherData => {
+          showWeatherForDateRange(weatherData.forecast, startDate, endDate);
+        });
+
+
         // Optional: redirect to attractions page
         window.location.href = '/attractions';
       }
@@ -341,6 +399,66 @@
     }
   });
 });
+
+
+document.getElementById('get-weather-btn').addEventListener('click', () => {
+  const city = document.getElementById('weather-city').value.trim();
+  const resultList = document.getElementById('weather-results');
+  resultList.innerHTML = '';
+
+  if (!city) return alert('Please enter a city');
+
+  fetch(`/api/weather?city=${encodeURIComponent(city)}`)
+    .then(res => res.json())
+    .then(data => {
+      if (!data.forecast || data.forecast.length === 0) {
+        resultList.innerHTML = '<li class="list-group-item">No rain forecasted in the next 5 days.</li>';
+        return;
+      }
+
+      data.forecast.forEach(entry => {
+        const item = document.createElement('li');
+        item.className = 'list-group-item';
+        item.innerHTML = `
+          <strong>${new Date(entry.datetime).toLocaleString()}</strong><br>
+          ☔ <strong>Rain:</strong> ${entry.rainVolume} mm<br>
+          🌡️ <strong>Temp:</strong> ${entry.temp}°C<br>
+          🌤️ <strong>Forecast:</strong> ${entry.weather}
+        `;
+        resultList.appendChild(item);
+      });
+    })
+    .catch(err => {
+      console.error(err);
+      resultList.innerHTML = '<li class="list-group-item text-danger">Error fetching weather data.</li>';
+    });
+});
+
+
+
   </script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script src="/js/weather.js"></script>
+<script>
+  // Fetch current plan
+  fetch('/api/plan')
+    .then(res => res.json())
+    .then(data => {
+      if (data.plan && data.plan.destination) {
+        const { destination, startDate, endDate } = data.plan;
+        fetch(`/api/weather?city=${encodeURIComponent(destination)}`)
+          .then(res => res.json())
+          .then(weatherData => {
+            showWeatherForDateRange(weatherData.forecast, startDate, endDate, '.main-content');
+          });
+      }
+    })
+    .catch(err => console.error('Weather load error:', err));
+</script>
+
+
+
 </body>
 </html>
