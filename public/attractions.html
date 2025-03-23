@@ -273,17 +273,17 @@
       return `${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}`;
     }
     
-    // Initialize the map
-    function initMap() {
-      // Default to Tokyo coordinates
-      const defaultLocation = { lat: 35.6762, lng: 139.6503 };
+   // Initialize the map
+   function initMap() {
+      // Initialize with a neutral view that will be updated once we load the plan
+      const defaultLocation = { lat: 0, lng: 0 };
       
       map = new google.maps.Map(document.getElementById("map"), {
         center: defaultLocation,
-        zoom: 12,
+        zoom: 2,
         mapTypeControl: false,
         fullscreenControl: true,
-        streetViewControl: false
+        streetViewControl: false,
       });
       
       // Load current plan and perform initial search

@@ -794,40 +794,25 @@
       return starsHtml;
     }
     
-    // Initialize the map
+   // Initialize the map
     function initMap() {
-      // Default to Tokyo coordinates
-      const defaultLocation = { lat: 35.6762, lng: 139.6503 };
+      // Initialize with a neutral view that will be updated once we load the plan
+      const defaultLocation = { lat: 0, lng: 0 };
       
       map = new google.maps.Map(document.getElementById("map"), {
         center: defaultLocation,
-        zoom: 12,
+        zoom: 2,
         mapTypeControl: false,
         fullscreenControl: true,
-        streetViewControl: false,
-        styles: [
-          {
-            "featureType": "poi.business",
-            "stylers": [
-              { "visibility": "off" }
-            ]
-          },
-          {
-            "featureType": "transit",
-            "elementType": "labels.icon",
-            "stylers": [
-              { "visibility": "off" }
-            ]
-          }
-        ]
+        streetViewControl: false
       });
       
       // Load current plan and perform initial search
       loadCurrentPlan();
-      
       // Set up filter event listeners
       setupFilters();
     }
+
     
     // Load current plan
     function loadCurrentPlan() {
@@ -843,8 +828,22 @@
             document.getElementById('current-plan-info').style.display = 'block';
             document.getElementById('no-plan-alert').style.display = 'none';
             
-            // Perform initial search
-            searchRestaurants('');
+            // Use the Geocoding service to get coordinates for the destination
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ 'address': currentPlan.destination }, function(results, status) {
+              if (status === 'OK') {
+                // Center map on the destination
+                map.setCenter(results[0].geometry.location);
+                map.setZoom(7); // Good zoom level for a country/region
+                
+                // Perform initial search
+                searchRestaurants('');
+              } else {
+                console.error('Geocode was not successful for the following reason: ' + status);
+                // Fallback - still do the search even if geocoding fails
+                searchRestaurants('');
+              }
+            });
           } else {
             // No plan exists
             document.getElementById('no-plan-alert').style.display = 'block';
@@ -920,7 +919,7 @@
       if (currentCuisine) {
         searchKeyword = searchKeyword ? `${searchKeyword} ${currentCuisine}` : currentCuisine;
       }
-      
+      console.error('currentPlan.destination:', currentPlan.destination);
       // Call the API
       let apiUrl = `/api/places?location=${encodeURIComponent(currentPlan.destination)}&type=restaurant&keyword=${encodeURIComponent(searchKeyword)}`;
       
