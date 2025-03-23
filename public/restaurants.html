@@ -29,32 +29,29 @@
     
     /* Navigation */
     .navbar {
-      background-color: var(--dark-color);
+      background-color: #0d6efd; /* Match the primary blue from Bootstrap */
       padding: 15px 0;
     }
-    
+
     .navbar-brand {
-      font-size: 1.6rem;
+      font-size: 1.5rem;
       font-weight: bold;
-      color: var(--light-color);
+      color: white;
     }
-    
+
     .nav-link {
       color: rgba(255, 255, 255, 0.85);
       font-weight: 500;
       transition: color 0.3s;
-      padding: 8px 15px;
-      border-radius: 4px;
     }
-    
+
     .nav-link:hover {
       color: white;
-      background-color: rgba(255, 255, 255, 0.1);
     }
-    
+
     .nav-link.active {
       color: white;
-      background-color: var(--primary-color);
+      font-weight: 600;
     }
     
     /* Header */
@@ -474,10 +471,10 @@
 </head>
 <body>
   <!-- Navigation -->
-  <nav class="navbar navbar-expand-lg">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container">
-      <a class="navbar-brand" href="/">TravelPlan</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <a class="navbar-brand" href="/">Travel Planner</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
@@ -491,13 +488,18 @@
           <li class="nav-item">
             <a class="nav-link active" href="/restaurants">Restaurants</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/itinerary">My Itinerary</a>
+          <!-- Auth buttons - these will be replaced by user info when logged in -->
+          <li class="nav-item ms-3">
+            <a class="btn btn-outline-light" href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/login?client_id=3anj5rhtknc7i97jq3jgknai71&response_type=code&scope=email+openid+phone&redirect_uri=http%3A%2F%2Flocalhost%3A3000">Login</a>
+          </li>
+          <li class="nav-item ms-2">
+            <a class="btn btn-outline-light" href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/signup?client_id=3anj5rhtknc7i97jq3jgknai71&redirect_uri=http%3A%2F%2Flocalhost%3A3000&response_type=code&scope=email+openid+phone">Sign Up</a>
           </li>
         </ul>
       </div>
     </div>
   </nav>
+
 
   <!-- Main Content -->
   <div class="main-content">
@@ -681,6 +683,87 @@
       if (!endDate) return `From ${new Date(startDate).toLocaleDateString()}`;
       
       return `${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}`;
+    }
+
+    // Auth functions for Add to Itenerary
+    // This checks if user is logged in before allowing add to itinerary
+    function checkAuthBeforeAddToItinerary(placeData) {
+      // Check if the user is authenticated
+      const authUser = localStorage.getItem('authUser');
+      
+      if (!authUser) {
+        // User is not authenticated, show login prompt
+        showLoginRequiredModal();
+        return false;
+      }
+      
+      // User is authenticated, proceed with adding to itinerary
+      return true;
+    }
+
+    // Function to show login required modal
+    function showLoginRequiredModal() {
+      // Show a notification at the top of the page
+      const notificationHtml = `
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <strong>Authentication Required!</strong> You need to log in to add items to your itinerary.
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      `;
+      
+      const notificationContainer = document.createElement('div');
+      notificationContainer.className = 'position-fixed top-0 start-0 end-0 p-3 text-center';
+      notificationContainer.style.zIndex = '5000';
+      notificationContainer.innerHTML = notificationHtml;
+      document.body.appendChild(notificationContainer);
+      
+      // Auto remove after showing the modal
+      setTimeout(() => {
+        if (notificationContainer.parentNode) {
+          notificationContainer.querySelector('.alert').classList.remove('show');
+          setTimeout(() => notificationContainer.remove(), 300);
+        }
+      }, 5000);
+      
+      // Create modal HTML
+      const modalHtml = `
+        <div class="modal fade" id="loginRequiredModal" tabindex="-1" aria-labelledby="loginRequiredModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="loginRequiredModalLabel">
+                  <i class="bi bi-shield-lock me-2"></i>Login Required
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <p class="lead">You need to be logged in to add places to your itinerary.</p>
+                <p>Would you like to log in now?</p>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/login?client_id=3anj5rhtknc7i97jq3jgknai71&response_type=code&scope=email+openid+phone&redirect_uri=http%3A%2F%2Flocalhost%3A3000" class="btn btn-warning">
+                  <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Append modal to body if it doesn't exist
+      if (!document.getElementById('loginRequiredModal')) {
+        const modalContainer = document.createElement('div');
+        modalContainer.innerHTML = modalHtml;
+        document.body.appendChild(modalContainer.firstChild);
+      }
+      
+      // Show the modal with a slight delay to ensure notification is seen first
+      setTimeout(() => {
+        const loginModal = new bootstrap.Modal(document.getElementById('loginRequiredModal'));
+        loginModal.show();
+      }, 500);
     }
     
     // Generate star rating HTML
@@ -1092,6 +1175,11 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('save-restaurant-btn').addEventListener('click', function() {
     if (!selectedPlace) return;
     
+    // Check if user is authenticated
+    if (!checkAuthBeforeAddToItinerary(selectedPlace)) {
+      return; // Stop if user is not authenticated
+    }       
+    
     const notes = document.getElementById('place-notes').value;
     
     fetch('/api/plan/places', {
@@ -1113,23 +1201,26 @@ document.addEventListener('DOMContentLoaded', function() {
         // Close modal
         restaurantModal.hide();
         
-        // Show success message with Bootstrap toast or alert
+        // Show success message with a nicer Bootstrap alert
         const alertHtml = `
           <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <strong>Success!</strong> Restaurant added to your itinerary!
+            <strong>Success!</strong> Attraction added to your itinerary!
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>
         `;
         
         const alertContainer = document.createElement('div');
-        alertContainer.className = 'position-fixed top-0 end-0 p-3';
+        alertContainer.className = 'position-fixed top-0 start-0 end-0 p-3 text-center';
         alertContainer.style.zIndex = '5000';
         alertContainer.innerHTML = alertHtml;
         document.body.appendChild(alertContainer);
         
         // Remove after 3 seconds
         setTimeout(() => {
-          alertContainer.remove();
+          if (alertContainer.parentNode) {
+            alertContainer.querySelector('.alert').classList.remove('show');
+            setTimeout(() => alertContainer.remove(), 300);
+          }
         }, 3000);
       }
     })
@@ -1167,6 +1258,6 @@ document.addEventListener('DOMContentLoaded', function() {
     .catch(err => console.error('Weather load error:', err));
 </script>
 
-
+<script src="/js/auth.js"></script>
 </body>
 </html>

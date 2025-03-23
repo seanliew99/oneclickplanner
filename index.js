@@ -55,6 +55,90 @@ app.post('/api/plan', (req, res) => {
 });
 
 
+// Authentication routes
+const jwt = require('jsonwebtoken');
+
+// Cognito token exchange endpoint
+app.get('/api/auth/callback', async (req, res) => {
+  const { code } = req.query;
+  
+  if (!code) {
+    return res.status(400).json({ error: 'Authorization code is required' });
+  }
+  
+  try {
+    // Exchange the authorization code for tokens
+    const tokenResponse = await axios.post(
+      `${process.env.COGNITO_DOMAIN}/oauth2/token`,
+      new URLSearchParams({
+        grant_type: 'authorization_code',
+        client_id: process.env.COGNITO_CLIENT_ID,
+        code,
+        redirect_uri: process.env.COGNITO_REDIRECT_URI
+      }),
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Authorization: `Basic ${Buffer.from(`${process.env.COGNITO_CLIENT_ID}:${process.env.COGNITO_CLIENT_SECRET}`).toString('base64')}`
+        }
+      }
+    );
+    
+    const { id_token, access_token, refresh_token } = tokenResponse.data;
+    
+    // Decode the ID token to get user info
+    const decodedToken = jwt.decode(id_token);
+    
+    // Store tokens in session
+    req.session.tokens = {
+      idToken: id_token,
+      accessToken: access_token,
+      refreshToken: refresh_token
+    };
+    
+    req.session.user = {
+      sub: decodedToken.sub,
+      email: decodedToken.email,
+      username: decodedToken['cognito:username'] || decodedToken.email
+    };
+    
+    // Redirect to home page or other appropriate page
+    res.redirect('/');
+  } catch (error) {
+    console.error('Error exchanging code for tokens:', error.response?.data || error.message);
+    res.status(500).json({ error: 'Failed to authenticate' });
+  }
+});
+
+// API endpoint to check if user is authenticated
+app.get('/api/auth/user', (req, res) => {
+  if (req.session.user) {
+    // Return user info without sensitive data
+    res.json({
+      authenticated: true,
+      user: {
+        username: req.session.user.username,
+        email: req.session.user.email
+      }
+    });
+  } else {
+    res.json({ authenticated: false });
+  }
+});
+
+// API endpoint for logout
+app.get('/api/auth/logout', (req, res) => {
+  // Clear session
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('Error destroying session:', err);
+      return res.status(500).json({ error: 'Failed to logout' });
+    }
+    
+    // Redirect to Cognito logout
+    res.redirect(`${process.env.COGNITO_DOMAIN}/logout?client_id=${process.env.COGNITO_CLIENT_ID}&logout_uri=${process.env.COGNITO_REDIRECT_URI}`);
+  });
+});
 
 //Weather related stuff
 app.get('/api/weather', async (req, res) => {
