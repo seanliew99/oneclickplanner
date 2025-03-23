@@ -318,7 +318,7 @@ app.delete('/api/plan/places/:id', (req, res) => {
   res.json({ success: true, plan: req.session.plan });
 });
 
-// Route to search for places using Places API v1
+// Route to search for places using Places API v1 - with location bounds
 app.get('/api/places', async (req, res) => {
   try {
     const { 
@@ -330,7 +330,20 @@ app.get('/api/places', async (req, res) => {
     if (!location) {
       return res.status(400).json({ error: 'Location is required' });
     }
+
+    // First, geocode the location to get its bounding box
+    const geocodingResponse = await axios.get(
+      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${API_KEY}`
+    );
+
+    if (geocodingResponse.data.status !== 'OK' || !geocodingResponse.data.results.length) {
+      return res.status(404).json({ error: 'Location not found' });
+    }
+
+    // Get the viewport boundaries for the location
+    const { viewport } = geocodingResponse.data.results[0].geometry;
     
+    // Build search query with explicit location mention
     let searchQuery = keyword;
     if (type === 'attraction') {
       searchQuery = keyword ? `${keyword} attractions in ${location}` : `attractions in ${location}`;
@@ -338,15 +351,28 @@ app.get('/api/places', async (req, res) => {
       searchQuery = keyword ? `${keyword} restaurants in ${location}` : `restaurants in ${location}`;
     }
     
-    console.log(`Searching for "${searchQuery}"...`);
+    console.log(`Searching for "${searchQuery}" in location "${location}"...`);
 
-    // Call the Places API v1 Text Search endpoint
+    // Call the Places API v1 Text Search endpoint with locationBias
     const response = await axios.post(
       'https://places.googleapis.com/v1/places:searchText',
       {
         textQuery: searchQuery,
         languageCode: "en",
-        maxResultCount: 20
+        maxResultCount: 20,
+        // Important: Use the viewport from geocoding to restrict results
+        locationBias: {
+          rectangle: {
+            low: {
+              latitude: viewport.southwest.lat,
+              longitude: viewport.southwest.lng
+            },
+            high: {
+              latitude: viewport.northeast.lat,
+              longitude: viewport.northeast.lng
+            }
+          }
+        }
       },
       {
         headers: {
@@ -373,9 +399,16 @@ app.get('/api/places', async (req, res) => {
       types: place.types || []
     })) : [];
 
+    // Filter results by checking if they contain the location name in the address
+    // This is an additional step to ensure we only get results from the specified location
+    const filteredResults = transformedResults.filter(place => {
+      const address = place.formatted_address.toLowerCase();
+      return address.includes(location.toLowerCase());
+    });
+
     res.json({
       status: "OK",
-      results: transformedResults,
+      results: filteredResults,
       query: searchQuery
     });
   } catch (error) {
