@@ -264,12 +264,36 @@ app.post('/api/plan/places', (req, res) => {
     addedAt: new Date()
   };
   
-  // Add to appropriate category
+  // Add to appropriate category, but check for duplicates first
   if (category === 'attraction') {
     req.session.plan.attractions = req.session.plan.attractions || [];
+    
+    // Check if this attraction is already in the itinerary
+    const isDuplicate = req.session.plan.attractions.some(item => item.id === placeId);
+    
+    if (isDuplicate) {
+      return res.json({ 
+        success: false, 
+        duplicate: true,
+        message: 'This attraction is already in your itinerary'
+      });
+    }
+    
     req.session.plan.attractions.push(place);
   } else if (category === 'restaurant') {
     req.session.plan.restaurants = req.session.plan.restaurants || [];
+    
+    // Check if this restaurant is already in the itinerary
+    const isDuplicate = req.session.plan.restaurants.some(item => item.id === placeId);
+    
+    if (isDuplicate) {
+      return res.json({ 
+        success: false, 
+        duplicate: true,
+        message: 'This restaurant is already in your itinerary'
+      });
+    }
+    
     req.session.plan.restaurants.push(place);
   }
   

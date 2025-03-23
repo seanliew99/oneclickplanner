@@ -642,32 +642,39 @@
         })
         .then(response => response.json())
         .then(data => {
-          if (data.success) {
-            // Close modal
-            attractionModal.hide();
-            
-            // Show success message with a nicer Bootstrap alert
-            const alertHtml = `
-              <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <strong>Success!</strong> Attraction added to your itinerary!
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-              </div>
-            `;
-            
-            const alertContainer = document.createElement('div');
-            alertContainer.className = 'position-fixed top-0 start-0 end-0 p-3 text-center';
-            alertContainer.style.zIndex = '5000';
-            alertContainer.innerHTML = alertHtml;
-            document.body.appendChild(alertContainer);
-            
-            // Remove after 3 seconds
-            setTimeout(() => {
-              if (alertContainer.parentNode) {
-                alertContainer.querySelector('.alert').classList.remove('show');
-                setTimeout(() => alertContainer.remove(), 300);
-              }
-            }, 3000);
+          // Close modal
+          attractionModal.hide();
+          
+          let alertClass = 'alert-success';
+          let alertMessage = '<strong>Success!</strong> Attraction added to your itinerary!';
+          
+          // Check if it was a duplicate
+          if (data.duplicate) {
+            alertClass = 'alert-warning';
+            alertMessage = '<strong>Note:</strong> ' + data.message;
           }
+          
+          // Show message with a Bootstrap alert
+          const alertHtml = `
+            <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+              ${alertMessage}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          `;
+          
+          const alertContainer = document.createElement('div');
+          alertContainer.className = 'position-fixed top-0 start-0 end-0 p-3 text-center';
+          alertContainer.style.zIndex = '5000';
+          alertContainer.innerHTML = alertHtml;
+          document.body.appendChild(alertContainer);
+          
+          // Remove after 3 seconds
+          setTimeout(() => {
+            if (alertContainer.parentNode) {
+              alertContainer.querySelector('.alert').classList.remove('show');
+              setTimeout(() => alertContainer.remove(), 300);
+            }
+          }, 3000);
         })
         .catch(error => {
           console.error('Error saving attraction:', error);
