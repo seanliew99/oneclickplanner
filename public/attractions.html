@@ -179,6 +179,12 @@
         <h2>Finding Attractions in <span id="destination-display"></span></h2>
         <p id="date-display" class="text-muted"></p>
       </div>
+      <!-- Dynamic Day Tabs Section -->
+      <section class="mt-4" id="itinerary-section" style="display: none;">
+        <h4 class="mb-3">Recommended Attractions For Each Day</h4>
+        <ul class="nav nav-tabs" id="dayTabs" role="tablist"></ul>
+        <div class="tab-content pt-3" id="dayTabsContent"></div>
+      </section>
 
      <!-- Search Container -->
 <div class="search-container mb-4">
@@ -263,6 +269,10 @@
     let selectedPlace = null;
     let rainDays = [];
 
+    const itineraryRecommendations = {}; // Format: { dayIndex: { morning: [], afternoon: [], evening: [] } }
+    const removedAttractions = new Set(); // Track removed place_ids
+
+
     const attractionModal = new bootstrap.Modal(document.getElementById('attractionModal'));
     
     // Format dates for display
@@ -290,40 +300,151 @@
       // Load current plan and perform initial search
       loadCurrentPlan();
     }
-    
+
+    function generateItineraryTabs(startDateStr, endDateStr) {
+      const dayTabs = document.getElementById('dayTabs');
+      const dayTabsContent = document.getElementById('dayTabsContent');
+      const itinerarySection = document.getElementById('itinerary-section');
+
+      dayTabs.innerHTML = '';
+      dayTabsContent.innerHTML = '';
+      itinerarySection.style.display = 'block';
+
+      const startDate = new Date(startDateStr);
+      const endDate = new Date(endDateStr);
+      const days = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+
+      for (let i = 0; i < days; i++) {
+        const currentDay = new Date(startDate);
+        currentDay.setDate(startDate.getDate() + i);
+        const dateLabel = currentDay.toLocaleDateString();
+        const tabId = `day${i + 1}`;
+        const isActive = i === 0 ? 'active' : '';
+        const isShow = i === 0 ? 'show active' : '';
+
+        // Ensure structure exists
+        itineraryRecommendations[i] = itineraryRecommendations[i] || [];
+
+        const tab = document.createElement('li');
+        tab.className = 'nav-item';
+        tab.innerHTML = `
+          <button class="nav-link ${isActive}" id="${tabId}-tab" data-bs-toggle="tab" data-bs-target="#${tabId}" type="button" role="tab">
+            Day ${i + 1} <small class="text-muted">(${dateLabel})</small>
+          </button>
+        `;
+        dayTabs.appendChild(tab);
+
+        const pane = document.createElement('div');
+        pane.className = `tab-pane fade ${isShow}`;
+        pane.id = tabId;
+        pane.role = 'tabpanel';
+
+        const listItems = itineraryRecommendations[i].map(place => `
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            ${place.name}
+            <button class="btn btn-sm btn-outline-success" onclick="addToItinerary('${place.place_id}', ${i})">
+              Add to Itinerary
+            </button>
+          </li>
+        `).join('');
+
+        pane.innerHTML = `
+          <div class="card p-3 bg-light border">
+            <h5>Recommended Places</h5>
+            <ul class="list-group">${listItems || '<li class="list-group-item text-muted">No recommendations yet.</li>'}</ul>
+          </div>
+        `;
+
+        dayTabsContent.appendChild(pane);
+      }
+    }
+
+    function addToItinerary(placeId, dayIndex) {
+      const place = itineraryRecommendations[dayIndex].find(p => p.place_id === placeId);
+      if (!place) return;
+
+      // ✅ Check if user is authenticated
+      if (!checkAuthBeforeAddToItinerary(place)) {
+        return; // 🚫 Stop if not authenticated
+      }
+
+      fetch('/api/plan/places', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          placeId: place.place_id,
+          name: place.name,
+          address: place.formatted_address,
+          category: 'attraction',
+          notes: '', // Optional: grab from a notes field if you add one
+          indoor: document.getElementById('indoor-toggle').checked
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        let alertClass = 'alert-success';
+        let alertMessage = `<strong>Success!</strong> "${place.name}" added to your itinerary.`;
+
+        if (data.duplicate) {
+          alertClass = 'alert-warning';
+          alertMessage = `<strong>Note:</strong> ${data.message}`;
+        }
+
+        const alertHtml = `
+          <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+            ${alertMessage}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        `;
+
+        const alertContainer = document.createElement('div');
+        alertContainer.className = 'position-fixed top-0 start-0 end-0 p-3 text-center';
+        alertContainer.style.zIndex = '5000';
+        alertContainer.innerHTML = alertHtml;
+        document.body.appendChild(alertContainer);
+
+        setTimeout(() => {
+          if (alertContainer.parentNode) {
+            alertContainer.querySelector('.alert').classList.remove('show');
+            setTimeout(() => alertContainer.remove(), 300);
+          }
+        }, 3000);
+      })
+      .catch(error => {
+        console.error('Error adding to itinerary:', error);
+        alert('Error adding to itinerary. Please try again later.');
+      });
+    }
+        
     // Load current plan
     function loadCurrentPlan() {
-  fetch('/api/plan')
+      fetch('/api/plan')
     .then(response => response.json())
     .then(data => {
       if (data.plan && data.plan.destination) {
         currentPlan = data.plan;
 
-        // Update UI
         document.getElementById('destination-display').textContent = currentPlan.destination;
         document.getElementById('date-display').textContent = formatDateRange(currentPlan.startDate, currentPlan.endDate);
         document.getElementById('current-plan-info').style.display = 'block';
         document.getElementById('no-plan-alert').style.display = 'none';
 
-        // 🔥 NEW: Get rainDays from weather API
+        generateItineraryTabs(currentPlan.startDate, currentPlan.endDate);
+
+        // Weather + search
         fetch(`/api/weather?city=${encodeURIComponent(currentPlan.destination)}`)
           .then(res => res.json())
           .then(weather => {
             rainDays = weather.rainDays || [];
-
-            // Optionally log them for debugging
-            console.log('Rainy days during trip:', rainDays);
-
-            // Now that we have weather + plan, search attractions
             searchAttractions('');
           })
           .catch(err => {
             console.error('Failed to fetch weather:', err);
-            searchAttractions(''); // Fallback: still search
+            searchAttractions('');
           });
-
       } else {
-        // No plan exists
         document.getElementById('no-plan-alert').style.display = 'block';
         document.getElementById('current-plan-info').style.display = 'none';
       }
@@ -420,6 +541,10 @@
       if (!currentPlan || !currentPlan.destination) {
         return;
       }
+
+      Object.keys(itineraryRecommendations).forEach(key => {
+        itineraryRecommendations[key] = [];
+      });
       
       // Show loading spinner
       document.getElementById('spinner').style.display = 'flex';
@@ -444,6 +569,53 @@
            
             displayResults(data.results);
 
+            let filtered = data.results.filter(p => !removedAttractions.has(p.place_id));
+            let dayCount = Object.keys(itineraryRecommendations).length;
+            let attractionsPerDay = 3; // you can change to 2 or 4 if you want
+
+            const clustered = [];
+            const visited = new Set();
+
+            function haversineDistance(a, b) {
+              const R = 6371; // km
+              const dLat = (b.lat - a.lat) * Math.PI / 180;
+              const dLng = (b.lng - a.lng) * Math.PI / 180;
+              const lat1 = a.lat * Math.PI / 180;
+              const lat2 = b.lat * Math.PI / 180;
+
+              const aCalc = Math.sin(dLat / 2) ** 2 +
+                            Math.sin(dLng / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
+              return R * 2 * Math.atan2(Math.sqrt(aCalc), Math.sqrt(1 - aCalc));
+            }
+
+            filtered.forEach((place, i) => {
+              if (visited.has(place.place_id)) return;
+
+              const cluster = [place];
+              visited.add(place.place_id);
+
+              for (let j = i + 1; j < filtered.length; j++) {
+                const dist = haversineDistance(
+                  place.geometry.location,
+                  filtered[j].geometry.location
+                );
+                if (dist < 5) {
+                  cluster.push(filtered[j]);
+                  visited.add(filtered[j].place_id);
+                }
+                if (cluster.length >= attractionsPerDay) break;
+              }
+
+              if (cluster.length > 0 && clustered.length < dayCount) {
+                itineraryRecommendations[clustered.length] = cluster;
+                clustered.push(cluster);
+              }
+            });
+
+
+            // Re-render itinerary tabs
+            generateItineraryTabs(currentPlan.startDate, currentPlan.endDate);
+
             
             // Fit map to show all markers
             const bounds = new google.maps.LatLngBounds();
@@ -467,6 +639,7 @@
           `;
         });
     }
+    
     
     // Display search results
     function displayResults(places) {
@@ -643,13 +816,13 @@ card.className = 'card attraction-card h-100'; // keep styling
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-  placeId: selectedPlace.place_id,
-  name: selectedPlace.name,
-  address: selectedPlace.formatted_address,
-  category: 'attraction',
-  notes: notes,
-  indoor: document.getElementById('indoor-toggle').checked // 🔥 NEW
-}),
+          placeId: selectedPlace.place_id,
+          name: selectedPlace.name,
+          address: selectedPlace.formatted_address,
+          category: 'attraction',
+          notes: notes,
+          indoor: document.getElementById('indoor-toggle').checked // 🔥 NEW
+        }),
 
         })
         .then(response => response.json())
