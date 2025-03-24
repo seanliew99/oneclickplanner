@@ -5,6 +5,16 @@ const axios = require('axios');
 const session = require('express-session');
 require('dotenv').config();
 
+const ItineraryModel = require('./models/itinerary');
+
+const isAuthenticated = (req, res, next) => {
+  if (req.session.user && req.session.user.sub) {
+    return next();
+  }
+  res.status(401).json({ error: 'Unauthorized', authenticated: false });
+};
+
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -34,24 +44,53 @@ app.get('/api/config', (req, res) => {
 });
 
 // Save or update travel plan
-app.post('/api/plan', (req, res) => {
+app.post('/api/plan', async (req, res) => {
   const { destination, startDate, endDate } = req.body;
   
   if (!destination) {
     return res.status(400).json({ error: 'Destination is required' });
   }
   
-  // Save plan to session
+  // Store the plan in session as before (for non-authenticated users)
   req.session.plan = {
     destination,
     startDate,
     endDate,
-    createdAt: new Date(),
+    createdAt: new Date().toISOString(),
     attractions: req.session.plan?.attractions || [],
     restaurants: req.session.plan?.restaurants || []
   };
   
-  res.json({ success: true,  n: req.session.plan });
+  // If user is authenticated, also save to DynamoDB
+  if (req.session.user && req.session.user.sub) {
+    try {
+      const userId = req.session.user.sub;
+      
+      // First check if the user already has an itinerary
+      let existingItinerary = await ItineraryModel.getItineraryByUserId(userId);
+      let savedItinerary;
+      
+      if (existingItinerary) {
+        // Update existing itinerary
+        existingItinerary.destination = destination;
+        existingItinerary.startDate = startDate;
+        existingItinerary.endDate = endDate;
+        existingItinerary.updatedAt = new Date().toISOString();
+        savedItinerary = await ItineraryModel.saveItinerary(userId, existingItinerary);
+      } else {
+        // Create new itinerary
+        savedItinerary = await ItineraryModel.saveItinerary(userId, req.session.plan);
+      }
+      
+      // Update session with the saved data
+      req.session.plan = savedItinerary;
+    } catch (error) {
+      console.error('Error saving itinerary to DynamoDB:', error);
+      // Continue even if DB save fails - at least it's in the session
+    }
+  }
+  
+  res.json({ success: true, plan: req.session.plan });
 });
 
 
@@ -135,8 +174,8 @@ app.get('/api/auth/logout', (req, res) => {
       return res.status(500).json({ error: 'Failed to logout' });
     }
     
-    // Redirect to Cognito logout
-    res.redirect(`${process.env.COGNITO_DOMAIN}/logout?client_id=${process.env.COGNITO_CLIENT_ID}&logout_uri=${process.env.COGNITO_REDIRECT_URI}`);
+    // Instead of redirecting to Cognito logout, just respond with success
+    res.json({ success: true, message: 'Logged out successfully' });
   });
 });
 
@@ -240,12 +279,30 @@ app.get('/api/weather', async (req, res) => {
 
 
 // Get current travel plan
-app.get('/api/plan', (req, res) => {
+app.get('/api/plan', async (req, res) => {
+  // If user is authenticated, try to get plan from DynamoDB
+  if (req.session.user && req.session.user.sub) {
+    try {
+      const userId = req.session.user.sub;
+      const itinerary = await ItineraryModel.getItineraryByUserId(userId);
+      
+      if (itinerary) {
+        // Store in session for future use
+        req.session.plan = itinerary;
+        return res.json({ plan: itinerary });
+      }
+    } catch (error) {
+      console.error('Error fetching itinerary from DynamoDB:', error);
+      // Fall back to session if DB fails
+    }
+  }
+  
+  // Return from session for non-authenticated users or as fallback
   res.json({ plan: req.session.plan || null });
 });
 
 // Add place to itinerary (attraction or restaurant)
-app.post('/api/plan/places', (req, res) => {
+app.post('/api/plan/places', async (req, res) => {
   const { placeId, name, address, category, notes } = req.body;
   
   if (!req.session.plan) {
@@ -261,47 +318,113 @@ app.post('/api/plan/places', (req, res) => {
     name,
     address,
     notes: notes || '',
-    addedAt: new Date()
+    addedAt: new Date().toISOString()
   };
   
-  // Add to appropriate category, but check for duplicates first
+  let isDuplicate = false;
+  
+  // Add to appropriate category in session, but check for duplicates first
   if (category === 'attraction') {
     req.session.plan.attractions = req.session.plan.attractions || [];
+    isDuplicate = req.session.plan.attractions.some(item => item.id === placeId);
     
-    // Check if this attraction is already in the itinerary
-    const isDuplicate = req.session.plan.attractions.some(item => item.id === placeId);
-    
-    if (isDuplicate) {
-      return res.json({ 
-        success: false, 
-        duplicate: true,
-        message: 'This attraction is already in your itinerary'
-      });
+    if (!isDuplicate) {
+      req.session.plan.attractions.push(place);
     }
-    
-    req.session.plan.attractions.push(place);
   } else if (category === 'restaurant') {
     req.session.plan.restaurants = req.session.plan.restaurants || [];
+    isDuplicate = req.session.plan.restaurants.some(item => item.id === placeId);
     
-    // Check if this restaurant is already in the itinerary
-    const isDuplicate = req.session.plan.restaurants.some(item => item.id === placeId);
-    
-    if (isDuplicate) {
-      return res.json({ 
-        success: false, 
-        duplicate: true,
-        message: 'This restaurant is already in your itinerary'
-      });
+    if (!isDuplicate) {
+      req.session.plan.restaurants.push(place);
     }
+  }
+  
+  if (isDuplicate) {
+    return res.json({ 
+      success: false, 
+      duplicate: true,
+      message: `This ${category} is already in your itinerary`
+    });
+  }
+  
+  // If user is authenticated, also update in DynamoDB
+  if (req.session.user && req.session.user.sub && req.session.plan.itineraryId) {
+    try {
+      const userId = req.session.user.sub;
+      const itineraryId = req.session.plan.itineraryId;
+      
+      await ItineraryModel.addPlaceToItinerary(userId, itineraryId, place, category);
+    } catch (error) {
+      console.error(`Error adding ${category} to DynamoDB:`, error);
+      // Continue even if DB save fails - at least it's in the session
+    }
+  }
+  
+  res.json({ success: true, plan: req.session.plan });
+});app.post('/api/plan/places', async (req, res) => {
+  const { placeId, name, address, category, notes } = req.body;
+  
+  if (!req.session.plan) {
+    return res.status(400).json({ error: 'No active travel plan' });
+  }
+  
+  if (!placeId || !name || !category) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+  
+  const place = {
+    id: placeId,
+    name,
+    address,
+    notes: notes || '',
+    addedAt: new Date().toISOString()
+  };
+  
+  let isDuplicate = false;
+  
+  // Add to appropriate category in session, but check for duplicates first
+  if (category === 'attraction') {
+    req.session.plan.attractions = req.session.plan.attractions || [];
+    isDuplicate = req.session.plan.attractions.some(item => item.id === placeId);
     
-    req.session.plan.restaurants.push(place);
+    if (!isDuplicate) {
+      req.session.plan.attractions.push(place);
+    }
+  } else if (category === 'restaurant') {
+    req.session.plan.restaurants = req.session.plan.restaurants || [];
+    isDuplicate = req.session.plan.restaurants.some(item => item.id === placeId);
+    
+    if (!isDuplicate) {
+      req.session.plan.restaurants.push(place);
+    }
+  }
+  
+  if (isDuplicate) {
+    return res.json({ 
+      success: false, 
+      duplicate: true,
+      message: `This ${category} is already in your itinerary`
+    });
+  }
+  
+  // If user is authenticated, also update in DynamoDB
+  if (req.session.user && req.session.user.sub && req.session.plan.itineraryId) {
+    try {
+      const userId = req.session.user.sub;
+      const itineraryId = req.session.plan.itineraryId;
+      
+      await ItineraryModel.addPlaceToItinerary(userId, itineraryId, place, category);
+    } catch (error) {
+      console.error(`Error adding ${category} to DynamoDB:`, error);
+      // Continue even if DB save fails - at least it's in the session
+    }
   }
   
   res.json({ success: true, plan: req.session.plan });
 });
 
-// Remove place from itinerary
-app.delete('/api/plan/places/:id', (req, res) => {
+app.delete('/api/plan/places/:id', async (req, res) => {
   const { id } = req.params;
   const { category } = req.query;
   
@@ -309,13 +432,57 @@ app.delete('/api/plan/places/:id', (req, res) => {
     return res.status(400).json({ error: 'No active travel plan' });
   }
   
+  // Remove from session
   if (category === 'attraction') {
     req.session.plan.attractions = (req.session.plan.attractions || []).filter(place => place.id !== id);
   } else if (category === 'restaurant') {
     req.session.plan.restaurants = (req.session.plan.restaurants || []).filter(place => place.id !== id);
   }
   
+  // If user is authenticated, also remove from DynamoDB
+  if (req.session.user && req.session.user.sub && req.session.plan.itineraryId) {
+    try {
+      const userId = req.session.user.sub;
+      const itineraryId = req.session.plan.itineraryId;
+      
+      await ItineraryModel.removePlaceFromItinerary(userId, itineraryId, id, category);
+    } catch (error) {
+      console.error(`Error removing ${category} from DynamoDB:`, error);
+      // Continue even if DB operation fails - at least it's removed from the session
+    }
+  }
+  
   res.json({ success: true, plan: req.session.plan });
+});
+
+
+app.post('/api/plan/migrate', isAuthenticated, async (req, res) => {
+  try {
+    const userId = req.session.user.sub;
+    
+    // Check if there's a plan in the session to migrate
+    if (!req.session.plan || !req.session.plan.destination) {
+      return res.json({ success: true, message: 'No plan to migrate' });
+    }
+    
+    // Check if user already has an itinerary in DynamoDB
+    const existingItinerary = await ItineraryModel.getItineraryByUserId(userId);
+    
+    if (!existingItinerary) {
+      // Save the session plan to DynamoDB
+      const savedItinerary = await ItineraryModel.saveItinerary(userId, req.session.plan);
+      req.session.plan = savedItinerary;
+      return res.json({ success: true, message: 'Plan migrated successfully' });
+    } else {
+      // User already has a plan in DB, merge if needed
+      // For simplicity, we'll just keep the DB version
+      req.session.plan = existingItinerary;
+      return res.json({ success: true, message: 'Using existing plan from database' });
+    }
+  } catch (error) {
+    console.error('Error migrating plan:', error);
+    res.status(500).json({ success: false, error: 'Failed to migrate plan' });
+  }
 });
 
 // Route to search for places using Places API v1 - with location bounds
