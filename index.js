@@ -318,12 +318,13 @@ app.post('/api/plan/places', async (req, res) => {
     name,
     address,
     notes: notes || '',
-    addedAt: new Date().toISOString()
+    indoor: req.body.indoor || false, // 🔥 NEW
+    addedAt: new Date()
   };
   
   let isDuplicate = false;
   
-  // Add to appropriate category in session, but check for duplicates first
+  // Add to appropriate category, but check for duplicates first
   if (category === 'attraction') {
     req.session.plan.attractions = req.session.plan.attractions || [];
     isDuplicate = req.session.plan.attractions.some(item => item.id === placeId);

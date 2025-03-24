@@ -364,6 +364,28 @@
         break-inside: avoid;
       }
     }
+
+    
+
+  .note-indicator {
+    animation: pulse 1s infinite alternate;
+  }
+
+  .fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.1); }
+  }
+
+
   </style>
 </head>
 <body>
@@ -506,6 +528,15 @@
          <!-- Smart Planner Recommendation -->
          <div class="container mt-5">
           <h2 class="text-center mb-4 fw-bold">🧭 Recommended Plan</h2>
+
+<!-- Weather Summary -->
+<div id="weather-summary" class="mb-4 sticky-top bg-white shadow-sm p-3 rounded text-center" style="z-index: 1000; display: none;">
+  <strong class="me-3 text-warning">☀️ Sunny: <span id="sunny-count">0</span></strong>
+  <strong class="me-3 text-info">🌧️ Rainy: <span id="rainy-count">0</span></strong>
+  <strong class="me-3 text-secondary">☁️ Cloudy: <span id="cloudy-count">0</span></strong>
+  <strong class="text-danger">⛈️ Stormy: <span id="stormy-count">0</span></strong>
+</div>
+
           <div id="itinerary-container" class="mt-4"></div>
         </div>
         
@@ -778,6 +809,7 @@
       );
 
 renderSmartItinerary(smartPlan, blockForecast); // ✅ show block-based weather
+updateWeatherSummaryFromSmartPlan(smartPlan,blockForecast);
 
       ;
     })
@@ -799,10 +831,8 @@ renderSmartItinerary(smartPlan, blockForecast); // ✅ show block-based weather
   }
 
   // Split attractions into indoor/outdoor
-  const indoor = attractions.filter(place =>
-    /museum|gallery|aquarium|mall|library|cinema|theater|shopping|exhibit/i.test(place.name)
-  );
-  const outdoor = attractions.filter(place => !indoor.includes(place));
+  const indoor = attractions.filter(place => place.indoor === true);
+const outdoor = attractions.filter(place => place.indoor !== true);
 
   // For each day and time block, assign attractions
   days.forEach(date => {
@@ -815,10 +845,13 @@ renderSmartItinerary(smartPlan, blockForecast); // ✅ show block-based weather
       let pick = null;
 
       if (weather === 'rain' || weather === 'storm') {
-        pick = indoor.shift();
-      } else {
-        pick = outdoor.shift() || indoor.shift();
-      }
+  // 🌧️ Rainy/stormy block → prioritize indoor
+  pick = indoor.shift() || outdoor.shift();
+} else {
+  // ☀️ Clear/cloudy block → prioritize outdoor
+  pick = outdoor.shift() || indoor.shift();
+}
+
 
       if (pick) {
         itinerary[date][block] = pick;
@@ -833,55 +866,174 @@ function renderSmartItinerary(itinerary, blockForecast = {}) {
   const container = document.getElementById('itinerary-container');
   container.innerHTML = '';
 
-  Object.entries(itinerary).forEach(([date, blocks]) => {
-    const card = document.createElement('div');
-card.className = 'card mb-4 shadow border-0';
-card.id = `itinerary-${date}`; // 👈 Adds ID for scroll-to-target
+  const blockLabels = {
+    morning: '☀️ Morning',
+    afternoon: '🌤️ Afternoon',
+    evening: '🌙 Evening'
+  };
 
+  Object.entries(itinerary).forEach(([date, blocks], dayIndex) => {
     const readableDate = new Date(date).toLocaleDateString(undefined, {
-      weekday: 'long',
-      month: 'long',
-      day: 'numeric'
-    });
+  weekday: 'long',
+  month: 'long',
+  day: 'numeric',
+  year: 'numeric'
+});
+const dayLabel = `Day ${dayIndex + 1}: ${readableDate}`;
 
-    card.innerHTML = `
-      <div class="card-header bg-dark text-white fw-bold fs-5">
-        ${readableDate}
+
+    const accordionItem = document.createElement('div');
+    accordionItem.className = 'accordion-item mb-3 shadow-sm border-0';
+
+    accordionItem.innerHTML = `
+      <h2 class="accordion-header" id="heading-${dayIndex}">
+        <button class="accordion-button collapsed fw-bold bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${dayIndex}" aria-expanded="false" aria-controls="collapse-${dayIndex}">
+      ${dayLabel}
+
+        </button>
+      </h2>
+      <div id="collapse-${dayIndex}" class="accordion-collapse collapse" aria-labelledby="heading-${dayIndex}">
+        <div class="accordion-body">
+          <ul class="list-group list-group-flush" id="block-list-${dayIndex}"></ul>
+        </div>
       </div>
-      <ul class="list-group list-group-flush"></ul>
     `;
 
-    const list = card.querySelector('ul');
+    container.appendChild(accordionItem);
 
-    const blockLabels = {
-      morning: '☀️ Morning',
-      afternoon: '🌤️ Afternoon',
-      evening: '🌙 Evening'
-    };
+    const list = accordionItem.querySelector(`#block-list-${dayIndex}`);
 
     ['morning', 'afternoon', 'evening'].forEach(block => {
       const place = blocks[block];
       const weather = blockForecast[date]?.[block] || 'clear';
       const weatherIcon = getWeatherIconLabel(weather);
+      const isIndoor = place?.indoor ? `<span class="badge bg-info ms-2">Indoor</span>` : '';
 
       const item = document.createElement('li');
-      item.className = 'list-group-item d-flex flex-column align-items-start';
+      item.className = 'list-group-item';
 
       item.innerHTML = `
-        <div class="fw-semibold text-primary mb-1">${blockLabels[block]} <span class="text-muted ms-2">${weatherIcon}</span></div>
-        ${
-          place
-            ? `<div><strong class="fs-6">${place.name}</strong><br><small class="text-muted">${place.address || ''}</small></div>`
-            : `<em class="text-muted">No activity planned for this block.</em>`
-        }
-      `;
+  <div class="d-flex justify-content-between align-items-start">
+    <div class="flex-grow-1 pe-3">
+      <div class="fw-semibold text-primary mb-1">${blockLabels[block]} ${isIndoor}</div>
+      ${
+        place
+          ? `<div><strong>${place.name}</strong><br><small class="text-muted">${place.address || ''}</small></div>`
+          : `<em class="text-muted">No activity planned.</em>`
+      }
+    </div>
+
+    <div class="text-end ms-auto">
+      ${weatherIcon}
+      ${
+        place
+          ? `
+          <button class="btn btn-outline-secondary btn-sm mt-2 toggle-note-btn d-flex align-items-center gap-1" data-note-id="${date}-${block}">
+            <i class="bi bi-sticky"></i><span>Note</span>
+            <span class="note-indicator" style="display: none; font-size: 1.2rem;">📌</span>
+          </button>
+
+          <div class="note-area mt-2 fade-in" style="display: none;">
+            <textarea
+              class="form-control form-control-sm note-textarea"
+              placeholder="Add note..."
+              style="width: 180px; height: 60px; font-size: 0.75rem;"
+              data-note-id="${date}-${block}"
+            ></textarea>
+            <button class="btn btn-link btn-sm text-danger p-0 mt-1 clear-note-btn" data-note-id="${date}-${block}">
+              <i class="bi bi-trash"></i> Clear Note
+            </button>
+          </div>
+          `
+          : ''
+      }
+    </div>
+  </div>
+`;
+
+
+
 
       list.appendChild(item);
     });
 
-    container.appendChild(card);
+      // ✅ 👉 ADD THIS HERE (Step 2)
+      const toggleButtons = accordionItem.querySelectorAll('.toggle-note-btn');
+toggleButtons.forEach(btn => {
+  const noteId = btn.dataset.noteId;
+  const textarea = accordionItem.querySelector(`textarea[data-note-id="${noteId}"]`);
+  const noteArea = textarea.closest('.note-area');
+  const indicator = btn.querySelector('.note-indicator');
+  const clearBtn = accordionItem.querySelector(`.clear-note-btn[data-note-id="${noteId}"]`);
+
+  // Restore saved note
+  const savedNote = localStorage.getItem('note-' + noteId);
+  textarea.value = savedNote || '';
+
+  // Show 📌 indicator if note exists
+  if (savedNote && indicator) {
+    indicator.style.display = 'inline';
+  }
+
+  // Toggle visibility
+  btn.addEventListener('click', () => {
+    noteArea.style.display = noteArea.style.display === 'none' ? 'block' : 'none';
+  });
+
+  // Auto-save
+  textarea.addEventListener('input', () => {
+    const value = textarea.value;
+    localStorage.setItem('note-' + noteId, value);
+
+    // Toggle 📌
+    if (value.trim()) {
+      indicator.style.display = 'inline';
+    } else {
+      indicator.style.display = 'none';
+    }
+  });
+
+  // Clear note
+  clearBtn?.addEventListener('click', () => {
+    textarea.value = '';
+    localStorage.removeItem('note-' + noteId);
+    indicator.style.display = 'none';
+    textarea.dispatchEvent(new Event('input'));
+  });
+});
+
   });
 }
+
+function updateWeatherSummaryFromSmartPlan(itinerary, blockForecast) {
+  const weatherTally = {
+    sunny: 0,
+    rainy: 0,
+    cloudy: 0,
+    stormy: 0
+  };
+
+  for (const date in itinerary) {
+    const blocks = itinerary[date];
+    for (const block of ['morning', 'afternoon', 'evening']) {
+      const weather = blockForecast[date]?.[block];
+      if (!weather) continue;
+
+      if (weather === 'clear') weatherTally.sunny++;
+      else if (weather === 'rain') weatherTally.rainy++;
+      else if (weather === 'cloudy') weatherTally.cloudy++;
+      else if (weather === 'storm') weatherTally.stormy++;
+    }
+  }
+
+  document.getElementById('sunny-count').textContent = weatherTally.sunny;
+  document.getElementById('rainy-count').textContent = weatherTally.rainy;
+  document.getElementById('cloudy-count').textContent = weatherTally.cloudy;
+  document.getElementById('stormy-count').textContent = weatherTally.stormy;
+
+  document.getElementById('weather-summary').style.display = 'block';
+}
+
 
 
 function capitalize(str) {
@@ -890,13 +1042,14 @@ function capitalize(str) {
 
 function getWeatherIconLabel(type) {
   switch (type) {
-    case 'rain': return '🌧️ Rain';
-    case 'clear': return '☀️ Clear';
-    case 'cloudy': return '☁️ Cloudy';
-    case 'storm': return '⛈️ Storm';
-    default: return '🌡️ Mixed';
+    case 'rain': return '<span class="text-info">🌧️ Rain</span>';
+    case 'clear': return '<span class="text-warning">☀️ Clear</span>';
+    case 'cloudy': return '<span class="text-secondary">☁️ Cloudy</span>';
+    case 'storm': return '<span class="text-danger">⛈️ Storm</span>';
+    default: return '<span class="text-muted">🌡️ Mixed</span>';
   }
 }
+
 
 // Wait until itinerary is fully rendered before scrolling
 window.addEventListener('DOMContentLoaded', () => {
