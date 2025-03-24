@@ -196,7 +196,7 @@
   <div class="form-check mt-3">
     <input class="form-check-input" type="checkbox" id="indoor-toggle">
     <label class="form-check-label" for="indoor-toggle">
-      Show indoor attractions only if it's going to rain ☔
+      Show indoor attractions ☔
     </label>
   </div>
 </div>
@@ -439,9 +439,9 @@
             // Update result count
             document.getElementById('result-count').textContent = `Found ${data.results.length} attractions`;
             
-            const filteredResults = filterByWeather(data.results);
-            document.getElementById('result-count').textContent = `Showing ${filteredResults.length} attractions`;
-            displayResults(filteredResults);
+            
+           
+            displayResults(data.results);
 
             
             // Fit map to show all markers
@@ -633,12 +633,14 @@
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            placeId: selectedPlace.place_id,
-            name: selectedPlace.name,
-            address: selectedPlace.formatted_address,
-            category: 'attraction',
-            notes: notes
-          }),
+  placeId: selectedPlace.place_id,
+  name: selectedPlace.name,
+  address: selectedPlace.formatted_address,
+  category: 'attraction',
+  notes: notes,
+  indoor: document.getElementById('indoor-toggle').checked // 🔥 NEW
+}),
+
         })
         .then(response => response.json())
         .then(data => {
@@ -682,11 +684,18 @@
         });
       });
     });
+    document.getElementById('indoor-toggle').addEventListener('change', (e) => {
+  const keywordInput = document.getElementById('keyword');
 
-    document.getElementById('indoor-toggle').addEventListener('change', () => {
-  const keyword = document.getElementById('keyword').value;
-  searchAttractions(keyword);
+  if (e.target.checked) {
+    keywordInput.value = 'indoors';
+  } else {
+    keywordInput.value = '';
+  }
+
+  searchAttractions(keywordInput.value);
 });
+
 
   </script>
   
@@ -717,34 +726,7 @@
 
 
 <script>
-function filterByWeather(places) {
-  const indoorToggle = document.getElementById('indoor-toggle');
-  if (!indoorToggle || !indoorToggle.checked) return places;
 
-  if (!currentPlan || !currentPlan.startDate || !currentPlan.endDate) return places;
-
-// Check if any date in the user's trip is a rainy day
-const start = new Date(currentPlan.startDate);
-const end = new Date(currentPlan.endDate);
-let rainExpected = false;
-
-while (start <= end) {
-  const dateStr = start.toISOString().split('T')[0];
-  if (rainDays.includes(dateStr)) {
-    rainExpected = true;
-    break;
-  }
-  start.setDate(start.getDate() + 1);
-}
-
-if (!rainExpected) return places;
-
-
-  return places.filter(place => {
-    const name = place.name.toLowerCase();
-    return /museum|gallery|aquarium|mall|shopping|library|indoor|cinema|theater/.test(name);
-  });
-}
 </script>
 
 <script src="/js/auth.js"></script>

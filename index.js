@@ -261,8 +261,10 @@ app.post('/api/plan/places', (req, res) => {
     name,
     address,
     notes: notes || '',
+    indoor: req.body.indoor || false, // 🔥 NEW
     addedAt: new Date()
   };
+  
   
   // Add to appropriate category, but check for duplicates first
   if (category === 'attraction') {

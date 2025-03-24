@@ -799,10 +799,8 @@ renderSmartItinerary(smartPlan, blockForecast); // ✅ show block-based weather
   }
 
   // Split attractions into indoor/outdoor
-  const indoor = attractions.filter(place =>
-    /museum|gallery|aquarium|mall|library|cinema|theater|shopping|exhibit/i.test(place.name)
-  );
-  const outdoor = attractions.filter(place => !indoor.includes(place));
+  const indoor = attractions.filter(place => place.indoor === true);
+const outdoor = attractions.filter(place => place.indoor !== true);
 
   // For each day and time block, assign attractions
   days.forEach(date => {
@@ -815,10 +813,13 @@ renderSmartItinerary(smartPlan, blockForecast); // ✅ show block-based weather
       let pick = null;
 
       if (weather === 'rain' || weather === 'storm') {
-        pick = indoor.shift();
-      } else {
-        pick = outdoor.shift() || indoor.shift();
-      }
+  // 🌧️ Rainy/stormy block → prioritize indoor
+  pick = indoor.shift() || outdoor.shift();
+} else {
+  // ☀️ Clear/cloudy block → prioritize outdoor
+  pick = outdoor.shift() || indoor.shift();
+}
+
 
       if (pick) {
         itinerary[date][block] = pick;
