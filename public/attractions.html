@@ -222,7 +222,8 @@
           </div>
           
           <!-- Results List -->
-          <div id="results-container"></div>
+          <div id="results-container" class="row g-4"></div>
+
         </div>
       </div>
     </div>
@@ -489,8 +490,12 @@
         marker.addListener('click', () => showPlaceDetails(place));
         
         // Create result card
-        const card = document.createElement('div');
-        card.className = 'card attraction-card';
+        const col = document.createElement('div');
+col.className = 'col-md-6 col-lg-4'; // 2 per row on md, 3 per row on lg+
+
+const card = document.createElement('div');
+card.className = 'card attraction-card h-100'; // keep styling
+
         card.innerHTML = `
           <div class="attraction-image" style="background-image: url('https://source.unsplash.com/300x200/?${encodeURIComponent(place.name)}')"></div>
           <div class="card-body">
@@ -502,13 +507,18 @@
             <button class="btn btn-sm btn-outline-primary view-details-btn">View Details</button>
           </div>
         `;
+
+
+        col.appendChild(card);
+
+
         
         // Add click event to the button
         card.querySelector('.view-details-btn').addEventListener('click', () => {
           showPlaceDetails(place);
         });
         
-        resultsContainer.appendChild(card);
+        resultsContainer.appendChild(col);
       });
     }
     
