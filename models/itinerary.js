@@ -1,17 +1,23 @@
 // models/itinerary.js
-const docClient = require('../config/dynamodb');
+const { db } = require('../config/firebase');
+const { 
+  collection, doc, setDoc, getDoc, getDocs, 
+  query, where, updateDoc, deleteDoc, arrayUnion
+} = require('firebase/firestore');
 const { v4: uuidv4 } = require('uuid');
 
-const TABLE_NAME = 'OneClickPlannerItineraries';
+const COLLECTION_NAME = 'itineraries';
 
 const ItineraryModel = {
   // Create or update an itinerary
   async saveItinerary(userId, itineraryData) {
-    const params = {
-      TableName: TABLE_NAME,
-      Item: {
+    try {
+      const itineraryId = itineraryData.itineraryId || uuidv4();
+      const docRef = doc(db, COLLECTION_NAME, itineraryId);
+      
+      const itinerary = {
         userId,
-        itineraryId: itineraryData.itineraryId || uuidv4(),
+        itineraryId,
         destination: itineraryData.destination,
         startDate: itineraryData.startDate,
         endDate: itineraryData.endDate,
@@ -19,12 +25,10 @@ const ItineraryModel = {
         restaurants: itineraryData.restaurants || [],
         updatedAt: new Date().toISOString(),
         createdAt: itineraryData.createdAt || new Date().toISOString()
-      }
-    };
-
-    try {
-      await docClient.put(params).promise();
-      return params.Item;
+      };
+      
+      await setDoc(docRef, itinerary);
+      return itinerary;
     } catch (error) {
       console.error('Error saving itinerary:', error);
       throw error;
@@ -33,20 +37,24 @@ const ItineraryModel = {
 
   // Get an itinerary by userId
   async getItineraryByUserId(userId) {
-    const params = {
-      TableName: TABLE_NAME,
-      KeyConditionExpression: 'userId = :userId',
-      ExpressionAttributeValues: {
-        ':userId': userId
-      }
-    };
-
     try {
-      const result = await docClient.query(params).promise();
-      // Return the most recently updated itinerary if multiple exist
-      return result.Items.sort((a, b) => 
+      const q = query(collection(db, COLLECTION_NAME), where("userId", "==", userId));
+      const querySnapshot = await getDocs(q);
+      
+      if (querySnapshot.empty) {
+        return null;
+      }
+      
+      // Convert to array and sort by updatedAt
+      const itineraries = [];
+      querySnapshot.forEach(doc => {
+        itineraries.push(doc.data());
+      });
+      
+      // Return the most recently updated itinerary
+      return itineraries.sort((a, b) => 
         new Date(b.updatedAt) - new Date(a.updatedAt)
-      )[0] || null;
+      )[0];
     } catch (error) {
       console.error('Error getting itinerary:', error);
       throw error;
@@ -55,43 +63,38 @@ const ItineraryModel = {
 
   // Add place to itinerary (attraction or restaurant)
   async addPlaceToItinerary(userId, itineraryId, place, category) {
-    const placeToAdd = {
-      id: place.id,
-      name: place.name,
-      address: place.address,
-      notes: place.notes || '',
-      addedAt: new Date().toISOString()
-    };
-
-    let updateExpression = '';
-    let expressionAttributeValues = {
-      ':updatedAt': new Date().toISOString()
-    };
-    
-    if (category === 'attraction') {
-      updateExpression = 'SET attractions = list_append(if_not_exists(attractions, :empty_list), :place), updatedAt = :updatedAt';
-      expressionAttributeValues[':place'] = [placeToAdd];
-      expressionAttributeValues[':empty_list'] = [];
-    } else if (category === 'restaurant') {
-      updateExpression = 'SET restaurants = list_append(if_not_exists(restaurants, :empty_list), :place), updatedAt = :updatedAt';
-      expressionAttributeValues[':place'] = [placeToAdd];
-      expressionAttributeValues[':empty_list'] = [];
-    }
-
-    const params = {
-      TableName: TABLE_NAME,
-      Key: {
-        userId,
-        itineraryId
-      },
-      UpdateExpression: updateExpression,
-      ExpressionAttributeValues: expressionAttributeValues,
-      ReturnValues: 'ALL_NEW'
-    };
-
     try {
-      const result = await docClient.update(params).promise();
-      return result.Attributes;
+      const docRef = doc(db, COLLECTION_NAME, itineraryId);
+      const docSnap = await getDoc(docRef);
+      
+      if (!docSnap.exists()) {
+        throw new Error('Itinerary not found');
+      }
+      
+      const placeToAdd = {
+        id: place.id,
+        name: place.name,
+        address: place.address,
+        notes: place.notes || '',
+        addedAt: new Date().toISOString()
+      };
+      
+      // Update the field based on category
+      if (category === 'attraction') {
+        await updateDoc(docRef, {
+          attractions: arrayUnion(placeToAdd),
+          updatedAt: new Date().toISOString()
+        });
+      } else if (category === 'restaurant') {
+        await updateDoc(docRef, {
+          restaurants: arrayUnion(placeToAdd),
+          updatedAt: new Date().toISOString()
+        });
+      }
+      
+      // Get the updated document
+      const updatedDoc = await getDoc(docRef);
+      return updatedDoc.data();
     } catch (error) {
       console.error('Error adding place to itinerary:', error);
       throw error;
@@ -100,22 +103,15 @@ const ItineraryModel = {
 
   // Remove place from itinerary
   async removePlaceFromItinerary(userId, itineraryId, placeId, category) {
-    // First, get the current itinerary
-    const params = {
-      TableName: TABLE_NAME,
-      Key: {
-        userId,
-        itineraryId
-      }
-    };
-
     try {
-      const result = await docClient.get(params).promise();
-      if (!result.Item) {
+      const docRef = doc(db, COLLECTION_NAME, itineraryId);
+      const docSnap = await getDoc(docRef);
+      
+      if (!docSnap.exists()) {
         throw new Error('Itinerary not found');
       }
       
-      const itinerary = result.Item;
+      const itinerary = docSnap.data();
       
       // Filter out the place to remove
       if (category === 'attraction' && itinerary.attractions) {
@@ -127,12 +123,7 @@ const ItineraryModel = {
       // Update the itinerary
       itinerary.updatedAt = new Date().toISOString();
       
-      const updateParams = {
-        TableName: TABLE_NAME,
-        Item: itinerary
-      };
-      
-      await docClient.put(updateParams).promise();
+      await setDoc(docRef, itinerary);
       return itinerary;
     } catch (error) {
       console.error('Error removing place from itinerary:', error);
@@ -142,16 +133,9 @@ const ItineraryModel = {
 
   // Delete an itinerary
   async deleteItinerary(userId, itineraryId) {
-    const params = {
-      TableName: TABLE_NAME,
-      Key: {
-        userId,
-        itineraryId
-      }
-    };
-
     try {
-      await docClient.delete(params).promise();
+      const docRef = doc(db, COLLECTION_NAME, itineraryId);
+      await deleteDoc(docRef);
       return { success: true };
     } catch (error) {
       console.error('Error deleting itinerary:', error);
