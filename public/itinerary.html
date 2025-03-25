@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Itinerary - Travel Planner</title>
@@ -340,30 +341,6 @@
       margin-top: auto;
     }
     
-    /* Print styles */
-    @media print {
-      .navbar, footer, .page-header, .export-card, .action-buttons, .item-delete {
-        display: none !important;
-      }
-      
-      body {
-        background-color: white;
-      }
-      
-      .container {
-        width: 100%;
-        max-width: 100%;
-      }
-      
-      .trip-info-card, .section-card {
-        box-shadow: none;
-        margin-bottom: 20px;
-      }
-      
-      .item-card {
-        break-inside: avoid;
-      }
-    }
 
     
 
@@ -384,6 +361,58 @@
     0% { transform: scale(1); }
     100% { transform: scale(1.1); }
   }
+
+/* Prevent breaks inside important sections */
+.trip-info-card,
+.section-card,
+.accordion-item,
+.item-card {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+/* Optional manual page break if needed */
+.pdf-page-break {
+  page-break-before: always;
+  break-before: page;
+}
+
+/* Clean up printing */
+@media print {
+  /* Hide non-essential stuff */
+  .navbar,
+  footer,
+  .export-card,
+  .action-buttons,
+  .item-delete {
+    display: none !important;
+  }
+
+  /* Ensure full page width is used */
+  body {
+    background-color: white;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .trip-info-card,
+  .section-card {
+    box-shadow: none;
+    margin-bottom: 20px;
+  }
+
+  .item-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .accordion-item {
+    page-break-inside: avoid;
+  }
+}
 
 
   </style>
@@ -527,7 +556,11 @@
 
          <!-- Smart Planner Recommendation -->
          <div class="container mt-5">
-          <h2 class="text-center mb-4 fw-bold">🧭 Recommended Plan</h2>
+          <h2 class="text-center mb-4 fw-bold d-flex justify-content-center align-items-center gap-2" id="toggle-smart-planner">
+            🧭 Recommended Plan
+            <i class="bi bi-chevron-down" id="planner-toggle-icon" style="transition: transform 0.3s;"></i>
+          </h2>
+          
 
 <!-- Weather Summary -->
 <div id="weather-summary" class="mb-4 sticky-top bg-white shadow-sm p-3 rounded text-center" style="z-index: 1000; display: none;">
@@ -537,7 +570,10 @@
   <strong class="text-danger">⛈️ Stormy: <span id="stormy-count">0</span></strong>
 </div>
 
-          <div id="itinerary-container" class="mt-4"></div>
+<div id="smart-planner-wrapper" class="collapse show">
+  <div id="itinerary-container" class="mt-4"></div>
+</div>
+
         </div>
         
         
@@ -762,18 +798,97 @@
     
     // Export to PDF
     function exportPDF() {
-      alert('PDF export functionality will be implemented soon.');
-    }
+  // ✅ Expand all accordion items before printing
+  const accordions = document.querySelectorAll('.accordion-collapse');
+  accordions.forEach(acc => acc.classList.add('show'));
+
+  // ✅ Optional: Scroll to top before printing
+  window.scrollTo(0, 0);
+
+  // ✅ Trigger the print dialog after a short delay
+  setTimeout(() => {
+    window.print();
+  }, 300); // wait a bit to let UI settle
+}
+
+
+
     
     // Export to Calendar
     function exportCalendar() {
-      alert('Calendar export functionality will be implemented soon.');
+  const calendarEvents = [];
+
+  // Example: iterate through your smart plan
+  for (const [date, blocks] of Object.entries(currentPlan.smartPlan || {})) {
+    for (const [block, place] of Object.entries(blocks)) {
+      if (!place) continue;
+
+      const title = place.name;
+      const location = place.address || '';
+      const description = 'Planned via Travel Planner';
+
+      const startDate = new Date(date);
+      if (block === 'afternoon') startDate.setHours(12);
+      else if (block === 'evening') startDate.setHours(18);
+      else startDate.setHours(9);
+
+      const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // 2-hour event
+
+      const event = [
+        'BEGIN:VEVENT',
+        `SUMMARY:${title}`,
+        `DTSTART:${formatICSDate(startDate)}`,
+        `DTEND:${formatICSDate(endDate)}`,
+        `LOCATION:${location}`,
+        `DESCRIPTION:${description}`,
+        'END:VEVENT'
+      ].join('\n');
+
+      calendarEvents.push(event);
     }
+  }
+
+  const icsContent = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'CALSCALE:GREGORIAN',
+    ...calendarEvents,
+    'END:VCALENDAR'
+  ].join('\n');
+
+  const blob = new Blob([icsContent], { type: 'text/calendar' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'itinerary.ics';
+  a.click();
+}
+function formatICSDate(date) {
+  return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+}
+
     
     // Export via Email
     function exportEmail() {
-      alert('Email export functionality will be implemented soon.');
+  const subject = 'My Travel Itinerary';
+  const body = encodeURIComponent(generatePlainTextItinerary(currentPlan.smartPlan || {}));
+  window.location.href = `mailto:?subject=${subject}&body=${body}`;
+}
+
+function generatePlainTextItinerary(plan) {
+  let text = 'Here’s my travel itinerary:\n\n';
+  for (const [date, blocks] of Object.entries(plan)) {
+    text += `📅 ${date}\n`;
+    for (const [block, place] of Object.entries(blocks)) {
+      if (place) {
+        text += `  - ${capitalize(block)}: ${place.name} (${place.address || 'No address'})\n`;
+      }
     }
+    text += '\n';
+  }
+  return text;
+}
 
 
 
@@ -807,6 +922,8 @@
         currentPlan.endDate,
         blockForecast // ✅ use time-block-based forecast
       );
+      currentPlan.smartPlan = smartPlan;
+
 
 renderSmartItinerary(smartPlan, blockForecast); // ✅ show block-based weather
 updateWeatherSummaryFromSmartPlan(smartPlan,blockForecast);
@@ -862,6 +979,8 @@ const outdoor = attractions.filter(place => place.indoor !== true);
   return itinerary;
 }
 
+
+
 function renderSmartItinerary(itinerary, blockForecast = {}) {
   const container = document.getElementById('itinerary-container');
   container.innerHTML = '';
@@ -885,19 +1004,21 @@ const dayLabel = `Day ${dayIndex + 1}: ${readableDate}`;
     const accordionItem = document.createElement('div');
     accordionItem.className = 'accordion-item mb-3 shadow-sm border-0';
 
-    accordionItem.innerHTML = `
-      <h2 class="accordion-header" id="heading-${dayIndex}">
-        <button class="accordion-button collapsed fw-bold bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${dayIndex}" aria-expanded="false" aria-controls="collapse-${dayIndex}">
-      ${dayLabel}
+const isFirst = dayIndex === 0;
+accordionItem.innerHTML = `
+  <h2 class="accordion-header" id="heading-${dayIndex}">
+    <button class="accordion-button ${isFirst ? '' : 'collapsed'} fw-bold bg-light d-flex justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${dayIndex}" aria-expanded="${isFirst}" aria-controls="collapse-${dayIndex}">
+      <span>${dayLabel}</span>
+      <i class="bi bi-chevron-down ms-2 transition" id="chevron-${dayIndex}" style="transition: transform 0.3s;"></i>
+    </button>
+  </h2>
+  <div id="collapse-${dayIndex}" class="accordion-collapse collapse ${isFirst ? 'show' : ''}" aria-labelledby="heading-${dayIndex}">
+    <div class="accordion-body">
+      <ul class="list-group list-group-flush" id="block-list-${dayIndex}"></ul>
+    </div>
+  </div>
+`;
 
-        </button>
-      </h2>
-      <div id="collapse-${dayIndex}" class="accordion-collapse collapse" aria-labelledby="heading-${dayIndex}">
-        <div class="accordion-body">
-          <ul class="list-group list-group-flush" id="block-list-${dayIndex}"></ul>
-        </div>
-      </div>
-    `;
 
     container.appendChild(accordionItem);
 
@@ -1003,6 +1124,23 @@ toggleButtons.forEach(btn => {
 });
 
   });
+
+  Object.entries(itinerary).forEach(([date, blocks], dayIndex) => {
+  const collapseId = `collapse-${dayIndex}`;
+  const chevron = document.getElementById(`chevron-${dayIndex}`);
+  const collapseElement = document.getElementById(collapseId);
+
+  if (collapseElement && chevron) {
+    collapseElement.addEventListener('shown.bs.collapse', () => {
+      chevron.style.transform = 'rotate(180deg)';
+    });
+
+    collapseElement.addEventListener('hidden.bs.collapse', () => {
+      chevron.style.transform = 'rotate(0deg)';
+    });
+  }
+});
+
 }
 
 function updateWeatherSummaryFromSmartPlan(itinerary, blockForecast) {
@@ -1098,6 +1236,20 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     })
     .catch(err => console.error('Weather load error:', err));
+</script>
+<script>
+  const toggleBtn = document.getElementById('toggle-smart-planner');
+  const plannerIcon = document.getElementById('planner-toggle-icon');
+  const plannerWrapper = document.getElementById('smart-planner-wrapper');
+
+  toggleBtn.style.cursor = 'pointer';
+  toggleBtn.addEventListener('click', () => {
+    const isShown = plannerWrapper.classList.contains('show');
+    plannerWrapper.classList.toggle('show');
+
+    // Rotate the icon
+    plannerIcon.style.transform = isShown ? 'rotate(-90deg)' : 'rotate(0deg)';
+  });
 </script>
 
 
