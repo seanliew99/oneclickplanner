@@ -654,7 +654,231 @@
       return diffDays + 1; // Including both start and end days
     }
     
-    // Load current plan
+    function organizeItineraryByDay() {
+      // Get the attractions and restaurants sections
+      const attractionsContainer = document.getElementById('attractions-container');
+      const restaurantsContainer = document.getElementById('restaurants-container');
+      
+      // First ensure we have the plan data
+      fetch('/api/plan')
+        .then(response => response.json())
+        .then(data => {
+          if (!data.plan || !data.plan.destination) {
+            return;
+          }
+          
+          const plan = data.plan;
+          const startDate = new Date(plan.startDate);
+          const endDate = new Date(plan.endDate);
+          const attractions = plan.attractions || [];
+          const restaurants = plan.restaurants || [];
+          
+          // If no attractions or restaurants, show empty state
+          if (attractions.length === 0 && restaurants.length === 0) {
+            showEmptyState(attractionsContainer, restaurantsContainer);
+            return;
+          }
+          
+          // Generate day tabs based on the trip duration
+          const days = generateDayArray(startDate, endDate);
+          
+          // Create the day-based UI structure for attractions
+          createDayBasedUI(attractionsContainer, attractions, days, 'attraction');
+          
+          // Create the day-based UI structure for restaurants
+          createDayBasedUI(restaurantsContainer, restaurants, days, 'restaurant');
+        })
+        .catch(error => {
+          console.error('Error loading plan for day organization:', error);
+          showErrorState(attractionsContainer, restaurantsContainer);
+        });
+    }
+
+    // Generate an array of dates between start and end
+    function generateDayArray(startDate, endDate) {
+      const days = [];
+      const currentDate = new Date(startDate);
+      
+      while (currentDate <= endDate) {
+        days.push({
+          date: new Date(currentDate),
+          formatted: currentDate.toISOString().split('T')[0],
+          display: currentDate.toLocaleDateString(undefined, {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+          })
+        });
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      
+      return days;
+    }
+
+    // Create the day-based UI structure
+    function createDayBasedUI(container, items, days, category) {
+      if (items.length === 0) {
+        // Show a message that there are no items yet
+        container.innerHTML = `
+          <div class="empty-section">
+            <div class="empty-icon">
+              <i class="bi bi-${category === 'attraction' ? 'geo-alt' : 'cup-hot'}"></i>
+            </div>
+            <h4>No ${category}s added yet</h4>
+            <p class="empty-text">Start adding ${category}s to your itinerary</p>
+            <a href="/${category}s" class="btn btn-primary">Find ${category.charAt(0).toUpperCase() + category.slice(1)}s</a>
+          </div>
+        `;
+        return;
+      }
+      
+      // Create tabs for days
+      const tabsId = `${category}-tabs`;
+      const tabContentId = `${category}-tabContent`;
+      
+      container.innerHTML = `
+        <ul class="nav nav-tabs" id="${tabsId}" role="tablist">
+          ${days.map((day, i) => `
+            <li class="nav-item" role="presentation">
+              <button class="nav-link ${i === 0 ? 'active' : ''}" 
+                      id="${category}-day${i+1}-tab" 
+                      data-bs-toggle="tab" 
+                      data-bs-target="#${category}-day${i+1}" 
+                      type="button" 
+                      role="tab" 
+                      aria-controls="${category}-day${i+1}" 
+                      aria-selected="${i === 0 ? 'true' : 'false'}">
+                Day ${i+1} <small class="text-muted">(${day.date.toLocaleDateString()})</small>
+              </button>
+            </li>
+          `).join('')}
+        </ul>
+        <div class="tab-content pt-3" id="${tabContentId}">
+          ${days.map((day, i) => `
+            <div class="tab-pane fade ${i === 0 ? 'show active' : ''}" 
+                id="${category}-day${i+1}" 
+                role="tabpanel" 
+                aria-labelledby="${category}-day${i+1}-tab">
+              <div id="${category}-day${i+1}-content" class="item-list">
+                <!-- Items will be loaded here -->
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      
+      // Distribute items to days (for now, let's just distribute evenly)
+      // Later we could use a more sophisticated approach like your smart planner
+      distributeItemsToDays(items, days, category, container);
+    }
+
+    // Distribute items to days based on dayIndex property
+    function distributeItemsToDays(items, days, category, container) {
+      // First, organize items by day
+      const itemsByDay = {};
+      
+      // Initialize empty arrays for each day
+      days.forEach((day, dayIndex) => {
+        itemsByDay[dayIndex] = [];
+      });
+      
+      // Sort items into day buckets based on dayIndex
+      items.forEach(item => {
+        // If item has a dayIndex property and it's within range, use it
+        if (item.dayIndex !== undefined && item.dayIndex !== null && itemsByDay[item.dayIndex] !== undefined) {
+          itemsByDay[item.dayIndex].push(item);
+        } else {
+          // Otherwise, put it in a "not assigned" category (using -1 as indicator)
+          if (!itemsByDay[-1]) {
+            itemsByDay[-1] = [];
+          }
+          itemsByDay[-1].push(item);
+        }
+      });
+      
+      // Distribute any unassigned items evenly
+      if (itemsByDay[-1] && itemsByDay[-1].length > 0) {
+        const unassignedItems = itemsByDay[-1];
+        const daysCount = days.length;
+        const itemsPerDay = Math.ceil(unassignedItems.length / daysCount);
+        
+        // Distribute evenly
+        unassignedItems.forEach((item, index) => {
+          const dayIndex = Math.min(Math.floor(index / itemsPerDay), daysCount - 1);
+          itemsByDay[dayIndex].push(item);
+        });
+        
+        // Remove the temporary -1 category
+        delete itemsByDay[-1];
+      }
+      
+      // Now render each day's items
+      days.forEach((day, dayIndex) => {
+        const dayContentContainer = container.querySelector(`#${category}-day${dayIndex+1}-content`);
+        const dayItems = itemsByDay[dayIndex] || [];
+        
+        if (dayItems.length === 0) {
+          dayContentContainer.innerHTML = `<p class="text-muted text-center">No ${category}s scheduled for this day.</p>`;
+          return;
+        }
+        
+        dayContentContainer.innerHTML = dayItems.map(item => `
+          <div class="item-card mb-3" data-id="${item.id}">
+            <div class="item-image" style="background-image: url('https://source.unsplash.com/300x200/?${encodeURIComponent(item.name + ' ' + category)}')"></div>
+            <div class="item-content">
+              <h4 class="item-title">${item.name}</h4>
+              <p class="item-address">${item.address || 'Address not available'}</p>
+              ${item.notes ? `<p class="item-notes">"${item.notes}"</p>` : ''}
+              <p class="item-date">Added on ${new Date(item.addedAt).toLocaleDateString()}</p>
+              <button class="item-delete" onclick="deletePlace('${item.id}', '${category}')">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+          </div>
+        `).join('');
+      });
+    }
+
+    // Show empty state
+    function showEmptyState(attractionsContainer, restaurantsContainer) {
+      attractionsContainer.innerHTML = `
+        <div class="empty-section">
+          <div class="empty-icon">
+            <i class="bi bi-geo-alt"></i>
+          </div>
+          <h4>No attractions added yet</h4>
+          <p class="empty-text">Start adding attractions to your itinerary</p>
+          <a href="/attractions" class="btn btn-primary">Find Attractions</a>
+        </div>
+      `;
+      
+      restaurantsContainer.innerHTML = `
+        <div class="empty-section">
+          <div class="empty-icon">
+            <i class="bi bi-cup-hot"></i>
+          </div>
+          <h4>No restaurants added yet</h4>
+          <p class="empty-text">Start adding restaurants to your itinerary</p>
+          <a href="/restaurants" class="btn btn-primary">Find Restaurants</a>
+        </div>
+      `;
+    }
+
+    // Show error state
+    function showErrorState(attractionsContainer, restaurantsContainer) {
+      const errorMessage = `
+        <div class="alert alert-danger">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          Error loading your itinerary. Please try refreshing the page.
+        </div>
+      `;
+      
+      attractionsContainer.innerHTML = errorMessage;
+      restaurantsContainer.innerHTML = errorMessage;
+    }
+
+    // Replace loadCurrentPlan to use our new organization function
     function loadCurrentPlan() {
       fetch('/api/plan')
         .then(response => response.json())
@@ -677,9 +901,8 @@
             document.getElementById('restaurants-count').textContent = restaurantsCount;
             document.getElementById('days-count').textContent = daysCount;
             
-            // Load attractions and restaurants
-            loadAttractions(data.plan.attractions || []);
-            loadRestaurants(data.plan.restaurants || []);
+            // Use our new day-based organization function
+            organizeItineraryByDay();
           } else {
             // No plan found
             document.getElementById('no-plan-alert').style.display = 'block';
@@ -691,84 +914,6 @@
           document.getElementById('no-plan-alert').style.display = 'block';
           document.getElementById('trip-info').style.display = 'none';
         });
-    }
-    
-    // Load attractions
-    function loadAttractions(attractions) {
-      const container = document.getElementById('attractions-container');
-      
-      if (attractions.length === 0) {
-        container.innerHTML = `
-          <div class="empty-section">
-            <div class="empty-icon">
-              <i class="bi bi-geo-alt"></i>
-            </div>
-            <h4>No attractions added yet</h4>
-            <p class="empty-text">Start adding attractions to your itinerary</p>
-            <a href="/attractions" class="btn btn-primary">Find Attractions</a>
-          </div>
-        `;
-        return;
-      }
-      
-      // We have attractions to display
-      container.innerHTML = `
-        <div class="item-list">
-          ${attractions.map(attraction => `
-            <div class="item-card" data-id="${attraction.id}">
-              <div class="item-image" style="background-image: url('https://source.unsplash.com/300x200/?${encodeURIComponent(attraction.name + ' attraction')}')"></div>
-              <div class="item-content">
-                <h4 class="item-title">${attraction.name}</h4>
-                <p class="item-address">${attraction.address || 'Address not available'}</p>
-                ${attraction.notes ? `<p class="item-notes">"${attraction.notes}"</p>` : ''}
-                <p class="item-date">Added on ${new Date(attraction.addedAt).toLocaleDateString()}</p>
-                <button class="item-delete" onclick="deletePlace('${attraction.id}', 'attraction')">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      `;
-    }
-    
-    // Load restaurants
-    function loadRestaurants(restaurants) {
-      const container = document.getElementById('restaurants-container');
-      
-      if (restaurants.length === 0) {
-        container.innerHTML = `
-          <div class="empty-section">
-            <div class="empty-icon">
-              <i class="bi bi-cup-hot"></i>
-            </div>
-            <h4>No restaurants added yet</h4>
-            <p class="empty-text">Start adding restaurants to your itinerary</p>
-            <a href="/restaurants" class="btn btn-primary">Find Restaurants</a>
-          </div>
-        `;
-        return;
-      }
-      
-      // We have restaurants to display
-      container.innerHTML = `
-        <div class="item-list">
-          ${restaurants.map(restaurant => `
-            <div class="item-card" data-id="${restaurant.id}">
-              <div class="item-image" style="background-image: url('https://source.unsplash.com/300x200/?${encodeURIComponent(restaurant.name + ' food')}')"></div>
-              <div class="item-content">
-                <h4 class="item-title">${restaurant.name}</h4>
-                <p class="item-address">${restaurant.address || 'Address not available'}</p>
-                ${restaurant.notes ? `<p class="item-notes">"${restaurant.notes}"</p>` : ''}
-                <p class="item-date">Added on ${new Date(restaurant.addedAt).toLocaleDateString()}</p>
-                <button class="item-delete" onclick="deletePlace('${restaurant.id}', 'restaurant')">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      `;
     }
     
     // Delete a place from the itinerary

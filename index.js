@@ -321,9 +321,11 @@ app.post('/api/plan/places', async (req, res) => {
     name,
     address,
     notes: notes || '',
-    indoor: req.body.indoor || false, // 🔥 NEW
-    addedAt: new Date()
+    indoor: req.body.indoor || false,
+    dayIndex: req.body.dayIndex !== undefined ? req.body.dayIndex : null,
+    addedAt: new Date().toISOString()
   };
+  
   
   let isDuplicate = false;
   
