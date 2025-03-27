@@ -533,83 +533,22 @@
     }
 
     // Rename the original function to avoid conflicts
-    function originalSearchAttractions(keyword) {
-      if (!currentPlan || !currentPlan.destination) {
-        return;
-      }
-
-      Object.keys(itineraryRecommendations).forEach(key => {
-        itineraryRecommendations[key] = [];
-      });
-      
-      // Show loading spinner
+    function originalSearchAttractions(keyword, locationOverride) {
+      if (!currentPlan || !currentPlan.destination) return;
       document.getElementById('spinner').style.display = 'flex';
       document.getElementById('results-container').innerHTML = '';
       document.getElementById('result-count').textContent = '';
-      
-      // Clear existing markers
       clearMarkers();
       
-      // Call the API
-      fetch(`/api/places?location=${encodeURIComponent(currentPlan.destination)}&type=attraction&keyword=${encodeURIComponent(keyword)}`)
+      // Use the location override if provided; otherwise, use the plan's main destination.
+      const location = locationOverride || currentPlan.destination;
+      fetch(`/api/places?location=${encodeURIComponent(location)}&type=attraction&keyword=${encodeURIComponent(keyword)}`)
         .then(response => response.json())
         .then(data => {
-          // Hide spinner
           document.getElementById('spinner').style.display = 'none';
-          
           if (data.status === 'OK' && data.results && data.results.length > 0) {
-            // Update result count
             document.getElementById('result-count').textContent = `Found ${data.results.length} attractions`;
-            
             displayResults(data.results);
-
-            let filtered = data.results.filter(p => !removedAttractions.has(p.place_id));
-            let dayCount = Object.keys(itineraryRecommendations).length;
-            let attractionsPerDay = 3;
-
-            const clustered = [];
-            const visited = new Set();
-
-            function haversineDistance(a, b) {
-              const R = 6371; // km
-              const dLat = (b.lat - a.lat) * Math.PI / 180;
-              const dLng = (b.lng - a.lng) * Math.PI / 180;
-              const lat1 = a.lat * Math.PI / 180;
-              const lat2 = b.lat * Math.PI / 180;
-
-              const aCalc = Math.sin(dLat / 2) ** 2 +
-                            Math.sin(dLng / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
-              return R * 2 * Math.atan2(Math.sqrt(aCalc), Math.sqrt(1 - aCalc));
-            }
-
-            filtered.forEach((place, i) => {
-              if (visited.has(place.place_id)) return;
-
-              const cluster = [place];
-              visited.add(place.place_id);
-
-              for (let j = i + 1; j < filtered.length; j++) {
-                const dist = haversineDistance(
-                  place.geometry.location,
-                  filtered[j].geometry.location
-                );
-                if (dist < 5) {
-                  cluster.push(filtered[j]);
-                  visited.add(filtered[j].place_id);
-                }
-                if (cluster.length >= attractionsPerDay) break;
-              }
-
-              if (cluster.length > 0 && clustered.length < dayCount) {
-                itineraryRecommendations[clustered.length] = cluster;
-                clustered.push(cluster);
-              }
-            });
-
-            // Re-render itinerary tabs
-            generateItineraryTabs(currentPlan.startDate, currentPlan.endDate);
-            
-            // Fit map to show all markers
             const bounds = new google.maps.LatLngBounds();
             markers.forEach(marker => bounds.extend(marker.getPosition()));
             map.fitBounds(bounds);
@@ -670,17 +609,64 @@
       addDaySelectionModal();
     });
 
+
     // Call this to set up the button when the page loads
     document.addEventListener('DOMContentLoaded', setupAddAllButton);
 
-    function generateItineraryTabs(startDateStr, endDateStr) {
+
+    function generateItineraryTabs() {
+      document.getElementById('itinerary-section').style.display = 'block';
+
       const dayTabs = document.getElementById('dayTabs');
       const dayTabsContent = document.getElementById('dayTabsContent');
-      const itinerarySection = document.getElementById('itinerary-section');
-
       dayTabs.innerHTML = '';
       dayTabsContent.innerHTML = '';
-      itinerarySection.style.display = 'block';
+      
+      const startDate = new Date(currentPlan.startDate);
+      const totalDays = currentPlan.perDayCityMap.length;
+      
+      for (let i = 0; i < totalDays; i++) {
+        const currentDay = new Date(startDate);
+        currentDay.setDate(startDate.getDate() + i);
+        const dateLabel = currentDay.toLocaleDateString();
+        const dayCity = currentPlan.perDayCityMap[i];
+        const tabId = `day${i + 1}`;
+        const isActive = i === 0 ? 'active' : '';
+        const isShow = i === 0 ? 'show active' : '';
+        
+        // Create the tab button.
+        const tab = document.createElement('li');
+        tab.className = 'nav-item';
+        tab.innerHTML = `
+          <button class="nav-link ${isActive}" id="${tabId}-tab" data-bs-toggle="tab" data-bs-target="#${tabId}" type="button" role="tab">
+            Day ${i + 1} (${dateLabel}) - ${dayCity}
+          </button>
+        `;
+        dayTabs.appendChild(tab);
+        
+        // Build the content for this day's recommendations.
+        const recs = itineraryRecommendations[i] || [];
+        const listItems = recs.map(place => `
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            ${place.name}
+            <button class="btn btn-sm btn-outline-success" onclick="addToItinerary('${place.place_id}', ${i})">
+              Add to Itinerary
+            </button>
+          </li>
+        `).join('');
+        
+        const pane = document.createElement('div');
+        pane.className = `tab-pane fade ${isShow}`;
+        pane.id = tabId;
+        pane.role = 'tabpanel';
+        pane.innerHTML = `
+          <div class="card p-3 bg-light border">
+            <h5>Recommended Places in ${dayCity}</h5>
+            <ul class="list-group">${listItems || '<li class="list-group-item text-muted">No recommendations yet.</li>'}</ul>
+          </div>
+        `;
+        dayTabsContent.appendChild(pane);
+      }
 
       // Add the "Add All Recommendations" button to the section title
       const sectionTitle = document.querySelector('#itinerary-section h4');
@@ -707,63 +693,33 @@
         `;
         itinerarySection.prepend(header);
       }
-
-      const startDate = new Date(startDateStr);
-      const endDate = new Date(endDateStr);
-      const days = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-
-      for (let i = 0; i < days; i++) {
-        const currentDay = new Date(startDate);
-        currentDay.setDate(startDate.getDate() + i);
-        const dateLabel = currentDay.toLocaleDateString();
-        const tabId = `day${i + 1}`;
-        const isActive = i === 0 ? 'active' : '';
-        const isShow = i === 0 ? 'show active' : '';
-
-        // Ensure structure exists
-        itineraryRecommendations[i] = itineraryRecommendations[i] || [];
-
-        const tab = document.createElement('li');
-        tab.className = 'nav-item';
-        tab.innerHTML = `
-          <button class="nav-link ${isActive}" id="${tabId}-tab" data-bs-toggle="tab" data-bs-target="#${tabId}" type="button" role="tab">
-            Day ${i + 1} <small class="text-muted">(${dateLabel})</small>
-          </button>
-        `;
-        dayTabs.appendChild(tab);
-
-        const pane = document.createElement('div');
-        pane.className = `tab-pane fade ${isShow}`;
-        pane.id = tabId;
-        pane.role = 'tabpanel';
-
-        const listItems = itineraryRecommendations[i].map(place => `
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            ${place.name}
-            <button class="btn btn-sm btn-outline-success recommended-add-btn" 
-                    data-place-id="${place.place_id}" 
-                    data-place-name="${place.name}" 
-                    data-place-address="${place.formatted_address || ''}">
-              Add to Itinerary
-            </button>
-          </li>
-        `).join('');
-
-        pane.innerHTML = `
-          <div class="card p-3 bg-light border">
-            <h5>Recommended Places</h5>
-            <ul class="list-group">${listItems || '<li class="list-group-item text-muted">No recommendations yet.</li>'}</ul>
-          </div>
-        `;
-
-        dayTabsContent.appendChild(pane);
-      }
-
       // Add event listeners to the new buttons
       setupRecommendedButtons();
 
       // Add the event listener for the "Add All" button
       setupAddAllButton();
+    }
+
+
+    function computePerDayCityMap(plan) {
+      const perDayCityMap = [];
+      if (plan.cities && plan.cities.length > 0) {
+        // Multi-city plan: repeat each city name for the specified number of days.
+        plan.cities.forEach(city => {
+          for (let i = 0; i < city.days; i++) {
+            perDayCityMap.push(city.name);
+          }
+        });
+      } else {
+        // Single-city plan: compute total days from start and end dates, then repeat the destination.
+        const start = new Date(plan.startDate);
+        const end = new Date(plan.endDate);
+        const totalDays = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+        for (let i = 0; i < totalDays; i++) {
+          perDayCityMap.push(plan.destination);
+        }
+      }
+      return perDayCityMap;
     }
 
     function setupRecommendedButtons() {
@@ -1597,29 +1553,67 @@
         
     // Load current plan
     function loadCurrentPlan() {
-      fetch('/api/plan')
+  fetch('/api/plan')
     .then(response => response.json())
     .then(data => {
       if (data.plan && data.plan.destination) {
         currentPlan = data.plan;
-
+        
+        // Compute perDayCityMap if not provided by the backend.
+        if (!currentPlan.perDayCityMap) {
+          currentPlan.perDayCityMap = computePerDayCityMap(currentPlan);
+          console.log('Computed perDayCityMap:', currentPlan.perDayCityMap);
+        }
+        
+        // Update UI with plan info.
         document.getElementById('destination-display').textContent = currentPlan.destination;
         document.getElementById('date-display').textContent = formatDateRange(currentPlan.startDate, currentPlan.endDate);
         document.getElementById('current-plan-info').style.display = 'block';
         document.getElementById('no-plan-alert').style.display = 'none';
-
-        generateItineraryTabs(currentPlan.startDate, currentPlan.endDate);
-
-        // Weather + search
+        
+        // Initially generate tabs (they may be empty until recommendations load).
+        generateItineraryTabs();
+        
+        // For each day, fetch recommendations using the city name.
+        const dayCount = currentPlan.perDayCityMap.length;
+        const fetchPromises = [];
+        for (let i = 0; i < dayCount; i++) {
+          const city = currentPlan.perDayCityMap[i];
+          const promise = fetch(`/api/places?location=${encodeURIComponent(city)}&type=attraction`)
+            .then(res => res.json())
+            .then(result => {
+              itineraryRecommendations[i] = result.results || [];
+            });
+          fetchPromises.push(promise);
+        }
+        
+        Promise.all(fetchPromises).then(() => {
+          // Once all recommendations are fetched, regenerate the tabs.
+          generateItineraryTabs();
+          
+          // Re-center the map on the first day's city.
+          if (currentPlan.perDayCityMap.length > 0) {
+            const firstCity = currentPlan.perDayCityMap[0];
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ address: firstCity }, (results, status) => {
+              if (status === 'OK' && results[0]) {
+                map.setCenter(results[0].geometry.location);
+                map.setZoom(12);
+              }
+            });
+            // Optionally run a search for the first city's attractions.
+            originalSearchAttractions('', firstCity);
+          }
+        });
+        
+        // Optionally load weather info.
         fetch(`/api/weather?city=${encodeURIComponent(currentPlan.destination)}`)
           .then(res => res.json())
           .then(weather => {
             rainDays = weather.rainDays || [];
-            originalSearchAttractions('');
           })
           .catch(err => {
             console.error('Failed to fetch weather:', err);
-            originalSearchAttractions('');
           });
       } else {
         document.getElementById('no-plan-alert').style.display = 'block';
@@ -1765,6 +1759,26 @@
         
         resultsContainer.appendChild(col);
       });
+    }
+
+    function computePerDayCityMap(plan) {
+      const perDayCityMap = [];
+      if (plan.cities && plan.cities.length > 0) {
+        plan.cities.forEach(city => {
+          for (let i = 0; i < city.days; i++) {
+            perDayCityMap.push(city.name);
+          }
+        });
+      } else {
+        // If it's a single-city plan, repeat the destination for each trip day.
+        const start = new Date(plan.startDate);
+        const end = new Date(plan.endDate);
+        const totalDays = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+        for (let i = 0; i < totalDays; i++) {
+          perDayCityMap.push(plan.destination);
+        }
+      }
+      return perDayCityMap;
     }
     
     // Show place details in modal
