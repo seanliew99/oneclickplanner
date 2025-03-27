@@ -670,6 +670,9 @@
       addDaySelectionModal();
     });
 
+    // Call this to set up the button when the page loads
+    document.addEventListener('DOMContentLoaded', setupAddAllButton);
+
     function generateItineraryTabs(startDateStr, endDateStr) {
       const dayTabs = document.getElementById('dayTabs');
       const dayTabsContent = document.getElementById('dayTabsContent');
@@ -678,6 +681,32 @@
       dayTabs.innerHTML = '';
       dayTabsContent.innerHTML = '';
       itinerarySection.style.display = 'block';
+
+      // Add the "Add All Recommendations" button to the section title
+      const sectionTitle = document.querySelector('#itinerary-section h4');
+      if (sectionTitle) {
+        sectionTitle.innerHTML = `
+          <div class="d-flex justify-content-between align-items-center w-100">
+            <span>Recommended Attractions For Each Day</span>
+            <button id="add-all-recommendations" class="btn btn-success btn-sm">
+              <i class="bi bi-plus-circle me-1"></i>Add All to Itinerary
+            </button>
+          </div>
+        `;
+      } else {
+        // If the section header doesn't exist yet, create it
+        const header = document.createElement('h4');
+        header.className = 'mb-3';
+        header.innerHTML = `
+          <div class="d-flex justify-content-between align-items-center w-100">
+            <span>Recommended Attractions For Each Day</span>
+            <button id="add-all-recommendations" class="btn btn-success btn-sm">
+              <i class="bi bi-plus-circle me-1"></i>Add All to Itinerary
+            </button>
+          </div>
+        `;
+        itinerarySection.prepend(header);
+      }
 
       const startDate = new Date(startDateStr);
       const endDate = new Date(endDateStr);
@@ -732,6 +761,9 @@
 
       // Add event listeners to the new buttons
       setupRecommendedButtons();
+
+      // Add the event listener for the "Add All" button
+      setupAddAllButton();
     }
 
     function setupRecommendedButtons() {
@@ -817,6 +849,667 @@
             });
         });
       });
+    }
+
+    // Setup the "Add All" button
+    function setupAddAllButton() {
+      const addAllBtn = document.getElementById('add-all-recommendations');
+      if (!addAllBtn) return;
+      
+      addAllBtn.addEventListener('click', function() {
+        // Check if user is authenticated
+        const authUser = localStorage.getItem('authUser');
+        if (!authUser) {
+          showLoginRequiredModal();
+          return;
+        }
+        
+        // Check if the itinerary already has items
+        checkItineraryStatus()
+          .then(status => {
+            if (status.hasItems) {
+              // Show confirmation modal for overwrite
+              showOverwriteConfirmationModal();
+            } else {
+              // Add all recommendations directly
+              addAllRecommendationsToItinerary();
+            }
+          })
+          .catch(error => {
+            console.error('Error checking itinerary status:', error);
+            // Show a generic error message
+            showNotification('error', 'Failed to check current itinerary. Please try again.');
+          });
+      });
+    }
+
+    // Function to check if the itinerary has items
+    function checkItineraryStatus() {
+      return fetch('/api/plan')
+        .then(response => response.json())
+        .then(data => {
+          const hasAttractions = data.plan && 
+                                data.plan.attractions && 
+                                data.plan.attractions.length > 0;
+          
+          return { 
+            hasItems: hasAttractions,
+            plan: data.plan 
+          };
+        });
+    }
+
+    // Function to show the overwrite confirmation modal
+    function showOverwriteConfirmationModal() {
+      // Create modal HTML if it doesn't exist
+      if (!document.getElementById('overwriteConfirmationModal')) {
+        const modalHTML = `
+          <div class="modal fade" id="overwriteConfirmationModal" tabindex="-1" aria-labelledby="overwriteConfirmationModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header bg-warning">
+                  <h5 class="modal-title" id="overwriteConfirmationModalLabel">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Warning: Existing Attractions
+                  </h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <p>Your itinerary already contains attractions. What would you like to do?</p>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                  <button type="button" class="btn btn-danger" id="overwrite-btn">
+                    <i class="bi bi-trash me-1"></i>Clear & Replace All
+                  </button>
+                  <button type="button" class="btn btn-primary" id="add-to-existing-btn">
+                    <i class="bi bi-plus-circle me-1"></i>Add To Existing
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        const modalContainer = document.createElement('div');
+        modalContainer.innerHTML = modalHTML;
+        document.body.appendChild(modalContainer);
+        
+        // Set up event listeners for the buttons
+        document.getElementById('overwrite-btn').addEventListener('click', function() {
+          // Clear existing itinerary and add all recommendations
+          clearItineraryAndAddAll();
+          bootstrap.Modal.getInstance(document.getElementById('overwriteConfirmationModal')).hide();
+        });
+        
+        document.getElementById('add-to-existing-btn').addEventListener('click', function() {
+          // Add recommendations to existing itinerary
+          addAllRecommendationsToItinerary();
+          bootstrap.Modal.getInstance(document.getElementById('overwriteConfirmationModal')).hide();
+        });
+      }
+      
+      // Show the modal
+      const overwriteModal = new bootstrap.Modal(document.getElementById('overwriteConfirmationModal'));
+      overwriteModal.show();
+    }
+
+    // Function to clear the itinerary and add all recommendations
+    function clearItineraryAndAddAll() {
+      // Create an initial loading notification with progress bar
+      const loadingNotification = createNotification('info', 'Preparing to update your itinerary...');
+      
+      // Add a progress bar to the notification
+      const progressBar = document.createElement('div');
+      progressBar.className = 'progress mt-2';
+      progressBar.innerHTML = `
+        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+            role="progressbar" 
+            style="width: 0%" 
+            aria-valuenow="0" 
+            aria-valuemin="0" 
+            aria-valuemax="100">0%</div>
+      `;
+      loadingNotification.querySelector('.alert').appendChild(progressBar);
+      
+      // First, fetch the current plan
+      fetch('/api/plan')
+        .then(response => response.json())
+        .then(data => {
+          if (!data.plan) {
+            throw new Error('No active plan found');
+          }
+
+          const plan = data.plan;
+          
+          // Update notification to show we're starting deletion
+          updateNotificationMessage(loadingNotification, 'info', 'Clearing existing attractions...');
+          
+          // If there are no attractions, skip to adding recommendations
+          if (!plan.attractions || plan.attractions.length === 0) {
+            updateNotificationMessage(loadingNotification, 'info', 'No existing attractions to clear. Adding recommendations...');
+            addAllRecommendationsToItinerary();
+            loadingNotification.remove();
+            return;
+          }
+          
+          // Update progress bar to show we're starting with 0%
+          updateProgress(progressBar, 0, plan.attractions.length);
+          
+          // Try the fast approach first - deletion via itinerary endpoint
+          const fastDeletePromise = fetch(`/api/plan/itinerary/${plan.itineraryId}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          
+          // Set a timeout to fall back to sequential deletion if the fast approach takes too long
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Delete operation timeout')), 1000);
+          });
+          
+          // Race between the fast delete and the timeout
+          Promise.race([fastDeletePromise, timeoutPromise])
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Failed to delete itinerary');
+              }
+              return response.json();
+            })
+            .then(() => {
+              // Successfully deleted via the fast approach
+              console.log('Successfully deleted itinerary via fast approach');
+              
+              // Update notification to show success and next steps
+              updateNotificationMessage(loadingNotification, 'success', 'Successfully cleared all attractions! Adding recommendations...');
+              
+              // Create a new empty itinerary with the same basic info
+              const newItineraryData = {
+                destination: plan.destination,
+                startDate: plan.startDate,
+                endDate: plan.endDate
+              };
+              
+              return fetch('/api/plan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newItineraryData)
+              });
+            })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Failed to create new itinerary');
+              }
+              return response.json();
+            })
+            .then(() => {
+              // Now add all recommendations
+              addAllRecommendationsToItinerary();
+              loadingNotification.remove();
+            })
+            .catch(error => {
+              console.log('Fast delete approach failed, falling back to sequential deletion:', error);
+              
+              // Update notification to show we're switching to sequential deletion
+              updateNotificationMessage(loadingNotification, 'info', 'Clearing existing attractions...');
+              
+              // Fall back to sequential deletion with the progress bar
+              deleteAttractionsSequentially(plan.attractions, 0, plan.attractions.length, progressBar, loadingNotification);
+            });
+        })
+        .catch(error => {
+          console.error('Error fetching plan:', error);
+          updateNotificationWithResult(loadingNotification, 'error', 'Failed to fetch current itinerary. Please try again.');
+          
+          // Automatically remove error notification after 1 seconds
+          setTimeout(() => {
+            if (loadingNotification.parentNode) {
+              loadingNotification.remove();
+            }
+          }, 1000);
+        });
+    }
+
+    // Sequential deletion function with progress bar
+    function deleteAttractionsSequentially(attractions, index, total, progressBar, notification) {
+      // Base case: all attractions processed
+      if (!attractions || index >= attractions.length) {
+        console.log('Finished deleting all attractions sequentially');
+        
+        // Update notification
+        updateNotificationMessage(notification, 'success', 'Successfully cleared all attractions! Adding recommendations...');
+        
+        // All attractions deleted, now add recommendations
+        addAllRecommendationsToItinerary();
+        return;
+      }
+      
+      // Update progress bar
+      updateProgress(progressBar, index, total);
+      
+      const attraction = attractions[index];
+      
+      // Delete current attraction
+      fetch(`/api/plan/places/${attraction.id}?category=attraction`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          console.warn(`Warning: Failed to delete attraction ${attraction.id}, continuing anyway`);
+        }
+        return response.json().catch(() => ({})); // Handle if response isn't JSON
+      })
+      .then(() => {
+        console.log(`Deleted attraction ${index + 1}/${total}`);
+        
+        // Process next attraction with a slight delay to avoid race conditions
+        setTimeout(() => {
+          deleteAttractionsSequentially(attractions, index + 1, total, progressBar, notification);
+        }, 50);
+      })
+      .catch(error => {
+        console.error(`Error deleting attraction ${attraction.id}:`, error);
+        
+        // Continue with next attraction even if this one fails
+        setTimeout(() => {
+          deleteAttractionsSequentially(attractions, index + 1, total, progressBar, notification);
+        }, 50);
+      });
+    }
+
+    // Helper function to update progress bar
+    function updateProgress(progressBar, current, total) {
+      const percentage = Math.round((current / total) * 100);
+      const progressElement = progressBar.querySelector('.progress-bar');
+      progressElement.style.width = `${percentage}%`;
+      progressElement.setAttribute('aria-valuenow', percentage);
+      progressElement.textContent = `${percentage}%`;
+    }
+
+    // Helper function to create a notification that doesn't disappear
+    function createNotification(type, message) {
+      // Map type to Bootstrap alert class
+      const alertClass = {
+        'success': 'alert-success',
+        'error': 'alert-danger',
+        'warning': 'alert-warning',
+        'info': 'alert-info'
+      }[type] || 'alert-info';
+      
+      // Map type to Bootstrap icon
+      const iconClass = {
+        'success': 'bi-check-circle-fill',
+        'error': 'bi-exclamation-triangle-fill',
+        'warning': 'bi-exclamation-circle-fill',
+        'info': 'bi-info-circle-fill'
+      }[type] || 'bi-info-circle-fill';
+      
+      // Create notification element
+      const alertContainer = document.createElement('div');
+      alertContainer.className = 'position-fixed top-0 start-0 end-0 p-3 text-center';
+      alertContainer.style.zIndex = '5000';
+      alertContainer.innerHTML = `
+        <div class="alert ${alertClass} fade show" role="alert">
+          <i class="bi ${iconClass} me-2"></i>${message}
+        </div>
+      `;
+      
+      document.body.appendChild(alertContainer);
+      return alertContainer;
+    }
+
+    // Function to update the message in an existing notification
+    function updateNotificationMessage(notificationElement, type, message) {
+      const alertClass = {
+        'success': 'alert-success',
+        'error': 'alert-danger',
+        'warning': 'alert-warning',
+        'info': 'alert-info'
+      }[type] || 'alert-info';
+      
+      const iconClass = {
+        'success': 'bi-check-circle-fill',
+        'error': 'bi-exclamation-triangle-fill',
+        'warning': 'bi-exclamation-circle-fill',
+        'info': 'bi-info-circle-fill'
+      }[type] || 'bi-info-circle-fill';
+      
+      const alertElement = notificationElement.querySelector('.alert');
+      if (!alertElement) return;
+      
+      // Change alert class
+      alertElement.className = `alert ${alertClass} fade show`;
+      
+      // Update message but keep any existing child elements like progress bars
+      const progressBar = alertElement.querySelector('.progress');
+      alertElement.innerHTML = `<i class="bi ${iconClass} me-2"></i>${message}`;
+      
+      // Add back the progress bar if it existed
+      if (progressBar) {
+        alertElement.appendChild(progressBar);
+      }
+    }
+
+    // Helper function to update an existing notification result
+    function updateNotificationWithResult(notificationElement, type, message) {
+      const alertClass = {
+        'success': 'alert-success',
+        'error': 'alert-danger',
+        'warning': 'alert-warning',
+        'info': 'alert-info'
+      }[type] || 'alert-info';
+      
+      const iconClass = {
+        'success': 'bi-check-circle-fill',
+        'error': 'bi-exclamation-triangle-fill',
+        'warning': 'bi-exclamation-circle-fill',
+        'info': 'bi-info-circle-fill'
+      }[type] || 'bi-info-circle-fill';
+      
+      const alertElement = notificationElement.querySelector('.alert');
+      if (!alertElement) return;
+      
+      // Remove progress bar if it exists
+      const progressBar = alertElement.querySelector('.progress');
+      if (progressBar) {
+        progressBar.remove();
+      }
+      
+      // Change alert class
+      alertElement.className = `alert ${alertClass} fade show`;
+      
+      // Change icon and message
+      alertElement.innerHTML = `<i class="bi ${iconClass} me-2"></i>${message}`;
+      
+      // For success messages, set a timer to fade out
+      if (type === 'success') {
+        // Keep the notification visible for a bit longer
+        setTimeout(() => {
+          alertElement.classList.remove('show');
+          setTimeout(() => {
+            if (notificationElement.parentNode) {
+              notificationElement.remove();
+            }
+          }, 50);
+        }, 500);
+      }
+    }
+
+    // Function to add all recommendations to the itinerary
+    // Optimized function to add all recommendations to the itinerary
+    function addAllRecommendationsToItinerary() {
+      // Collect all recommendations
+      const allRecommendations = [];
+      
+      // Gather recommendations from each day
+      Object.entries(itineraryRecommendations).forEach(([dayIndex, places]) => {
+        console.log(`Day ${dayIndex} has ${places ? places.length : 0} recommendations`);
+        
+        if (!places || !Array.isArray(places)) {
+          console.error(`Invalid places for day ${dayIndex}:`, places);
+          return;
+        }
+        
+        places.forEach(place => {
+          // Check if place is valid
+          if (!place || typeof place !== 'object') {
+            console.error('Invalid place object:', place);
+            return;
+          }
+          
+          // Ensure required fields are present
+          if (!place.place_id) {
+            console.error('Missing place_id for place:', place);
+            return; // Skip this place
+          }
+          
+          allRecommendations.push({
+            placeId: place.place_id,
+            name: place.name || 'Unknown Place',
+            address: place.formatted_address || '',
+            category: 'attraction',
+            notes: '',
+            indoor: document.getElementById('indoor-toggle').checked,
+            dayIndex: parseInt(dayIndex)
+          });
+        });
+      });
+      
+      console.log('Total recommendations to add:', allRecommendations.length);
+      
+      if (allRecommendations.length === 0) {
+        showNotification('warning', 'No recommendations available to add.');
+        return;
+      }
+      
+      // Show initial loading notification with progress bar
+      const initialNotification = createNotification('info', `Adding ${allRecommendations.length} attractions to your itinerary...`);
+      
+      // Create a progress bar in the notification
+      const progressBar = document.createElement('div');
+      progressBar.className = 'progress mt-2';
+      progressBar.innerHTML = `
+        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+            role="progressbar" 
+            style="width: 0%" 
+            aria-valuenow="0" 
+            aria-valuemin="0" 
+            aria-valuemax="100">0%</div>
+      `;
+      initialNotification.querySelector('.alert').appendChild(progressBar);
+      
+      // Process attractions one by one for maximum reliability
+      addAttractionsOneByOne(allRecommendations, progressBar, initialNotification);
+      
+      // Function to add attractions one by one with progress bar
+      function addAttractionsOneByOne(attractions, progressBar, notification) {
+        let currentIndex = 0;
+        let successCount = 0;
+        let errorCount = 0;
+        
+        function addNext() {
+          if (currentIndex >= attractions.length) {
+            // All done
+            console.log(`Completed adding attractions. Success: ${successCount}, Errors: ${errorCount}`);
+            
+            // Update notification with success message
+            updateNotificationWithResult(notification, 'success', 
+              `Successfully added ${successCount} attractions to your itinerary!`);
+            
+            // Reload the page
+            setTimeout(() => {
+              window.location.reload();
+            }, 500);
+            return;
+          }
+          
+          const attraction = attractions[currentIndex];
+          
+          // Log progress
+          console.log(`Adding ${currentIndex + 1}/${attractions.length}: ${attraction.name}`);
+          
+          // Update progress bar
+          updateProgress(progressBar, currentIndex, attractions.length);
+          
+          // Add the attraction
+          fetch('/api/plan/places', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(attraction)
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`Server error ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+          })
+          .then(data => {
+            if (data.success) {
+              successCount++;
+            } else if (data.duplicate) {
+              console.log(`Attraction already exists: ${attraction.name}`);
+            } else {
+              console.warn(`Unexpected response for ${attraction.name}:`, data);
+            }
+            
+            // Move to next attraction
+            currentIndex++;
+            
+            // Update progress bar
+            updateProgress(progressBar, currentIndex, attractions.length);
+            
+            // Wait a bit before next request to avoid overloading the server
+            setTimeout(addNext, 50);
+          })
+          .catch(error => {
+            errorCount++;
+            console.error(`Error adding ${attraction.name}:`, error);
+            
+            // Continue to next attraction even if this one failed
+            currentIndex++;
+            
+            // Update progress bar even on error
+            updateProgress(progressBar, currentIndex, attractions.length);
+            
+            setTimeout(addNext, 50);
+          });
+        }
+        
+        // Start the process
+        addNext();
+      }
+      
+      // Helper function to update progress bar
+      function updateProgress(progressBar, current, total) {
+        const percentage = Math.round((current / total) * 100);
+        const progressElement = progressBar.querySelector('.progress-bar');
+        progressElement.style.width = `${percentage}%`;
+        progressElement.setAttribute('aria-valuenow', percentage);
+        progressElement.textContent = `${percentage}%`;
+      }
+      
+      // Helper function to create a notification that doesn't disappear
+      function createNotification(type, message) {
+        // Map type to Bootstrap alert class
+        const alertClass = {
+          'success': 'alert-success',
+          'error': 'alert-danger',
+          'warning': 'alert-warning',
+          'info': 'alert-info'
+        }[type] || 'alert-info';
+        
+        // Map type to Bootstrap icon
+        const iconClass = {
+          'success': 'bi-check-circle-fill',
+          'error': 'bi-exclamation-triangle-fill',
+          'warning': 'bi-exclamation-circle-fill',
+          'info': 'bi-info-circle-fill'
+        }[type] || 'bi-info-circle-fill';
+        
+        // Create notification element
+        const alertContainer = document.createElement('div');
+        alertContainer.className = 'position-fixed top-0 start-0 end-0 p-3 text-center';
+        alertContainer.style.zIndex = '5000';
+        alertContainer.innerHTML = `
+          <div class="alert ${alertClass} fade show" role="alert">
+            <i class="bi ${iconClass} me-2"></i>${message}
+          </div>
+        `;
+        
+        document.body.appendChild(alertContainer);
+        return alertContainer;
+      }
+      
+      // Helper function to update an existing notification
+      function updateNotificationWithResult(notificationElement, type, message) {
+        const alertClass = {
+          'success': 'alert-success',
+          'error': 'alert-danger',
+          'warning': 'alert-warning',
+          'info': 'alert-info'
+        }[type] || 'alert-info';
+        
+        const iconClass = {
+          'success': 'bi-check-circle-fill',
+          'error': 'bi-exclamation-triangle-fill',
+          'warning': 'bi-exclamation-circle-fill',
+          'info': 'bi-info-circle-fill'
+        }[type] || 'bi-info-circle-fill';
+        
+        const alertElement = notificationElement.querySelector('.alert');
+        if (!alertElement) return;
+        
+        // Remove progress bar if it exists
+        const progressBar = alertElement.querySelector('.progress');
+        if (progressBar) {
+          progressBar.remove();
+        }
+        
+        // Change alert class
+        alertElement.className = `alert ${alertClass} fade show`;
+        
+        // Change icon and message
+        alertElement.innerHTML = `<i class="bi ${iconClass} me-2"></i>${message}`;
+        
+        // For success messages, set a timer to fade out
+        if (type === 'success') {
+          // Keep the notification visible for a bit longer
+          setTimeout(() => {
+            alertElement.classList.remove('show');
+            setTimeout(() => {
+              if (notificationElement.parentNode) {
+                notificationElement.remove();
+              }
+            }, 50);
+          }, 500);
+        }
+      }
+    }
+
+
+    // Utility function to show notifications
+    function showNotification(type, message) {
+      // Map type to Bootstrap alert class
+      const alertClass = {
+        'success': 'alert-success',
+        'error': 'alert-danger',
+        'warning': 'alert-warning',
+        'info': 'alert-info'
+      }[type] || 'alert-info';
+      
+      // Map type to Bootstrap icon
+      const iconClass = {
+        'success': 'bi-check-circle-fill',
+        'error': 'bi-exclamation-triangle-fill',
+        'warning': 'bi-exclamation-circle-fill',
+        'info': 'bi-info-circle-fill'
+      }[type] || 'bi-info-circle-fill';
+      
+      const alertHtml = `
+        <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+          <i class="bi ${iconClass} me-2"></i>${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      `;
+      
+      const alertContainer = document.createElement('div');
+      alertContainer.className = 'position-fixed top-0 start-0 end-0 p-3 text-center';
+      alertContainer.style.zIndex = '5000';
+      alertContainer.innerHTML = alertHtml;
+      document.body.appendChild(alertContainer);
+      
+      // Auto remove after 0.5 seconds for success/info, 1 seconds for warnings/errors
+      const timeout = (type === 'success' || type === 'info') ? 500 : 1000;
+      
+      setTimeout(() => {
+        if (alertContainer.parentNode) {
+          alertContainer.querySelector('.alert').classList.remove('show');
+          setTimeout(() => alertContainer.remove(), 50);
+        }
+      }, timeout);
     }
 
     // Helper function to find a place in recommendations by ID
@@ -1043,10 +1736,10 @@
         
         // Create result card
         const col = document.createElement('div');
-col.className = 'col-md-6 col-lg-4'; // 2 per row on md, 3 per row on lg+
+        col.className = 'col-md-6 col-lg-4'; // 2 per row on md, 3 per row on lg+
 
-const card = document.createElement('div');
-card.className = 'card attraction-card h-100'; // keep styling
+        const card = document.createElement('div');
+        card.className = 'card attraction-card h-100'; // keep styling
 
         card.innerHTML = `
           <div class="attraction-image" style="background-image: url('https://source.unsplash.com/300x200/?${encodeURIComponent(place.name)}')"></div>
