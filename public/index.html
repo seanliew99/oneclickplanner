@@ -330,7 +330,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function() {
 
   const planForm = document.getElementById('plan-form');
   const currentPlanAlert = document.getElementById('current-plan-alert');
@@ -346,6 +346,16 @@
   const addCityBtn = document.getElementById('add-city-btn');
   const cityToggle = document.getElementById('city-selection-toggle');
 
+  // ✅ Initial destination input required toggle based on checkbox
+  const isMulti = cityToggle.checked;
+  const destinationInput = document.getElementById('destination');
+  if (isMulti) {
+    destinationInput.removeAttribute('required');
+  } else {
+    destinationInput.setAttribute('required', 'required');
+  }
+
+
   function attachCityDaysListeners() {
   const dayInputs = document.querySelectorAll('.city-days');
   dayInputs.forEach(input => {
@@ -355,7 +365,7 @@
     input.addEventListener('input', updateAddCityBtnState);
     input.addEventListener('input', validateCityDaysInput);
   });
-}
+  }
 
 
   function validateCityDaysInput(e) {
@@ -379,7 +389,7 @@
   if (value > maxAllowed) {
     currentInput.value = maxAllowed > 0 ? maxAllowed : 1;
   }
-}
+  }
 
 
   function toggleCitySectionVisibility() {
@@ -403,10 +413,26 @@
 
 
   cityToggle.addEventListener('change', () => {
-    const isMulti = cityToggle.checked;
-    singleCityWrapper.classList.toggle('d-none', isMulti);
-    multiCityWrapper.classList.toggle('d-none', !isMulti);
-  });
+  const isMulti = cityToggle.checked;
+  singleCityWrapper.classList.toggle('d-none', isMulti);
+  multiCityWrapper.classList.toggle('d-none', !isMulti);
+
+  // ✅ Ensure single city input is required when multiple cities are disabled
+  const destinationInput = document.getElementById('destination');
+  if (isMulti) {
+    destinationInput.removeAttribute('required');
+    // Disable multiple city inputs to avoid validation errors
+    const hiddenInputs = multiCityWrapper.querySelectorAll('input');
+    hiddenInputs.forEach(input => input.disabled = true);
+  } else {
+    destinationInput.setAttribute('required', 'required');
+    // Enable single city input
+    const singleCityInput = document.getElementById('destination');
+    singleCityInput.disabled = false;
+  }
+});
+
+
 
 
   // Add new city entry
@@ -427,7 +453,7 @@
   citiesContainer.appendChild(entry);
   attachCityDaysListeners(); // <== CALL HERE
   updateAddCityBtnState();
-});
+  });
 
 
   // Remove city entry
@@ -597,100 +623,122 @@ function validateCityDaysExactly() {
     })
     .catch(error => console.error('Error loading plan:', error));
 
-    // Handle form submission
-    planForm.addEventListener('submit', function(e) {
-    e.preventDefault();
+planForm.addEventListener('submit', function (e) {
+  e.preventDefault();
 
-    if (cityToggle.checked && !validateCityDays()) {
-      return; // Cancel submission if validation fails
-    }
+  const startDate = startDateInput.value;
+  const endDate = endDateInput.value;
 
-    const startDate = startDateInput.value;
-    const endDate = endDateInput.value;
+  if (!startDate || !endDate) {
+    alert('Please select both a start and end date.');
+    return;
+  }
 
-    let destination = '';
-    if (citySelect.value === 'no') {
-      destination = document.getElementById('destination').value;
-    } else {
-      const cityInputs = citiesContainer.querySelectorAll('.city-entry');
-      const cities = Array.from(cityInputs).map(entry => {
-        const name = entry.querySelector('.city-name').value;
-        const days = entry.querySelector('.city-days').value;
-        return `${name} (${days}d)`;
-      });
-      destination = cities.join(', ');
-    }
+  if (new Date(endDate) < new Date(startDate)) {
+    alert('End date cannot be before start date.');
+    return;
+  }
 
-    // Validate dates
-    if (endDate && !startDate) {
-      alert('Please select a start date before selecting an end date.');
-      return;
-    }
-    
-    if (endDate && startDate && new Date(endDate) < new Date(startDate)) {
-      alert('End date cannot be before start date.');
-      return;
-    }
-    
+  const isMultiCity = cityToggle.checked;
+
+  // 🚫 Avoid validation errors on unused inputs
+  if (isMultiCity) {
+    destinationInput.removeAttribute('required');
+  } else {
+    // Disable multi-city inputs
+    const hiddenInputs = multiCityWrapper.querySelectorAll('input');
+    hiddenInputs.forEach(input => input.disabled = true);
+  }
+
+  if (isMultiCity && !validateCityDaysExactly()) {
+    return;
+  }
+
+  let destination = '';
+  let cities = [];
+
+  if (!isMultiCity) {
+    const name = destinationInput.value.trim();
+    destination = name;
+    const totalDays = calculateTripDays(startDate, endDate);
+    cities = [{ name, days: totalDays }];
+  } else {
+    const cityInputs = citiesContainer.querySelectorAll('.city-entry');
+    cities = Array.from(cityInputs).map(entry => {
+      const name = entry.querySelector('.city-name').value.trim();
+      const days = parseInt(entry.querySelector('.city-days').value);
+      return { name, days };
+    });
+    destination = cities.map(city => `${city.name} (${city.days}d)`).join(', ');
+  }
+
+  // 🌐 Send plan to server
+  fetch('/api/plan', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      destination,
+      cities,
+      startDate,
+      endDate,
+    }),
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        planDestination.textContent = destination;
+        planDates.textContent = formatDateRange(startDate, endDate);
+        currentPlanAlert.style.display = 'block';
+
+        // 🌦 Fetch forecast
+        fetch(`/api/weather?city=${encodeURIComponent(destination)}`)
+          .then(res => res.json())
+          .then(weatherData => {
+            showWeatherForDateRange(weatherData.forecast, startDate, endDate);
+          });
+
+        // ✅ Navigate
+        window.location.href = '/attractions';
+      } else {
+        console.error('Plan submission failed:', data);
+        alert('Failed to save plan.');
+      }
+    })
+    .catch(error => {
+      console.error('Error saving plan:', error);
+      alert('Error saving plan.');
+    });
+});
+
+
+// Handle clear plan button
+clearPlanBtn.addEventListener('click', function () {
+  if (confirm('Are you sure you want to clear your current trip plan?')) {
     fetch('/api/plan', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        destination,
-        startDate,
-        endDate
+        destination: '',
+        startDate: '',
+        endDate: '',
       }),
     })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        // Update current plan display
-        planDestination.textContent = destination;
-        planDates.textContent = formatDateRange(startDate, endDate);
-        currentPlanAlert.style.display = 'block';
-        
-          // Fetch weather forecast
-      fetch(`/api/weather?city=${encodeURIComponent(destination)}`)
-        .then(res => res.json())
-        .then(weatherData => {
-          showWeatherForDateRange(weatherData.forecast, startDate, endDate);
-        });
-
-
-        // Optional: redirect to attractions page
-        window.location.href = '/attractions';
-      }
-    })
-    .catch(error => console.error('Error saving plan:', error));
-  });
-
-  // Handle clear plan button
-  clearPlanBtn.addEventListener('click', function() {
-    if (confirm('Are you sure you want to clear your current trip plan?')) {
-      fetch('/api/plan', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          destination: '',
-          startDate: '',
-          endDate: ''
-        }),
-      })
       .then(() => {
         // Reset form
         planForm.reset();
-        // Reset date inputs
         endDateInput.setAttribute('disabled', true);
-        // Hide current plan alert
         currentPlanAlert.style.display = 'none';
       })
       .catch(error => console.error('Error clearing plan:', error));
-    }
-  });
+  }
+});
+
+attachCityDaysListeners();
+
 });
 
 

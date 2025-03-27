@@ -45,7 +45,7 @@ app.get('/api/config', (req, res) => {
 
 // Save or update travel plan
 app.post('/api/plan', async (req, res) => {
-  const { destination, startDate, endDate } = req.body;
+  const { destination, cities = [], startDate, endDate } = req.body;
   
   if (!destination) {
     return res.status(400).json({ error: 'Destination is required' });
@@ -53,13 +53,15 @@ app.post('/api/plan', async (req, res) => {
   
   // Store the plan in session as before (for non-authenticated users)
   req.session.plan = {
-    destination,
+    destination, // still keep for quick display
+    cities,       // <-- array of { name, days }
     startDate,
     endDate,
     createdAt: new Date().toISOString(),
     attractions: req.session.plan?.attractions || [],
     restaurants: req.session.plan?.restaurants || []
   };
+  
   
   // If user is authenticated, also save to DynamoDB
   if (req.session.user && req.session.user.sub) {
@@ -73,8 +75,9 @@ app.post('/api/plan', async (req, res) => {
       if (existingItinerary) {
         // Update existing itinerary
         existingItinerary.destination = destination;
+        existingItinerary.cities = cities;
         existingItinerary.startDate = startDate;
-        existingItinerary.endDate = endDate;
+        existingItinerary.endDate = endDate;        
         existingItinerary.updatedAt = new Date().toISOString();
         savedItinerary = await ItineraryModel.saveItinerary(userId, existingItinerary);
       } else {
