@@ -136,6 +136,7 @@
 
 
 
+
   /* Animations */
   @keyframes fadeInDown {
     from { opacity: 0; transform: translateY(-20px); }
@@ -197,10 +198,12 @@
           <div class="planning-card">
             <h2 class="text-center mb-4">Create Your Trip Plan</h2>
             <form id="plan-form">
+              <!-- Country -->
               <div class="mb-3">
-                <label for="destination" class="form-label">Where are you going?</label>
-                <input type="text" class="form-control" id="destination" placeholder="Enter city, country..." required>
+                <label for="country" class="form-label">Country</label>
+                <input type="text" class="form-control" id="country" placeholder="e.g. Japan" required>
               </div>
+
               <div class="row mb-3">
                 <div class="col-md-6">
                   <label for="start-date" class="form-label">Start Date</label>
@@ -211,9 +214,48 @@
                   <input type="date" class="form-control" id="end-date" required>
                 </div>
               </div>
-              <div class="text-center">
-                <button type="submit" class="btn btn-primary btn-lg px-4">Start Planning</button>
+
+              <!-- Hidden warning -->
+              <p id="date-required-warning" class="text-danger d-none text-center mb-3">Choose your dates before planning cities.</p>
+
+              <!-- Wrap city logic -->
+              <div id="city-details-wrapper" class="d-none">
+                <div class="mb-3 form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="city-selection-toggle">
+                  <label class="form-check-label" for="city-selection-toggle">Multiple Cities</label>
+                </div>
+
+                <!-- Single City Input -->
+                <div class="mb-3" id="single-city-wrapper">
+                  <label for="destination" class="form-label">City</label>
+                  <input type="text" class="form-control" id="destination" placeholder="City name..." required />
+                </div>
+
+                <!-- Multi-City Input Group -->
+                <div class="mb-3 d-none" id="multi-city-wrapper">
+                  <label class="form-label">Cities and Days</label>
+                  <div id="cities-container">
+                    <div class="row mb-2 city-entry">
+                      <div class="col-md-6">
+                        <input type="text" class="form-control city-name" placeholder="City name" required />
+                      </div>
+                      <div class="col-md-4">
+                        <input type="number" class="form-control city-days" placeholder="Days" min="1" required />
+                      </div>
+                      <div class="col-md-2">
+                        <button type="button" class="btn btn-danger remove-city w-100">−</button>
+                      </div>
+                    </div>
+                  </div>
+                  <button type="button" id="add-city-btn" class="btn btn-outline-light mt-2">+ Add City</button>
+                  <p id="date-warning" class="text-danger mt-2 d-none">Choose your dates before adding cities.</p>
+                </div>
+
+                <div class="text-center">
+                  <button type="submit" class="btn btn-primary btn-lg px-4">Start Planning</button>
+                </div>
               </div>
+
             </form>
           </div>
           
@@ -288,7 +330,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function() {
+
   const planForm = document.getElementById('plan-form');
   const currentPlanAlert = document.getElementById('current-plan-alert');
   const planDestination = document.getElementById('plan-destination');
@@ -296,6 +339,180 @@
   const clearPlanBtn = document.getElementById('clear-plan-btn');
   const startDateInput = document.getElementById('start-date');
   const endDateInput = document.getElementById('end-date');
+  const citySelect = document.getElementById('city-selection');
+  const singleCityWrapper = document.getElementById('single-city-wrapper');
+  const multiCityWrapper = document.getElementById('multi-city-wrapper');
+  const citiesContainer = document.getElementById('cities-container');
+  const addCityBtn = document.getElementById('add-city-btn');
+  const cityToggle = document.getElementById('city-selection-toggle');
+
+  // ✅ Initial destination input required toggle based on checkbox
+  const isMulti = cityToggle.checked;
+  const destinationInput = document.getElementById('destination');
+  if (isMulti) {
+    destinationInput.removeAttribute('required');
+  } else {
+    destinationInput.setAttribute('required', 'required');
+  }
+
+
+  function attachCityDaysListeners() {
+  const dayInputs = document.querySelectorAll('.city-days');
+  dayInputs.forEach(input => {
+    input.removeEventListener('input', updateAddCityBtnState);
+    input.removeEventListener('input', validateCityDaysInput);
+
+    input.addEventListener('input', updateAddCityBtnState);
+    input.addEventListener('input', validateCityDaysInput);
+  });
+  }
+
+
+  function validateCityDaysInput(e) {
+  const totalTripDays = calculateTripDays(startDateInput.value, endDateInput.value);
+  const currentInput = e.target;
+  const allInputs = document.querySelectorAll('.city-days');
+
+  let usedSoFar = 0;
+  allInputs.forEach(input => {
+    if (input !== currentInput) {
+      const val = parseInt(input.value);
+      if (!isNaN(val)) usedSoFar += val;
+    }
+  });
+
+  let value = parseInt(currentInput.value);
+  if (isNaN(value) || value < 1) value = 1;
+
+  // Cap the current input to not exceed the total trip days
+  const maxAllowed = totalTripDays - usedSoFar;
+  if (value > maxAllowed) {
+    currentInput.value = maxAllowed > 0 ? maxAllowed : 1;
+  }
+  }
+
+
+  function toggleCitySectionVisibility() {
+  const start = document.getElementById('start-date').value;
+  const end = document.getElementById('end-date').value;
+  const wrapper = document.getElementById('city-details-wrapper');
+  const warning = document.getElementById('date-required-warning');
+
+  if (start && end) {
+    wrapper.classList.remove('d-none');
+    warning.classList.add('d-none');
+  } else {
+    wrapper.classList.add('d-none');
+    warning.classList.remove('d-none');
+  }
+  } 
+
+  document.getElementById('start-date').addEventListener('change', toggleCitySectionVisibility);
+  document.getElementById('end-date').addEventListener('change', toggleCitySectionVisibility);
+  attachCityDaysListeners(); // for the initial city-days input on page load
+
+
+  cityToggle.addEventListener('change', () => {
+  const isMulti = cityToggle.checked;
+  singleCityWrapper.classList.toggle('d-none', isMulti);
+  multiCityWrapper.classList.toggle('d-none', !isMulti);
+
+  // ✅ Avoid validation error
+  const destinationInput = document.getElementById('destination');
+  if (isMulti) {
+    destinationInput.removeAttribute('required');
+  } else {
+    destinationInput.setAttribute('required', 'required');
+  }
+});
+
+
+
+  // Add new city entry
+  addCityBtn.addEventListener('click', () => {
+  const entry = document.createElement('div');
+  entry.className = 'row mb-2 city-entry';
+  entry.innerHTML = `
+    <div class="col-md-6">
+      <input type="text" class="form-control city-name" placeholder="City name" required />
+    </div>
+    <div class="col-md-4">
+      <input type="number" class="form-control city-days" placeholder="Days" min="1" required />
+    </div>
+    <div class="col-md-2">
+      <button type="button" class="btn btn-danger remove-city w-100">−</button>
+    </div>
+  `;
+  citiesContainer.appendChild(entry);
+  attachCityDaysListeners(); // <== CALL HERE
+  updateAddCityBtnState();
+  });
+
+
+  // Remove city entry
+  citiesContainer.addEventListener('click', e => {
+    if (e.target.classList.contains('remove-city')) {
+      const row = e.target.closest('.city-entry');
+      row.remove();
+    }
+  });
+
+  function calculateTripDays(start, end) {
+  const s = new Date(start);
+  const e = new Date(end);
+  const diff = Math.floor((e - s) / (1000 * 60 * 60 * 24)) + 1;
+  return diff > 0 ? diff : 0;
+}
+
+function getUsedCityDays() {
+  const dayInputs = document.querySelectorAll('.city-days');
+  let usedDays = 0;
+  dayInputs.forEach(input => {
+    const val = parseInt(input.value);
+    if (!isNaN(val)) usedDays += val;
+  });
+  return usedDays;
+}
+
+function updateAddCityBtnState() {
+  const start = document.getElementById('start-date').value;
+  const end = document.getElementById('end-date').value;
+  const warning = document.getElementById('date-warning');
+  const addBtn = document.getElementById('add-city-btn');
+
+  if (!start || !end) {
+    warning.classList.remove('d-none');
+    addBtn.disabled = true;
+    return;
+  }
+
+  warning.classList.add('d-none');
+
+  const totalDays = calculateTripDays(start, end);
+  const usedDays = getUsedCityDays();
+
+  addBtn.disabled = usedDays >= totalDays;
+}
+
+function validateCityDaysExactly() {
+  const start = document.getElementById('start-date').value;
+  const end = document.getElementById('end-date').value;
+  const totalDays = calculateTripDays(start, end);
+  const usedDays = getUsedCityDays();
+
+  if (!start || !end) {
+    alert("Please choose a start and end date.");
+    return false;
+  }
+
+  if (usedDays !== totalDays) {
+    alert(`You've assigned ${usedDays} days, but your trip is ${totalDays} days. Adjust to match.`);
+    return false;
+  }
+
+  return true;
+}
+
 
   // Set min date for start date (today)
   const today = new Date().toISOString().split('T')[0];
@@ -399,84 +616,119 @@
     })
     .catch(error => console.error('Error loading plan:', error));
 
-  // Handle form submission
-  planForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const destination = document.getElementById('destination').value;
-    const startDate = startDateInput.value;
-    const endDate = endDateInput.value;
-    
-    // Validate dates
-    if (endDate && !startDate) {
-      alert('Please select a start date before selecting an end date.');
-      return;
-    }
-    
-    if (endDate && startDate && new Date(endDate) < new Date(startDate)) {
-      alert('End date cannot be before start date.');
-      return;
-    }
-    
+// Handle form submission
+planForm.addEventListener('submit', function (e) {
+  e.preventDefault();
+
+  const startDate = startDateInput.value;
+  const endDate = endDateInput.value;
+
+  if (!startDate || !endDate) {
+    alert('Please select both a start and end date.');
+    return;
+  }
+
+  if (new Date(endDate) < new Date(startDate)) {
+    alert('End date cannot be before start date.');
+    return;
+  }
+
+  if (cityToggle.checked && !validateCityDaysExactly()) {
+    return;
+  }
+
+  let destination = '';
+  let cities = [];
+
+  if (!cityToggle.checked) {
+    const name = document.getElementById('destination').value.trim();
+    destination = name;
+    const totalDays = calculateTripDays(startDate, endDate);
+    cities = [{ name, days: totalDays }];
+  } else {
+    const cityInputs = citiesContainer.querySelectorAll('.city-entry');
+    cities = Array.from(cityInputs).map(entry => {
+      const name = entry.querySelector('.city-name').value.trim();
+      const days = parseInt(entry.querySelector('.city-days').value);
+      return { name, days };
+    });
+    destination = cities.map(city => `${city.name} (${city.days}d)`).join(', ');
+  }
+
+    // Disable unused multi-city inputs if single-city mode is active
+  if (!cityToggle.checked) {
+    const hiddenInputs = multiCityWrapper.querySelectorAll('input');
+    hiddenInputs.forEach(input => input.disabled = true);
+  }
+
+
+  // Send plan to server
+  fetch('/api/plan', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      destination,
+      cities,
+      startDate,
+      endDate,
+    }),
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Update current plan UI
+        planDestination.textContent = destination;
+        planDates.textContent = formatDateRange(startDate, endDate);
+        currentPlanAlert.style.display = 'block';
+
+        // Show forecast (optional)
+        fetch(`/api/weather?city=${encodeURIComponent(destination)}`)
+          .then(res => res.json())
+          .then(weatherData => {
+            showWeatherForDateRange(weatherData.forecast, startDate, endDate);
+          });
+
+        // ✅ Redirect to attractions
+        window.location.href = '/attractions';
+      } else {
+        console.error('Plan submission failed:', data);
+        alert('Failed to save plan.');
+      }
+    })
+    .catch(error => {
+      console.error('Error saving plan:', error);
+      alert('Error saving plan.');
+    });
+});
+
+// Handle clear plan button
+clearPlanBtn.addEventListener('click', function () {
+  if (confirm('Are you sure you want to clear your current trip plan?')) {
     fetch('/api/plan', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        destination,
-        startDate,
-        endDate
+        destination: '',
+        startDate: '',
+        endDate: '',
       }),
     })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        // Update current plan display
-        planDestination.textContent = destination;
-        planDates.textContent = formatDateRange(startDate, endDate);
-        currentPlanAlert.style.display = 'block';
-        
-          // Fetch weather forecast
-      fetch(`/api/weather?city=${encodeURIComponent(destination)}`)
-        .then(res => res.json())
-        .then(weatherData => {
-          showWeatherForDateRange(weatherData.forecast, startDate, endDate);
-        });
-
-
-        // Optional: redirect to attractions page
-        window.location.href = '/attractions';
-      }
-    })
-    .catch(error => console.error('Error saving plan:', error));
-  });
-
-  // Handle clear plan button
-  clearPlanBtn.addEventListener('click', function() {
-    if (confirm('Are you sure you want to clear your current trip plan?')) {
-      fetch('/api/plan', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          destination: '',
-          startDate: '',
-          endDate: ''
-        }),
-      })
       .then(() => {
         // Reset form
         planForm.reset();
-        // Reset date inputs
         endDateInput.setAttribute('disabled', true);
-        // Hide current plan alert
         currentPlanAlert.style.display = 'none';
       })
       .catch(error => console.error('Error clearing plan:', error));
-    }
-  });
+  }
+});
+
+attachCityDaysListeners();
+
 });
 
 
@@ -539,94 +791,5 @@ document.getElementById('get-weather-btn').addEventListener('click', () => {
 
 
 <script src="/js/auth.js"></script>
-<script >
-document.addEventListener('DOMContentLoaded', function() {
-  // Find ALL View Itinerary buttons (both in the alert box and in the feature card)
-  const itineraryLinks = document.querySelectorAll('a[href="/itinerary"]');
-  
-  itineraryLinks.forEach(link => {
-    // Replace the default link behavior with our auth check
-    link.addEventListener('click', function(e) {
-      e.preventDefault();
-      
-      // Check if user is authenticated
-      const authUser = localStorage.getItem('authUser');
-      
-      if (authUser) {
-        // User is logged in, proceed to itinerary page
-        window.location.href = '/itinerary';
-      } else {
-        // User is not logged in, show login modal
-        showLoginRequiredModal();
-      }
-    });
-  });
-});
-
-// Function to show login required modal
-function showLoginRequiredModal() {
-  // Show a notification at the top of the page
-  const notificationHtml = `
-    <div class="alert alert-warning alert-dismissible fade show" role="alert">
-      <i class="bi bi-exclamation-triangle-fill me-2"></i>
-      <strong>Authentication Required!</strong> You need to log in to view your itinerary.
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  `;
-  
-  const notificationContainer = document.createElement('div');
-  notificationContainer.className = 'position-fixed top-0 start-0 end-0 p-3 text-center';
-  notificationContainer.style.zIndex = '5000';
-  notificationContainer.innerHTML = notificationHtml;
-  document.body.appendChild(notificationContainer);
-  
-  // Auto remove after showing the modal
-  setTimeout(() => {
-    if (notificationContainer.parentNode) {
-      notificationContainer.querySelector('.alert').classList.remove('show');
-      setTimeout(() => notificationContainer.remove(), 300);
-    }
-  }, 5000);
-  
-  // Create modal HTML
-  const modalHtml = `
-    <div class="modal fade" id="loginRequiredModal" tabindex="-1" aria-labelledby="loginRequiredModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header bg-warning text-dark">
-            <h5 class="modal-title" id="loginRequiredModalLabel">
-              <i class="bi bi-shield-lock me-2"></i>Login Required
-            </h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <p class="lead">You need to be logged in to add places to your itinerary.</p>
-            <p>Would you like to log in now?</p>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <a href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/login?client_id=3anj5rhtknc7i97jq3jgknai71&response_type=code&scope=email+openid+phone&redirect_uri=http%3A%2F%2Flocalhost%3A3000" class="btn btn-warning">
-              <i class="bi bi-box-arrow-in-right me-1"></i>Login
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-  
-  // Append modal to body if it doesn't exist
-  if (!document.getElementById('loginRequiredModal')) {
-    const modalContainer = document.createElement('div');
-    modalContainer.innerHTML = modalHtml;
-    document.body.appendChild(modalContainer.firstChild);
-  }
-  
-  // Show the modal with a slight delay to ensure notification is seen first
-  setTimeout(() => {
-    const loginModal = new bootstrap.Modal(document.getElementById('loginRequiredModal'));
-    loginModal.show();
-  }, 500);
-}
-</script>
 </body>
 </html>
