@@ -268,6 +268,9 @@
     let currentPlan = null;
     let selectedPlace = null;
     let rainDays = [];
+    let isMapDragging = false;
+    let debounceTimer = null;
+    let currentMapBounds = null;
 
     const itineraryRecommendations = {}; // Format: { dayIndex: { morning: [], afternoon: [], evening: [] } }
     const removedAttractions = new Set(); // Track removed place_ids
@@ -284,8 +287,8 @@
       return `${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}`;
     }
     
-   // Initialize the map
-   function initMap() {
+    // Initialize the map
+    function initMap() {
       // Initialize with a neutral view that will be updated once we load the plan
       const defaultLocation = { lat: 0, lng: 0 };
       
@@ -297,9 +300,373 @@
         streetViewControl: false,
       });
       
+      // Add event listeners for map movements
+      map.addListener('dragstart', function() {
+        isMapDragging = true;
+      });
+      
+      map.addListener('dragend', function() {
+        isMapDragging = false;
+        debouncedSearchByMapBounds();
+      });
+      
+      map.addListener('zoom_changed', function() {
+        debouncedSearchByMapBounds();
+      });
+      
       // Load current plan and perform initial search
       loadCurrentPlan();
     }
+
+    // Function to debounce map movement events
+    function debouncedSearchByMapBounds() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(searchAttractionsByMapBounds, 500); // 500ms delay
+    }
+
+    // New function to search for attractions based on current map bounds
+    function searchAttractionsByMapBounds() {
+      const bounds = map.getBounds();
+      if (!bounds) return;
+      
+      currentMapBounds = bounds;
+      
+      // Get the center of the visible map
+      const center = map.getCenter();
+      const lat = center.lat();
+      const lng = center.lng();
+      
+      // Show loading spinner
+      document.getElementById('spinner').style.display = 'flex';
+      
+      // Perform reverse geocoding to get the name of the location
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ location: { lat, lng } }, function(results, status) {
+        if (status === 'OK' && results[0]) {
+          let locationName = '';
+          
+          // Look for a locality (city) or administrative_area_level_1 (state/province)
+          for (let component of results[0].address_components) {
+            if (component.types.includes('locality')) {
+              locationName = component.long_name;
+              break;
+            } else if (component.types.includes('administrative_area_level_1') && !locationName) {
+              locationName = component.long_name;
+            }
+          }
+          
+          // If we found a location name, update the UI and search
+          if (locationName) {
+            const mapAreaHeading = document.getElementById('map-area-heading');
+            if (!mapAreaHeading) {
+              // Create the heading element if it doesn't exist
+              const headingDiv = document.createElement('div');
+              headingDiv.id = 'map-area-heading';
+              headingDiv.className = 'alert alert-info mb-3';
+              headingDiv.innerHTML = `<i class="bi bi-geo-alt"></i> Showing attractions in <strong>${locationName}</strong>`;
+              
+              // Insert after the search container
+              const searchContainer = document.querySelector('.search-container');
+              searchContainer.parentNode.insertBefore(headingDiv, searchContainer.nextSibling);
+            } else {
+              // Update existing heading
+              mapAreaHeading.innerHTML = `<i class="bi bi-geo-alt"></i> Showing attractions in <strong>${locationName}</strong>`;
+            }
+            
+            // Search attractions in this area
+            searchAttractionsByLocation(locationName);
+          }
+        } else {
+          console.log('Geocoder failed due to: ' + status);
+          // If geocoding fails, just search by keyword without location context
+          searchAttractions('');
+        }
+      });
+    }
+
+    // Modified version of searchAttractions that takes a specific location
+    function searchAttractionsByLocation(location) {
+      // Clear existing markers
+      clearMarkers();
+      
+      // Show loading spinner
+      document.getElementById('spinner').style.display = 'flex';
+      document.getElementById('results-container').innerHTML = '';
+      document.getElementById('result-count').textContent = '';
+      
+      const keyword = document.getElementById('keyword').value;
+      
+      // Call the API with the location from the map
+      fetch(`/api/places?location=${encodeURIComponent(location)}&type=attraction&keyword=${encodeURIComponent(keyword)}`)
+        .then(response => response.json())
+        .then(data => {
+          // Hide spinner
+          document.getElementById('spinner').style.display = 'none';
+          
+          if (data.status === 'OK' && data.results && data.results.length > 0) {
+            // Update result count
+            document.getElementById('result-count').textContent = `Found ${data.results.length} attractions`;
+            
+            // Display results and update recommendations
+            displayResults(data.results);
+            
+            // Only update itinerary recommendations if they already exist
+            if (Object.keys(itineraryRecommendations).length > 0) {
+              updateItineraryRecommendations(data.results);
+            }
+          } else {
+            document.getElementById('results-container').innerHTML = `
+              <div class="alert alert-info">
+                No attractions found in ${location}. Try searching with different keywords.
+              </div>
+            `;
+          }
+        })
+        .catch(error => {
+          console.error('Error searching attractions:', error);
+          document.getElementById('spinner').style.display = 'none';
+          document.getElementById('results-container').innerHTML = `
+            <div class="alert alert-danger">
+              Error searching for attractions. Please try again later.
+            </div>
+          `;
+        });
+    }
+
+    // Add this function to update itinerary recommendations
+    function updateItineraryRecommendations(results) {
+      // Filter out any attractions that have been removed
+      let filtered = results.filter(p => !removedAttractions.has(p.place_id));
+      let dayCount = Object.keys(itineraryRecommendations).length;
+      let attractionsPerDay = 3;
+      
+      // Reset recommendations
+      for (let i = 0; i < dayCount; i++) {
+        itineraryRecommendations[i] = [];
+      }
+      
+      // Use the same clustering logic as before
+      const clustered = [];
+      const visited = new Set();
+      
+      function haversineDistance(a, b) {
+        const R = 6371; // km
+        const dLat = (b.lat - a.lat) * Math.PI / 180;
+        const dLng = (b.lng - a.lng) * Math.PI / 180;
+        const lat1 = a.lat * Math.PI / 180;
+        const lat2 = b.lat * Math.PI / 180;
+        
+        const aCalc = Math.sin(dLat / 2) ** 2 +
+                      Math.sin(dLng / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
+        return R * 2 * Math.atan2(Math.sqrt(aCalc), Math.sqrt(1 - aCalc));
+      }
+      
+      filtered.forEach((place, i) => {
+        if (visited.has(place.place_id)) return;
+        
+        const cluster = [place];
+        visited.add(place.place_id);
+        
+        for (let j = i + 1; j < filtered.length; j++) {
+          const dist = haversineDistance(
+            place.geometry.location,
+            filtered[j].geometry.location
+          );
+          if (dist < 5) {
+            cluster.push(filtered[j]);
+            visited.add(filtered[j].place_id);
+          }
+          if (cluster.length >= attractionsPerDay) break;
+        }
+        
+        if (cluster.length > 0 && clustered.length < dayCount) {
+          itineraryRecommendations[clustered.length] = cluster;
+          clustered.push(cluster);
+        }
+      });
+      
+      // Re-render itinerary tabs
+      generateItineraryTabs(currentPlan.startDate, currentPlan.endDate);
+    }
+
+    // Modify the original searchAttractions function to use our new map-based search
+    // when appropriate
+    function searchAttractions(keyword) {
+      if (!currentPlan || !currentPlan.destination) {
+        return;
+      }
+      
+      // If map has been moved/zoomed and we have bounds, use the map location
+      if (currentMapBounds) {
+        const center = map.getCenter();
+        const geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ location: { lat: center.lat(), lng: center.lng() } }, function(results, status) {
+          if (status === 'OK' && results[0]) {
+            let locationName = '';
+            
+            // Look for a locality (city) or administrative_area_level_1 (state/province)
+            for (let component of results[0].address_components) {
+              if (component.types.includes('locality')) {
+                locationName = component.long_name;
+                break;
+              } else if (component.types.includes('administrative_area_level_1') && !locationName) {
+                locationName = component.long_name;
+              }
+            }
+            
+            if (locationName) {
+              searchAttractionsByLocation(locationName);
+            } else {
+              // If we can't determine location, use the plan destination
+              originalSearchAttractions(keyword);
+            }
+          } else {
+            // Fallback to the original function
+            originalSearchAttractions(keyword);
+          }
+        });
+      } else {
+        // Use the original function if map hasn't been moved
+        originalSearchAttractions(keyword);
+      }
+    }
+
+    // Rename the original function to avoid conflicts
+    function originalSearchAttractions(keyword) {
+      if (!currentPlan || !currentPlan.destination) {
+        return;
+      }
+
+      Object.keys(itineraryRecommendations).forEach(key => {
+        itineraryRecommendations[key] = [];
+      });
+      
+      // Show loading spinner
+      document.getElementById('spinner').style.display = 'flex';
+      document.getElementById('results-container').innerHTML = '';
+      document.getElementById('result-count').textContent = '';
+      
+      // Clear existing markers
+      clearMarkers();
+      
+      // Call the API
+      fetch(`/api/places?location=${encodeURIComponent(currentPlan.destination)}&type=attraction&keyword=${encodeURIComponent(keyword)}`)
+        .then(response => response.json())
+        .then(data => {
+          // Hide spinner
+          document.getElementById('spinner').style.display = 'none';
+          
+          if (data.status === 'OK' && data.results && data.results.length > 0) {
+            // Update result count
+            document.getElementById('result-count').textContent = `Found ${data.results.length} attractions`;
+            
+            displayResults(data.results);
+
+            let filtered = data.results.filter(p => !removedAttractions.has(p.place_id));
+            let dayCount = Object.keys(itineraryRecommendations).length;
+            let attractionsPerDay = 3;
+
+            const clustered = [];
+            const visited = new Set();
+
+            function haversineDistance(a, b) {
+              const R = 6371; // km
+              const dLat = (b.lat - a.lat) * Math.PI / 180;
+              const dLng = (b.lng - a.lng) * Math.PI / 180;
+              const lat1 = a.lat * Math.PI / 180;
+              const lat2 = b.lat * Math.PI / 180;
+
+              const aCalc = Math.sin(dLat / 2) ** 2 +
+                            Math.sin(dLng / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
+              return R * 2 * Math.atan2(Math.sqrt(aCalc), Math.sqrt(1 - aCalc));
+            }
+
+            filtered.forEach((place, i) => {
+              if (visited.has(place.place_id)) return;
+
+              const cluster = [place];
+              visited.add(place.place_id);
+
+              for (let j = i + 1; j < filtered.length; j++) {
+                const dist = haversineDistance(
+                  place.geometry.location,
+                  filtered[j].geometry.location
+                );
+                if (dist < 5) {
+                  cluster.push(filtered[j]);
+                  visited.add(filtered[j].place_id);
+                }
+                if (cluster.length >= attractionsPerDay) break;
+              }
+
+              if (cluster.length > 0 && clustered.length < dayCount) {
+                itineraryRecommendations[clustered.length] = cluster;
+                clustered.push(cluster);
+              }
+            });
+
+            // Re-render itinerary tabs
+            generateItineraryTabs(currentPlan.startDate, currentPlan.endDate);
+            
+            // Fit map to show all markers
+            const bounds = new google.maps.LatLngBounds();
+            markers.forEach(marker => bounds.extend(marker.getPosition()));
+            map.fitBounds(bounds);
+          } else {
+            document.getElementById('results-container').innerHTML = `
+              <div class="alert alert-info">
+                No attractions found. Try a different search term.
+              </div>
+            `;
+          }
+        })
+        .catch(error => {
+          console.error('Error searching attractions:', error);
+          document.getElementById('spinner').style.display = 'none';
+          document.getElementById('results-container').innerHTML = `
+            <div class="alert alert-danger">
+              Error searching for attractions. Please try again later.
+            </div>
+          `;
+        });
+    }
+
+    // Add a "Reset Map" button to easily go back to the original destination
+    function addResetMapButton() {
+      const mapElement = document.getElementById('map');
+      const resetButton = document.createElement('button');
+      resetButton.id = 'reset-map-button';
+      resetButton.className = 'btn btn-sm btn-light position-absolute m-2';
+      resetButton.style.zIndex = '1';
+      resetButton.style.top = '10px';
+      resetButton.style.right = '10px';
+      resetButton.innerHTML = '<i class="bi bi-arrow-counterclockwise"></i> Reset Map';
+      
+      resetButton.addEventListener('click', function() {
+        // Clear the current map bounds to reset to original destination
+        currentMapBounds = null;
+        
+        // Remove the map area heading if it exists
+        const mapAreaHeading = document.getElementById('map-area-heading');
+        if (mapAreaHeading) {
+          mapAreaHeading.remove();
+        }
+        
+        // Reload attractions for the original destination
+        searchAttractions('');
+      });
+      
+      // Insert the button inside the map container
+      const mapContainer = mapElement.parentNode;
+      mapContainer.style.position = 'relative';
+      mapContainer.appendChild(resetButton);
+    }
+
+    // Call this when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      // Add the reset button after the map is initialized
+      setTimeout(addResetMapButton, 1000);
+    });
 
     function generateItineraryTabs(startDateStr, endDateStr) {
       const dayTabs = document.getElementById('dayTabs');
@@ -438,11 +805,11 @@
           .then(res => res.json())
           .then(weather => {
             rainDays = weather.rainDays || [];
-            searchAttractions('');
+            originalSearchAttractions('');
           })
           .catch(err => {
             console.error('Failed to fetch weather:', err);
-            searchAttractions('');
+            originalSearchAttractions('');
           });
       } else {
         document.getElementById('no-plan-alert').style.display = 'block';
@@ -535,111 +902,6 @@
       }, 500);
     }
 
-    
-    // Search for attractions
-    function searchAttractions(keyword) {
-      if (!currentPlan || !currentPlan.destination) {
-        return;
-      }
-
-      Object.keys(itineraryRecommendations).forEach(key => {
-        itineraryRecommendations[key] = [];
-      });
-      
-      // Show loading spinner
-      document.getElementById('spinner').style.display = 'flex';
-      document.getElementById('results-container').innerHTML = '';
-      document.getElementById('result-count').textContent = '';
-      
-      // Clear existing markers
-      clearMarkers();
-      
-      // Call the API
-      fetch(`/api/places?location=${encodeURIComponent(currentPlan.destination)}&type=attraction&keyword=${encodeURIComponent(keyword)}`)
-        .then(response => response.json())
-        .then(data => {
-          // Hide spinner
-          document.getElementById('spinner').style.display = 'none';
-          
-          if (data.status === 'OK' && data.results && data.results.length > 0) {
-            // Update result count
-            document.getElementById('result-count').textContent = `Found ${data.results.length} attractions`;
-            
-            
-           
-            displayResults(data.results);
-
-            let filtered = data.results.filter(p => !removedAttractions.has(p.place_id));
-            let dayCount = Object.keys(itineraryRecommendations).length;
-            let attractionsPerDay = 3; // you can change to 2 or 4 if you want
-
-            const clustered = [];
-            const visited = new Set();
-
-            function haversineDistance(a, b) {
-              const R = 6371; // km
-              const dLat = (b.lat - a.lat) * Math.PI / 180;
-              const dLng = (b.lng - a.lng) * Math.PI / 180;
-              const lat1 = a.lat * Math.PI / 180;
-              const lat2 = b.lat * Math.PI / 180;
-
-              const aCalc = Math.sin(dLat / 2) ** 2 +
-                            Math.sin(dLng / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
-              return R * 2 * Math.atan2(Math.sqrt(aCalc), Math.sqrt(1 - aCalc));
-            }
-
-            filtered.forEach((place, i) => {
-              if (visited.has(place.place_id)) return;
-
-              const cluster = [place];
-              visited.add(place.place_id);
-
-              for (let j = i + 1; j < filtered.length; j++) {
-                const dist = haversineDistance(
-                  place.geometry.location,
-                  filtered[j].geometry.location
-                );
-                if (dist < 5) {
-                  cluster.push(filtered[j]);
-                  visited.add(filtered[j].place_id);
-                }
-                if (cluster.length >= attractionsPerDay) break;
-              }
-
-              if (cluster.length > 0 && clustered.length < dayCount) {
-                itineraryRecommendations[clustered.length] = cluster;
-                clustered.push(cluster);
-              }
-            });
-
-
-            // Re-render itinerary tabs
-            generateItineraryTabs(currentPlan.startDate, currentPlan.endDate);
-
-            
-            // Fit map to show all markers
-            const bounds = new google.maps.LatLngBounds();
-            markers.forEach(marker => bounds.extend(marker.getPosition()));
-            map.fitBounds(bounds);
-          } else {
-            document.getElementById('results-container').innerHTML = `
-              <div class="alert alert-info">
-                No attractions found. Try a different search term.
-              </div>
-            `;
-          }
-        })
-        .catch(error => {
-          console.error('Error searching attractions:', error);
-          document.getElementById('spinner').style.display = 'none';
-          document.getElementById('results-container').innerHTML = `
-            <div class="alert alert-danger">
-              Error searching for attractions. Please try again later.
-            </div>
-          `;
-        });
-    }
-    
     
     // Display search results
     function displayResults(places) {
@@ -796,7 +1058,7 @@ card.className = 'card attraction-card h-100'; // keep styling
       document.getElementById('search-form').addEventListener('submit', function(e) {
         e.preventDefault();
         const keyword = document.getElementById('keyword').value;
-        searchAttractions(keyword);
+        originalSearchAttractions(keyword);
       });
       
       // Save attraction button
@@ -876,7 +1138,7 @@ card.className = 'card attraction-card h-100'; // keep styling
     keywordInput.value = '';
   }
 
-  searchAttractions(keywordInput.value);
+  originalSearchAttractions(keywordInput.value);
 });
 
 
