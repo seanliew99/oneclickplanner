@@ -649,7 +649,9 @@
         const listItems = recs.map(place => `
           <li class="list-group-item d-flex justify-content-between align-items-center">
             ${place.name}
-            <button class="btn btn-sm btn-outline-success" onclick="addToItinerary('${place.place_id}', ${i})">
+            <button class="btn btn-sm btn-outline-success recommended-add-btn"
+              data-place-id="${place.place_id}" 
+              data-day-index="${i}">
               Add to Itinerary
             </button>
           </li>
