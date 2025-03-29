@@ -38,10 +38,7 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       padding: 20px;
       margin-bottom: 30px;
-
-      
     }
-    
     
     #map {
       height: 400px;
@@ -140,7 +137,7 @@
           <li class="nav-item">
             <a class="nav-link" href="/restaurants">Restaurants</a>
           </li>
-          <!-- Auth buttons - these will be replaced by user info when logged in -->
+          <!-- Auth buttons -->
           <li class="nav-item ms-3">
             <a class="btn btn-outline-light" href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/login?client_id=3anj5rhtknc7i97jq3jgknai71&response_type=code&scope=email+openid+phone&redirect_uri=http%3A%2F%2Flocalhost%3A3000">Login</a>
           </li>
@@ -151,7 +148,6 @@
       </div>
     </div>
   </nav>
-
 
   <!-- Main Content -->
   <div class="main-content">
@@ -164,7 +160,7 @@
     </header>
 
     <div class="container">
-      <!-- No Plan Alert (Hidden by default) -->
+      <!-- No Plan Alert -->
       <div id="no-plan-alert" class="alert alert-warning no-plan-alert" role="alert" style="display: none;">
         <h4 class="alert-heading">No destination selected!</h4>
         <p>It looks like you haven't set a destination for your trip yet.</p>
@@ -186,27 +182,25 @@
         <div class="tab-content pt-3" id="dayTabsContent"></div>
       </section>
 
-     <!-- Search Container -->
-<div class="search-container mb-4">
-  <form id="search-form" class="row g-3 align-items-end">
-    <div class="col-md-8">
-      <label for="keyword" class="form-label">Search Attractions</label>
-      <input type="text" class="form-control form-control-lg" id="keyword" placeholder="Museum, park, landmark, etc.">
-    </div>
-    <div class="col-md-4">
-      <button type="submit" class="btn btn-primary btn-lg w-100">Search</button>
-    </div>
-  </form>
-
-  <!-- Weather-based filter toggle -->
-  <div class="form-check mt-3">
-    <input class="form-check-input" type="checkbox" id="indoor-toggle">
-    <label class="form-check-label" for="indoor-toggle">
-      Show indoor attractions ☔
-    </label>
-  </div>
-</div>
-
+      <!-- Search Container -->
+      <div class="search-container mb-4">
+        <form id="search-form" class="row g-3 align-items-end">
+          <div class="col-md-8">
+            <label for="keyword" class="form-label">Search Attractions</label>
+            <input type="text" class="form-control form-control-lg" id="keyword" placeholder="Museum, park, landmark, etc.">
+          </div>
+          <div class="col-md-4">
+            <button type="submit" class="btn btn-primary btn-lg w-100">Search</button>
+          </div>
+        </form>
+        <!-- Weather-based filter toggle -->
+        <div class="form-check mt-3">
+          <input class="form-check-input" type="checkbox" id="indoor-toggle">
+          <label class="form-check-label" for="indoor-toggle">
+            Show indoor attractions ☔
+          </label>
+        </div>
+      </div>
 
       <!-- Map and Results Container -->
       <div class="row">
@@ -214,22 +208,15 @@
         <div class="col-lg-6 mb-4">
           <div id="map"></div>
         </div>
-        
         <!-- Results Column -->
         <div class="col-lg-6">
-          <!-- Results Count -->
           <div id="result-count" class="result-count"></div>
-          
-          <!-- Loading Spinner (Hidden by default) -->
           <div id="spinner" class="spinner-container" style="display: none;">
             <div class="spinner-border text-primary" role="status">
               <span class="visually-hidden">Loading...</span>
             </div>
           </div>
-          
-          <!-- Results List -->
           <div id="results-container" class="row g-4"></div>
-
         </div>
       </div>
     </div>
@@ -261,6 +248,7 @@
     </div>
   </footer>
 
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     let map;
@@ -273,26 +261,62 @@
     let currentMapBounds = null;
     let selectedPlaceForDaySelection = null;
 
-    const itineraryRecommendations = {}; // Format: { dayIndex: { morning: [], afternoon: [], evening: [] } }
-    const removedAttractions = new Set(); // Track removed place_ids
-
+    // Global object to hold pre-fetched recommendations per day
+    const itineraryRecommendations = {}; 
+    const removedAttractions = new Set();
 
     const attractionModal = new bootstrap.Modal(document.getElementById('attractionModal'));
-    
-    // Format dates for display
+
+    // ----- Helper Functions for Clustering -----
+    function haversineDistance(a, b) {
+      const latA = typeof a.lat === 'function' ? a.lat() : a.lat;
+      const lngA = typeof a.lng === 'function' ? a.lng() : a.lng;
+      const latB = typeof b.lat === 'function' ? b.lat() : b.lat;
+      const lngB = typeof b.lng === 'function' ? b.lng() : b.lng;
+      const R = 6371;
+      const dLat = (latB - latA) * Math.PI / 180;
+      const dLng = (lngB - lngA) * Math.PI / 180;
+      const aCalc = Math.sin(dLat/2) ** 2 +
+                    Math.cos(latA * Math.PI/180) * Math.cos(latB * Math.PI/180) *
+                    Math.sin(dLng/2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(aCalc), Math.sqrt(1 - aCalc));
+    }
+
+    // Returns at most maxCount attractions that are close to each other (within threshold km)
+    function filterRecommendations(recs, maxCount = 5, threshold = 5) {
+      if (recs.length <= maxCount) return recs;
+      let bestCluster = [];
+      for (let i = 0; i < recs.length; i++) {
+        if (!recs[i].geometry || !recs[i].geometry.location) continue;
+        let cluster = [recs[i]];
+        for (let j = 0; j < recs.length; j++) {
+          if (i === j) continue;
+          if (!recs[j].geometry || !recs[j].geometry.location) continue;
+          const dist = haversineDistance(recs[i].geometry.location, recs[j].geometry.location);
+          if (dist < threshold) {
+            cluster.push(recs[j]);
+          }
+        }
+        if (cluster.length > bestCluster.length) {
+          bestCluster = cluster;
+        }
+      }
+      if (bestCluster.length === 0) return recs.slice(0, maxCount);
+      const seed = bestCluster[0];
+      bestCluster.sort((a, b) => haversineDistance(seed.geometry.location, a.geometry.location) - haversineDistance(seed.geometry.location, b.geometry.location));
+      return bestCluster.slice(0, maxCount);
+    }
+    // ----- End Helper Functions -----
+
     function formatDateRange(startDate, endDate) {
       if (!startDate && !endDate) return 'Dates not specified';
       if (!startDate) return `Until ${new Date(endDate).toLocaleDateString()}`;
       if (!endDate) return `From ${new Date(startDate).toLocaleDateString()}`;
-      
       return `${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}`;
     }
-    
-    // Initialize the map
+
     function initMap() {
-      // Initialize with a neutral view that will be updated once we load the plan
       const defaultLocation = { lat: 0, lng: 0 };
-      
       map = new google.maps.Map(document.getElementById("map"), {
         center: defaultLocation,
         zoom: 2,
@@ -301,7 +325,6 @@
         streetViewControl: false,
       });
       
-      // Add event listeners for map movements
       map.addListener('dragstart', function() {
         isMapDragging = true;
       });
@@ -315,38 +338,26 @@
         debouncedSearchByMapBounds();
       });
       
-      // Load current plan and perform initial search
       loadCurrentPlan();
     }
 
-    // Function to debounce map movement events
     function debouncedSearchByMapBounds() {
       clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(searchAttractionsByMapBounds, 500); // 500ms delay
+      debounceTimer = setTimeout(searchAttractionsByMapBounds, 500);
     }
 
-    // New function to search for attractions based on current map bounds
     function searchAttractionsByMapBounds() {
       const bounds = map.getBounds();
       if (!bounds) return;
-      
       currentMapBounds = bounds;
-      
-      // Get the center of the visible map
       const center = map.getCenter();
       const lat = center.lat();
       const lng = center.lng();
-      
-      // Show loading spinner
       document.getElementById('spinner').style.display = 'flex';
-      
-      // Perform reverse geocoding to get the name of the location
       const geocoder = new google.maps.Geocoder();
       geocoder.geocode({ location: { lat, lng } }, function(results, status) {
         if (status === 'OK' && results[0]) {
           let locationName = '';
-          
-          // Look for a locality (city) or administrative_area_level_1 (state/province)
           for (let component of results[0].address_components) {
             if (component.types.includes('locality')) {
               locationName = component.long_name;
@@ -355,66 +366,40 @@
               locationName = component.long_name;
             }
           }
-          
-          // If we found a location name, update the UI and search
           if (locationName) {
-            const mapAreaHeading = document.getElementById('map-area-heading');
+            let mapAreaHeading = document.getElementById('map-area-heading');
             if (!mapAreaHeading) {
-              // Create the heading element if it doesn't exist
               const headingDiv = document.createElement('div');
               headingDiv.id = 'map-area-heading';
               headingDiv.className = 'alert alert-info mb-3';
               headingDiv.innerHTML = `<i class="bi bi-geo-alt"></i> Showing attractions in <strong>${locationName}</strong>`;
-              
-              // Insert after the search container
               const searchContainer = document.querySelector('.search-container');
               searchContainer.parentNode.insertBefore(headingDiv, searchContainer.nextSibling);
             } else {
-              // Update existing heading
               mapAreaHeading.innerHTML = `<i class="bi bi-geo-alt"></i> Showing attractions in <strong>${locationName}</strong>`;
             }
-            
-            // Search attractions in this area
             searchAttractionsByLocation(locationName);
           }
         } else {
           console.log('Geocoder failed due to: ' + status);
-          // If geocoding fails, just search by keyword without location context
           searchAttractions('');
         }
       });
     }
 
-    // Modified version of searchAttractions that takes a specific location
     function searchAttractionsByLocation(location) {
-      // Clear existing markers
       clearMarkers();
-      
-      // Show loading spinner
       document.getElementById('spinner').style.display = 'flex';
       document.getElementById('results-container').innerHTML = '';
       document.getElementById('result-count').textContent = '';
-      
       const keyword = document.getElementById('keyword').value;
-      
-      // Call the API with the location from the map
       fetch(`/api/places?location=${encodeURIComponent(location)}&type=attraction&keyword=${encodeURIComponent(keyword)}`)
         .then(response => response.json())
         .then(data => {
-          // Hide spinner
           document.getElementById('spinner').style.display = 'none';
-          
           if (data.status === 'OK' && data.results && data.results.length > 0) {
-            // Update result count
             document.getElementById('result-count').textContent = `Found ${data.results.length} attractions`;
-            
-            // Display results and update recommendations
             displayResults(data.results);
-            
-            // Only update itinerary recommendations if they already exist
-            if (Object.keys(itineraryRecommendations).length > 0) {
-              updateItineraryRecommendations(data.results);
-            }
           } else {
             document.getElementById('results-container').innerHTML = `
               <div class="alert alert-info">
@@ -434,113 +419,12 @@
         });
     }
 
-    // Add this function to update itinerary recommendations
-    function updateItineraryRecommendations(results) {
-      // Filter out any attractions that have been removed
-      let filtered = results.filter(p => !removedAttractions.has(p.place_id));
-      let dayCount = Object.keys(itineraryRecommendations).length;
-      let attractionsPerDay = 3;
-      
-      // Reset recommendations
-      for (let i = 0; i < dayCount; i++) {
-        itineraryRecommendations[i] = [];
-      }
-      
-      // Use the same clustering logic as before
-      const clustered = [];
-      const visited = new Set();
-      
-      function haversineDistance(a, b) {
-        const R = 6371; // km
-        const dLat = (b.lat - a.lat) * Math.PI / 180;
-        const dLng = (b.lng - a.lng) * Math.PI / 180;
-        const lat1 = a.lat * Math.PI / 180;
-        const lat2 = b.lat * Math.PI / 180;
-        
-        const aCalc = Math.sin(dLat / 2) ** 2 +
-                      Math.sin(dLng / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
-        return R * 2 * Math.atan2(Math.sqrt(aCalc), Math.sqrt(1 - aCalc));
-      }
-      
-      filtered.forEach((place, i) => {
-        if (visited.has(place.place_id)) return;
-        
-        const cluster = [place];
-        visited.add(place.place_id);
-        
-        for (let j = i + 1; j < filtered.length; j++) {
-          const dist = haversineDistance(
-            place.geometry.location,
-            filtered[j].geometry.location
-          );
-          if (dist < 5) {
-            cluster.push(filtered[j]);
-            visited.add(filtered[j].place_id);
-          }
-          if (cluster.length >= attractionsPerDay) break;
-        }
-        
-        if (cluster.length > 0 && clustered.length < dayCount) {
-          itineraryRecommendations[clustered.length] = cluster;
-          clustered.push(cluster);
-        }
-      });
-      
-      // Re-render itinerary tabs
-      generateItineraryTabs(currentPlan.startDate, currentPlan.endDate);
-    }
-
-    // Modify the original searchAttractions function to use our new map-based search
-    // when appropriate
-    function searchAttractions(keyword) {
-      if (!currentPlan || !currentPlan.destination) {
-        return;
-      }
-      
-      // If map has been moved/zoomed and we have bounds, use the map location
-      if (currentMapBounds) {
-        const center = map.getCenter();
-        const geocoder = new google.maps.Geocoder();
-        geocoder.geocode({ location: { lat: center.lat(), lng: center.lng() } }, function(results, status) {
-          if (status === 'OK' && results[0]) {
-            let locationName = '';
-            
-            // Look for a locality (city) or administrative_area_level_1 (state/province)
-            for (let component of results[0].address_components) {
-              if (component.types.includes('locality')) {
-                locationName = component.long_name;
-                break;
-              } else if (component.types.includes('administrative_area_level_1') && !locationName) {
-                locationName = component.long_name;
-              }
-            }
-            
-            if (locationName) {
-              searchAttractionsByLocation(locationName);
-            } else {
-              // If we can't determine location, use the plan destination
-              originalSearchAttractions(keyword);
-            }
-          } else {
-            // Fallback to the original function
-            originalSearchAttractions(keyword);
-          }
-        });
-      } else {
-        // Use the original function if map hasn't been moved
-        originalSearchAttractions(keyword);
-      }
-    }
-
-    // Rename the original function to avoid conflicts
     function originalSearchAttractions(keyword, locationOverride) {
       if (!currentPlan || !currentPlan.destination) return;
       document.getElementById('spinner').style.display = 'flex';
       document.getElementById('results-container').innerHTML = '';
       document.getElementById('result-count').textContent = '';
       clearMarkers();
-      
-      // Use the location override if provided; otherwise, use the plan's main destination.
       const location = locationOverride || currentPlan.destination;
       fetch(`/api/places?location=${encodeURIComponent(location)}&type=attraction&keyword=${encodeURIComponent(keyword)}`)
         .then(response => response.json())
@@ -571,7 +455,6 @@
         });
     }
 
-    // Add a "Reset Map" button to easily go back to the original destination
     function addResetMapButton() {
       const mapElement = document.getElementById('map');
       const resetButton = document.createElement('button');
@@ -583,44 +466,71 @@
       resetButton.innerHTML = '<i class="bi bi-arrow-counterclockwise"></i> Reset Map';
       
       resetButton.addEventListener('click', function() {
-        // Clear the current map bounds to reset to original destination
         currentMapBounds = null;
-        
-        // Remove the map area heading if it exists
         const mapAreaHeading = document.getElementById('map-area-heading');
         if (mapAreaHeading) {
           mapAreaHeading.remove();
         }
-        
-        // Reload attractions for the original destination
         searchAttractions('');
       });
       
-      // Insert the button inside the map container
       const mapContainer = mapElement.parentNode;
       mapContainer.style.position = 'relative';
       mapContainer.appendChild(resetButton);
     }
 
-    // Call this when the page loads
-    document.addEventListener('DOMContentLoaded', function() {
-      // Add the reset button after the map is initialized
-      setTimeout(addResetMapButton, 1000);
-      addDaySelectionModal();
-    });
+    function addDaySelectionModal() {
+      if (!document.getElementById('daySelectionModal')) {
+        const modalHTML = `
+          <div class="modal fade" id="daySelectionModal" tabindex="-1" aria-labelledby="daySelectionModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="daySelectionModalLabel">Choose Day to Add Attraction</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <p>Select which day you'd like to add <strong id="place-name-display"></strong> to:</p>
+                  <div id="day-selection-buttons" class="d-grid gap-2">
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        const modalContainer = document.createElement('div');
+        modalContainer.innerHTML = modalHTML;
+        document.body.appendChild(modalContainer);
+      }
+    }
 
-
-    // Call this to set up the button when the page loads
-    document.addEventListener('DOMContentLoaded', setupAddAllButton);
-
-
+    // Generate itinerary tabs using pre-fetched recommendations.
+    // Before generating, for days with the same city, remove duplicates already used in an earlier day.
     function generateItineraryTabs() {
       document.getElementById('itinerary-section').style.display = 'block';
-
       const dayTabs = document.getElementById('dayTabs');
       const dayTabsContent = document.getElementById('dayTabsContent');
       dayTabs.innerHTML = '';
       dayTabsContent.innerHTML = '';
+      
+      // Remove duplicate recommendations across days that have the same city.
+      const cityUsed = {}; // city => set of place_ids used in earlier days
+      for (let i = 0; i < currentPlan.perDayCityMap.length; i++) {
+        const city = currentPlan.perDayCityMap[i];
+        if (!cityUsed[city]) {
+          cityUsed[city] = new Set();
+        }
+        // Remove attractions already used in this city on previous days.
+        itineraryRecommendations[i] = (itineraryRecommendations[i] || []).filter(place => {
+          return !cityUsed[city].has(place.place_id);
+        });
+        // Apply clustering to limit to max 5.
+        itineraryRecommendations[i] = filterRecommendations(itineraryRecommendations[i], 5, 5);
+        itineraryRecommendations[i].forEach(place => cityUsed[city].add(place.place_id));
+      }
       
       const startDate = new Date(currentPlan.startDate);
       const totalDays = currentPlan.perDayCityMap.length;
@@ -634,7 +544,6 @@
         const isActive = i === 0 ? 'active' : '';
         const isShow = i === 0 ? 'show active' : '';
         
-        // Create the tab button.
         const tab = document.createElement('li');
         tab.className = 'nav-item';
         tab.innerHTML = `
@@ -644,7 +553,6 @@
         `;
         dayTabs.appendChild(tab);
         
-        // Build the content for this day's recommendations.
         const recs = itineraryRecommendations[i] || [];
         const listItems = recs.map(place => `
           <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -669,8 +577,8 @@
         `;
         dayTabsContent.appendChild(pane);
       }
-
-      // Add the "Add All Recommendations" button to the section title
+      
+      // Add "Add All Recommendations" button to section title
       const sectionTitle = document.querySelector('#itinerary-section h4');
       if (sectionTitle) {
         sectionTitle.innerHTML = `
@@ -682,7 +590,6 @@
           </div>
         `;
       } else {
-        // If the section header doesn't exist yet, create it
         const header = document.createElement('h4');
         header.className = 'mb-3';
         header.innerHTML = `
@@ -695,25 +602,19 @@
         `;
         itinerarySection.prepend(header);
       }
-      // Add event listeners to the new buttons
       setupRecommendedButtons();
-
-      // Add the event listener for the "Add All" button
       setupAddAllButton();
     }
-
 
     function computePerDayCityMap(plan) {
       const perDayCityMap = [];
       if (plan.cities && plan.cities.length > 0) {
-        // Multi-city plan: repeat each city name for the specified number of days.
         plan.cities.forEach(city => {
           for (let i = 0; i < city.days; i++) {
             perDayCityMap.push(city.name);
           }
         });
       } else {
-        // Single-city plan: compute total days from start and end dates, then repeat the destination.
         const start = new Date(plan.startDate);
         const end = new Date(plan.endDate);
         const totalDays = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
@@ -726,27 +627,15 @@
 
     function setupRecommendedButtons() {
       const buttons = document.querySelectorAll('.recommended-add-btn');
-      
       buttons.forEach(button => {
         button.addEventListener('click', function() {
           const placeId = this.dataset.placeId;
-          const placeName = this.dataset.placeName;
-          const placeAddress = this.dataset.placeAddress;
-          
-          // Find the place in the recommendations
           const place = findPlaceInRecommendations(placeId);
-          
           if (!place) {
             console.error('Place not found in recommendations');
             return;
           }
-          
-          // Check if user is authenticated
-          if (!checkAuthBeforeAddToItinerary(place)) {
-            return; // Stop if not authenticated
-          }
-          
-          // Set up for day selection
+          if (!checkAuthBeforeAddToItinerary(place)) return;
           selectedPlaceForDaySelection = {
             placeId: place.place_id,
             name: place.name,
@@ -754,112 +643,79 @@
             notes: '',
             indoor: document.getElementById('indoor-toggle').checked
           };
-          
-          // Get trip dates to create day options
           fetch('/api/plan')
             .then(response => response.json())
             .then(data => {
               if (data.plan && data.plan.startDate && data.plan.endDate) {
                 const startDate = new Date(data.plan.startDate);
                 const endDate = new Date(data.plan.endDate);
-                
-                // Calculate total days
                 const dayCount = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-                
-                // Update place name in modal
                 document.getElementById('place-name-display').textContent = selectedPlaceForDaySelection.name;
-                
-                // Generate day buttons
                 const buttonsContainer = document.getElementById('day-selection-buttons');
                 buttonsContainer.innerHTML = '';
-                
                 for (let i = 0; i < dayCount; i++) {
                   const currentDay = new Date(startDate);
                   currentDay.setDate(startDate.getDate() + i);
-                  
                   const button = document.createElement('button');
                   button.type = 'button';
                   button.className = 'btn btn-outline-primary';
                   button.innerHTML = `Day ${i + 1} <small>(${currentDay.toLocaleDateString()})</small>`;
                   button.dataset.dayIndex = i;
-                  
                   button.addEventListener('click', function() {
                     addToItineraryForDay(selectedPlaceForDaySelection, i);
                     const daySelectionModal = bootstrap.Modal.getInstance(document.getElementById('daySelectionModal'));
                     daySelectionModal.hide();
                   });
-                  
                   buttonsContainer.appendChild(button);
                 }
-                
-                // Open the day selection modal
                 const daySelectionModal = new bootstrap.Modal(document.getElementById('daySelectionModal'));
                 daySelectionModal.show();
               } else {
-                // Fallback if no date range is set
                 addToItineraryWithoutDay(selectedPlaceForDaySelection);
               }
             })
             .catch(error => {
               console.error('Error loading plan for day selection:', error);
-              // Fallback to default behavior
               addToItineraryWithoutDay(selectedPlaceForDaySelection);
             });
         });
       });
     }
 
-    // Setup the "Add All" button
     function setupAddAllButton() {
       const addAllBtn = document.getElementById('add-all-recommendations');
       if (!addAllBtn) return;
-      
       addAllBtn.addEventListener('click', function() {
-        // Check if user is authenticated
         const authUser = localStorage.getItem('authUser');
         if (!authUser) {
           showLoginRequiredModal();
           return;
         }
-        
-        // Check if the itinerary already has items
         checkItineraryStatus()
           .then(status => {
             if (status.hasItems) {
-              // Show confirmation modal for overwrite
               showOverwriteConfirmationModal();
             } else {
-              // Add all recommendations directly
               addAllRecommendationsToItinerary();
             }
           })
           .catch(error => {
             console.error('Error checking itinerary status:', error);
-            // Show a generic error message
             showNotification('error', 'Failed to check current itinerary. Please try again.');
           });
       });
     }
 
-    // Function to check if the itinerary has items
     function checkItineraryStatus() {
       return fetch('/api/plan')
         .then(response => response.json())
         .then(data => {
-          const hasAttractions = data.plan && 
-                                data.plan.attractions && 
-                                data.plan.attractions.length > 0;
-          
-          return { 
-            hasItems: hasAttractions,
-            plan: data.plan 
-          };
+          const hasAttractions = data.plan && data.plan.attractions && data.plan.attractions.length > 0;
+          return { hasItems: hasAttractions, plan: data.plan };
         });
     }
 
-    // Function to show the overwrite confirmation modal
     function showOverwriteConfirmationModal() {
-      // Create modal HTML if it doesn't exist
       if (!document.getElementById('overwriteConfirmationModal')) {
         const modalHTML = `
           <div class="modal fade" id="overwriteConfirmationModal" tabindex="-1" aria-labelledby="overwriteConfirmationModalLabel" aria-hidden="true">
@@ -887,36 +743,24 @@
             </div>
           </div>
         `;
-        
         const modalContainer = document.createElement('div');
         modalContainer.innerHTML = modalHTML;
         document.body.appendChild(modalContainer);
-        
-        // Set up event listeners for the buttons
         document.getElementById('overwrite-btn').addEventListener('click', function() {
-          // Clear existing itinerary and add all recommendations
           clearItineraryAndAddAll();
           bootstrap.Modal.getInstance(document.getElementById('overwriteConfirmationModal')).hide();
         });
-        
         document.getElementById('add-to-existing-btn').addEventListener('click', function() {
-          // Add recommendations to existing itinerary
           addAllRecommendationsToItinerary();
           bootstrap.Modal.getInstance(document.getElementById('overwriteConfirmationModal')).hide();
         });
       }
-      
-      // Show the modal
       const overwriteModal = new bootstrap.Modal(document.getElementById('overwriteConfirmationModal'));
       overwriteModal.show();
     }
 
-    // Function to clear the itinerary and add all recommendations
     function clearItineraryAndAddAll() {
-      // Create an initial loading notification with progress bar
       const loadingNotification = createNotification('info', 'Preparing to update your itinerary...');
-      
-      // Add a progress bar to the notification
       const progressBar = document.createElement('div');
       progressBar.className = 'progress mt-2';
       progressBar.innerHTML = `
@@ -928,43 +772,28 @@
             aria-valuemax="100">0%</div>
       `;
       loadingNotification.querySelector('.alert').appendChild(progressBar);
-      
-      // First, fetch the current plan
       fetch('/api/plan')
         .then(response => response.json())
         .then(data => {
           if (!data.plan) {
             throw new Error('No active plan found');
           }
-
           const plan = data.plan;
-          
-          // Update notification to show we're starting deletion
           updateNotificationMessage(loadingNotification, 'info', 'Clearing existing attractions...');
-          
-          // If there are no attractions, skip to adding recommendations
           if (!plan.attractions || plan.attractions.length === 0) {
             updateNotificationMessage(loadingNotification, 'info', 'No existing attractions to clear. Adding recommendations...');
             addAllRecommendationsToItinerary();
             loadingNotification.remove();
             return;
           }
-          
-          // Update progress bar to show we're starting with 0%
           updateProgress(progressBar, 0, plan.attractions.length);
-          
-          // Try the fast approach first - deletion via itinerary endpoint
           const fastDeletePromise = fetch(`/api/plan/itinerary/${plan.itineraryId}`, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' }
           });
-          
-          // Set a timeout to fall back to sequential deletion if the fast approach takes too long
           const timeoutPromise = new Promise((_, reject) => {
             setTimeout(() => reject(new Error('Delete operation timeout')), 1000);
           });
-          
-          // Race between the fast delete and the timeout
           Promise.race([fastDeletePromise, timeoutPromise])
             .then(response => {
               if (!response.ok) {
@@ -973,19 +802,12 @@
               return response.json();
             })
             .then(() => {
-              // Successfully deleted via the fast approach
-              console.log('Successfully deleted itinerary via fast approach');
-              
-              // Update notification to show success and next steps
               updateNotificationMessage(loadingNotification, 'success', 'Successfully cleared all attractions! Adding recommendations...');
-              
-              // Create a new empty itinerary with the same basic info
               const newItineraryData = {
                 destination: plan.destination,
                 startDate: plan.startDate,
                 endDate: plan.endDate
               };
-              
               return fetch('/api/plan', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -999,25 +821,18 @@
               return response.json();
             })
             .then(() => {
-              // Now add all recommendations
               addAllRecommendationsToItinerary();
               loadingNotification.remove();
             })
             .catch(error => {
               console.log('Fast delete approach failed, falling back to sequential deletion:', error);
-              
-              // Update notification to show we're switching to sequential deletion
               updateNotificationMessage(loadingNotification, 'info', 'Clearing existing attractions...');
-              
-              // Fall back to sequential deletion with the progress bar
               deleteAttractionsSequentially(plan.attractions, 0, plan.attractions.length, progressBar, loadingNotification);
             });
         })
         .catch(error => {
           console.error('Error fetching plan:', error);
           updateNotificationWithResult(loadingNotification, 'error', 'Failed to fetch current itinerary. Please try again.');
-          
-          // Automatically remove error notification after 1 seconds
           setTimeout(() => {
             if (loadingNotification.parentNode) {
               loadingNotification.remove();
@@ -1026,57 +841,39 @@
         });
     }
 
-    // Sequential deletion function with progress bar
     function deleteAttractionsSequentially(attractions, index, total, progressBar, notification) {
-      // Base case: all attractions processed
       if (!attractions || index >= attractions.length) {
         console.log('Finished deleting all attractions sequentially');
-        
-        // Update notification
         updateNotificationMessage(notification, 'success', 'Successfully cleared all attractions! Adding recommendations...');
-        
-        // All attractions deleted, now add recommendations
         addAllRecommendationsToItinerary();
         return;
       }
-      
-      // Update progress bar
       updateProgress(progressBar, index, total);
-      
       const attraction = attractions[index];
-      
-      // Delete current attraction
       fetch(`/api/plan/places/${attraction.id}?category=attraction`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        }
+        headers: { 'Content-Type': 'application/json' }
       })
       .then(response => {
         if (!response.ok) {
           console.warn(`Warning: Failed to delete attraction ${attraction.id}, continuing anyway`);
         }
-        return response.json().catch(() => ({})); // Handle if response isn't JSON
+        return response.json().catch(() => ({}));
       })
       .then(() => {
         console.log(`Deleted attraction ${index + 1}/${total}`);
-        
-        // Process next attraction with a slight delay to avoid race conditions
         setTimeout(() => {
           deleteAttractionsSequentially(attractions, index + 1, total, progressBar, notification);
         }, 50);
       })
       .catch(error => {
         console.error(`Error deleting attraction ${attraction.id}:`, error);
-        
-        // Continue with next attraction even if this one fails
         setTimeout(() => {
           deleteAttractionsSequentially(attractions, index + 1, total, progressBar, notification);
         }, 50);
       });
     }
 
-    // Helper function to update progress bar
     function updateProgress(progressBar, current, total) {
       const percentage = Math.round((current / total) * 100);
       const progressElement = progressBar.querySelector('.progress-bar');
@@ -1085,9 +882,7 @@
       progressElement.textContent = `${percentage}%`;
     }
 
-    // Helper function to create a notification that doesn't disappear
     function createNotification(type, message) {
-      // Map type to Bootstrap alert class
       const alertClass = {
         'success': 'alert-success',
         'error': 'alert-danger',
@@ -1095,7 +890,6 @@
         'info': 'alert-info'
       }[type] || 'alert-info';
       
-      // Map type to Bootstrap icon
       const iconClass = {
         'success': 'bi-check-circle-fill',
         'error': 'bi-exclamation-triangle-fill',
@@ -1103,7 +897,6 @@
         'info': 'bi-info-circle-fill'
       }[type] || 'bi-info-circle-fill';
       
-      // Create notification element
       const alertContainer = document.createElement('div');
       alertContainer.className = 'position-fixed top-0 start-0 end-0 p-3 text-center';
       alertContainer.style.zIndex = '5000';
@@ -1112,12 +905,10 @@
           <i class="bi ${iconClass} me-2"></i>${message}
         </div>
       `;
-      
       document.body.appendChild(alertContainer);
       return alertContainer;
     }
 
-    // Function to update the message in an existing notification
     function updateNotificationMessage(notificationElement, type, message) {
       const alertClass = {
         'success': 'alert-success',
@@ -1135,21 +926,14 @@
       
       const alertElement = notificationElement.querySelector('.alert');
       if (!alertElement) return;
-      
-      // Change alert class
       alertElement.className = `alert ${alertClass} fade show`;
-      
-      // Update message but keep any existing child elements like progress bars
       const progressBar = alertElement.querySelector('.progress');
       alertElement.innerHTML = `<i class="bi ${iconClass} me-2"></i>${message}`;
-      
-      // Add back the progress bar if it existed
       if (progressBar) {
         alertElement.appendChild(progressBar);
       }
     }
 
-    // Helper function to update an existing notification result
     function updateNotificationWithResult(notificationElement, type, message) {
       const alertClass = {
         'success': 'alert-success',
@@ -1167,22 +951,13 @@
       
       const alertElement = notificationElement.querySelector('.alert');
       if (!alertElement) return;
-      
-      // Remove progress bar if it exists
       const progressBar = alertElement.querySelector('.progress');
       if (progressBar) {
         progressBar.remove();
       }
-      
-      // Change alert class
       alertElement.className = `alert ${alertClass} fade show`;
-      
-      // Change icon and message
       alertElement.innerHTML = `<i class="bi ${iconClass} me-2"></i>${message}`;
-      
-      // For success messages, set a timer to fade out
       if (type === 'success') {
-        // Keep the notification visible for a bit longer
         setTimeout(() => {
           alertElement.classList.remove('show');
           setTimeout(() => {
@@ -1194,243 +969,7 @@
       }
     }
 
-    // Function to add all recommendations to the itinerary
-    // Optimized function to add all recommendations to the itinerary
-    function addAllRecommendationsToItinerary() {
-      // Collect all recommendations
-      const allRecommendations = [];
-      
-      // Gather recommendations from each day
-      Object.entries(itineraryRecommendations).forEach(([dayIndex, places]) => {
-        console.log(`Day ${dayIndex} has ${places ? places.length : 0} recommendations`);
-        
-        if (!places || !Array.isArray(places)) {
-          console.error(`Invalid places for day ${dayIndex}:`, places);
-          return;
-        }
-        
-        places.forEach(place => {
-          // Check if place is valid
-          if (!place || typeof place !== 'object') {
-            console.error('Invalid place object:', place);
-            return;
-          }
-          
-          // Ensure required fields are present
-          if (!place.place_id) {
-            console.error('Missing place_id for place:', place);
-            return; // Skip this place
-          }
-          
-          allRecommendations.push({
-            placeId: place.place_id,
-            name: place.name || 'Unknown Place',
-            address: place.formatted_address || '',
-            category: 'attraction',
-            notes: '',
-            indoor: document.getElementById('indoor-toggle').checked,
-            dayIndex: parseInt(dayIndex)
-          });
-        });
-      });
-      
-      console.log('Total recommendations to add:', allRecommendations.length);
-      
-      if (allRecommendations.length === 0) {
-        showNotification('warning', 'No recommendations available to add.');
-        return;
-      }
-      
-      // Show initial loading notification with progress bar
-      const initialNotification = createNotification('info', `Adding ${allRecommendations.length} attractions to your itinerary...`);
-      
-      // Create a progress bar in the notification
-      const progressBar = document.createElement('div');
-      progressBar.className = 'progress mt-2';
-      progressBar.innerHTML = `
-        <div class="progress-bar progress-bar-striped progress-bar-animated" 
-            role="progressbar" 
-            style="width: 0%" 
-            aria-valuenow="0" 
-            aria-valuemin="0" 
-            aria-valuemax="100">0%</div>
-      `;
-      initialNotification.querySelector('.alert').appendChild(progressBar);
-      
-      // Process attractions one by one for maximum reliability
-      addAttractionsOneByOne(allRecommendations, progressBar, initialNotification);
-      
-      // Function to add attractions one by one with progress bar
-      function addAttractionsOneByOne(attractions, progressBar, notification) {
-        let currentIndex = 0;
-        let successCount = 0;
-        let errorCount = 0;
-        
-        function addNext() {
-          if (currentIndex >= attractions.length) {
-            // All done
-            console.log(`Completed adding attractions. Success: ${successCount}, Errors: ${errorCount}`);
-            
-            // Update notification with success message
-            updateNotificationWithResult(notification, 'success', 
-              `Successfully added ${successCount} attractions to your itinerary!`);
-            
-            // Reload the page
-            setTimeout(() => {
-              window.location.reload();
-            }, 500);
-            return;
-          }
-          
-          const attraction = attractions[currentIndex];
-          
-          // Log progress
-          console.log(`Adding ${currentIndex + 1}/${attractions.length}: ${attraction.name}`);
-          
-          // Update progress bar
-          updateProgress(progressBar, currentIndex, attractions.length);
-          
-          // Add the attraction
-          fetch('/api/plan/places', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(attraction)
-          })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error(`Server error ${response.status}: ${response.statusText}`);
-            }
-            return response.json();
-          })
-          .then(data => {
-            if (data.success) {
-              successCount++;
-            } else if (data.duplicate) {
-              console.log(`Attraction already exists: ${attraction.name}`);
-            } else {
-              console.warn(`Unexpected response for ${attraction.name}:`, data);
-            }
-            
-            // Move to next attraction
-            currentIndex++;
-            
-            // Update progress bar
-            updateProgress(progressBar, currentIndex, attractions.length);
-            
-            // Wait a bit before next request to avoid overloading the server
-            setTimeout(addNext, 50);
-          })
-          .catch(error => {
-            errorCount++;
-            console.error(`Error adding ${attraction.name}:`, error);
-            
-            // Continue to next attraction even if this one failed
-            currentIndex++;
-            
-            // Update progress bar even on error
-            updateProgress(progressBar, currentIndex, attractions.length);
-            
-            setTimeout(addNext, 50);
-          });
-        }
-        
-        // Start the process
-        addNext();
-      }
-      
-      // Helper function to update progress bar
-      function updateProgress(progressBar, current, total) {
-        const percentage = Math.round((current / total) * 100);
-        const progressElement = progressBar.querySelector('.progress-bar');
-        progressElement.style.width = `${percentage}%`;
-        progressElement.setAttribute('aria-valuenow', percentage);
-        progressElement.textContent = `${percentage}%`;
-      }
-      
-      // Helper function to create a notification that doesn't disappear
-      function createNotification(type, message) {
-        // Map type to Bootstrap alert class
-        const alertClass = {
-          'success': 'alert-success',
-          'error': 'alert-danger',
-          'warning': 'alert-warning',
-          'info': 'alert-info'
-        }[type] || 'alert-info';
-        
-        // Map type to Bootstrap icon
-        const iconClass = {
-          'success': 'bi-check-circle-fill',
-          'error': 'bi-exclamation-triangle-fill',
-          'warning': 'bi-exclamation-circle-fill',
-          'info': 'bi-info-circle-fill'
-        }[type] || 'bi-info-circle-fill';
-        
-        // Create notification element
-        const alertContainer = document.createElement('div');
-        alertContainer.className = 'position-fixed top-0 start-0 end-0 p-3 text-center';
-        alertContainer.style.zIndex = '5000';
-        alertContainer.innerHTML = `
-          <div class="alert ${alertClass} fade show" role="alert">
-            <i class="bi ${iconClass} me-2"></i>${message}
-          </div>
-        `;
-        
-        document.body.appendChild(alertContainer);
-        return alertContainer;
-      }
-      
-      // Helper function to update an existing notification
-      function updateNotificationWithResult(notificationElement, type, message) {
-        const alertClass = {
-          'success': 'alert-success',
-          'error': 'alert-danger',
-          'warning': 'alert-warning',
-          'info': 'alert-info'
-        }[type] || 'alert-info';
-        
-        const iconClass = {
-          'success': 'bi-check-circle-fill',
-          'error': 'bi-exclamation-triangle-fill',
-          'warning': 'bi-exclamation-circle-fill',
-          'info': 'bi-info-circle-fill'
-        }[type] || 'bi-info-circle-fill';
-        
-        const alertElement = notificationElement.querySelector('.alert');
-        if (!alertElement) return;
-        
-        // Remove progress bar if it exists
-        const progressBar = alertElement.querySelector('.progress');
-        if (progressBar) {
-          progressBar.remove();
-        }
-        
-        // Change alert class
-        alertElement.className = `alert ${alertClass} fade show`;
-        
-        // Change icon and message
-        alertElement.innerHTML = `<i class="bi ${iconClass} me-2"></i>${message}`;
-        
-        // For success messages, set a timer to fade out
-        if (type === 'success') {
-          // Keep the notification visible for a bit longer
-          setTimeout(() => {
-            alertElement.classList.remove('show');
-            setTimeout(() => {
-              if (notificationElement.parentNode) {
-                notificationElement.remove();
-              }
-            }, 50);
-          }, 500);
-        }
-      }
-    }
-
-
-    // Utility function to show notifications
     function showNotification(type, message) {
-      // Map type to Bootstrap alert class
       const alertClass = {
         'success': 'alert-success',
         'error': 'alert-danger',
@@ -1438,7 +977,6 @@
         'info': 'alert-info'
       }[type] || 'alert-info';
       
-      // Map type to Bootstrap icon
       const iconClass = {
         'success': 'bi-check-circle-fill',
         'error': 'bi-exclamation-triangle-fill',
@@ -1459,7 +997,6 @@
       alertContainer.innerHTML = alertHtml;
       document.body.appendChild(alertContainer);
       
-      // Auto remove after 0.5 seconds for success/info, 1 seconds for warnings/errors
       const timeout = (type === 'success' || type === 'info') ? 500 : 1000;
       
       setTimeout(() => {
@@ -1470,7 +1007,6 @@
       }, timeout);
     }
 
-    // Helper function to find a place in recommendations by ID
     function findPlaceInRecommendations(placeId) {
       for (const dayIndex in itineraryRecommendations) {
         for (const place of itineraryRecommendations[dayIndex]) {
@@ -1482,170 +1018,198 @@
       return null;
     }
 
-    // addToItinerary function
+    function addToItineraryForDay(place, dayIndex) {
+      const payload = {
+        placeId: place.placeId,
+        name: place.name,
+        address: place.address,
+        category: 'attraction',
+        notes: place.notes,
+        indoor: place.indoor,
+        dayIndex: dayIndex
+      };
+      
+      fetch('/api/plan/places', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(response => response.json())
+      .then(data => {
+        showResultNotification(data, place.name, dayIndex);
+      })
+      .catch(error => {
+        console.error('Error adding to itinerary:', error);
+        alert('Error adding to itinerary. Please try again later.');
+      });
+    }
+
+    function addToItineraryWithoutDay(place) {
+      fetch('/api/plan/places', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          placeId: place.placeId,
+          name: place.name,
+          address: place.address,
+          category: 'attraction',
+          notes: place.notes,
+          indoor: place.indoor
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        showResultNotification(data, place.name);
+      })
+      .catch(error => {
+        console.error('Error adding to itinerary:', error);
+        alert('Error adding to itinerary. Please try again later.');
+      });
+    }
+
+    function showResultNotification(data, placeName, dayIndex) {
+      let alertClass = 'alert-success';
+      let dayMessage = dayIndex !== undefined ? ` for Day ${dayIndex + 1}` : '';
+      let alertMessage = `<strong>Success!</strong> "${placeName}" added to your itinerary${dayMessage}.`;
+      
+      if (data.duplicate) {
+        alertClass = 'alert-warning';
+        alertMessage = `<strong>Note:</strong> ${data.message}`;
+      }
+      
+      const alertHtml = `
+        <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+          ${alertMessage}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      `;
+      
+      const alertContainer = document.createElement('div');
+      alertContainer.className = 'position-fixed top-0 start-0 end-0 p-3 text-center';
+      alertContainer.style.zIndex = '5000';
+      alertContainer.innerHTML = alertHtml;
+      document.body.appendChild(alertContainer);
+      
+      setTimeout(() => {
+        if (alertContainer.parentNode) {
+          alertContainer.querySelector('.alert').classList.remove('show');
+          setTimeout(() => alertContainer.remove(), 300);
+        }
+      }, 3000);
+    }
+
     function addToItinerary(placeId, dayIndex) {
       const place = itineraryRecommendations[dayIndex].find(p => p.place_id === placeId);
       if (!place) return;
+      if (!checkAuthBeforeAddToItinerary(place)) return;
+      fetch('/api/plan/places', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          placeId: place.place_id,
+          name: place.name,
+          address: place.formatted_address,
+          category: 'attraction',
+          notes: '',
+          indoor: document.getElementById('indoor-toggle').checked,
+          dayIndex: dayIndex
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        showResultNotification(data, place.name, dayIndex);
+      })
+      .catch(error => {
+        console.error('Error adding to itinerary:', error);
+        alert('Error adding to itinerary. Please try again later.');
+      });
+    }
 
-      // Check if user is authenticated
-      if (!checkAuthBeforeAddToItinerary(place)) {
-        return; // Stop if not authenticated
-      }
-
-      // Set up for day selection
-      selectedPlaceForDaySelection = {
-        placeId: place.place_id,
-        name: place.name,
-        address: place.formatted_address || '',
-        notes: '',
-        indoor: document.getElementById('indoor-toggle').checked
-      };
-      
-      // Get trip dates to create day options
+    function loadCurrentPlan() {
       fetch('/api/plan')
         .then(response => response.json())
         .then(data => {
-          if (data.plan && data.plan.startDate && data.plan.endDate) {
-            const startDate = new Date(data.plan.startDate);
-            const endDate = new Date(data.plan.endDate);
-            
-            // Calculate total days
-            const dayCount = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-            
-            // Update place name in modal
-            document.getElementById('place-name-display').textContent = selectedPlaceForDaySelection.name;
-            
-            // Generate day buttons
-            const buttonsContainer = document.getElementById('day-selection-buttons');
-            buttonsContainer.innerHTML = '';
-            
-            for (let i = 0; i < dayCount; i++) {
-              const currentDay = new Date(startDate);
-              currentDay.setDate(startDate.getDate() + i);
-              
-              const button = document.createElement('button');
-              button.type = 'button';
-              button.className = 'btn btn-outline-primary';
-              button.innerHTML = `Day ${i + 1} <small>(${currentDay.toLocaleDateString()})</small>`;
-              button.dataset.dayIndex = i;
-              
-              button.addEventListener('click', function() {
-                addToItineraryForDay(selectedPlaceForDaySelection, i);
-                const daySelectionModal = bootstrap.Modal.getInstance(document.getElementById('daySelectionModal'));
-                daySelectionModal.hide();
-              });
-              
-              buttonsContainer.appendChild(button);
+          if (data.plan && data.plan.destination) {
+            currentPlan = data.plan;
+            if (!currentPlan.perDayCityMap) {
+              currentPlan.perDayCityMap = computePerDayCityMap(currentPlan);
+              console.log('Computed perDayCityMap:', currentPlan.perDayCityMap);
             }
-            
-            // Open the day selection modal
-            const daySelectionModal = new bootstrap.Modal(document.getElementById('daySelectionModal'));
-            daySelectionModal.show();
+            document.getElementById('destination-display').textContent = currentPlan.destination;
+            document.getElementById('date-display').textContent = formatDateRange(currentPlan.startDate, currentPlan.endDate);
+            document.getElementById('current-plan-info').style.display = 'block';
+            document.getElementById('no-plan-alert').style.display = 'none';
+            // Pre-generate tabs (they may be empty until recommendations load)
+            generateItineraryTabs();
+            const dayCount = currentPlan.perDayCityMap.length;
+            const fetchPromises = [];
+            for (let i = 0; i < dayCount; i++) {
+              const city = currentPlan.perDayCityMap[i];
+              const promise = fetch(`/api/places?location=${encodeURIComponent(city)}&type=attraction`)
+                .then(res => res.json())
+                .then(result => {
+                  itineraryRecommendations[i] = result.results || [];
+                });
+              fetchPromises.push(promise);
+            }
+            Promise.all(fetchPromises).then(() => {
+              // Remove duplicate recommended attractions for the same city across days.
+              const cityUsed = {};
+              for (let i = 0; i < currentPlan.perDayCityMap.length; i++) {
+                const city = currentPlan.perDayCityMap[i];
+                if (!cityUsed[city]) {
+                  cityUsed[city] = new Set();
+                }
+                itineraryRecommendations[i] = (itineraryRecommendations[i] || []).filter(place => {
+                  return !cityUsed[city].has(place.place_id);
+                });
+                itineraryRecommendations[i] = filterRecommendations(itineraryRecommendations[i], 5, 5);
+                itineraryRecommendations[i].forEach(place => {
+                  cityUsed[city].add(place.place_id);
+                });
+              }
+              generateItineraryTabs();
+              if (currentPlan.perDayCityMap.length > 0) {
+                const firstCity = currentPlan.perDayCityMap[0];
+                const geocoder = new google.maps.Geocoder();
+                geocoder.geocode({ address: firstCity }, (results, status) => {
+                  if (status === 'OK' && results[0]) {
+                    map.setCenter(results[0].geometry.location);
+                    map.setZoom(12);
+                  }
+                });
+                originalSearchAttractions('', firstCity);
+              }
+            });
+            fetch(`/api/weather?city=${encodeURIComponent(currentPlan.destination)}`)
+              .then(res => res.json())
+              .then(weather => {
+                rainDays = weather.rainDays || [];
+              })
+              .catch(err => {
+                console.error('Failed to fetch weather:', err);
+              });
           } else {
-            // Fallback if no date range is set
-            addToItineraryWithoutDay(selectedPlaceForDaySelection);
+            document.getElementById('no-plan-alert').style.display = 'block';
+            document.getElementById('current-plan-info').style.display = 'none';
           }
         })
         .catch(error => {
-          console.error('Error loading plan for day selection:', error);
-          // Fallback to default behavior
-          addToItineraryWithoutDay(selectedPlaceForDaySelection);
+          console.error('Error loading plan:', error);
+          document.getElementById('no-plan-alert').style.display = 'block';
         });
     }
-        
-    // Load current plan
-    function loadCurrentPlan() {
-  fetch('/api/plan')
-    .then(response => response.json())
-    .then(data => {
-      if (data.plan && data.plan.destination) {
-        currentPlan = data.plan;
-        
-        // Compute perDayCityMap if not provided by the backend.
-        if (!currentPlan.perDayCityMap) {
-          currentPlan.perDayCityMap = computePerDayCityMap(currentPlan);
-          console.log('Computed perDayCityMap:', currentPlan.perDayCityMap);
-        }
-        
-        // Update UI with plan info.
-        document.getElementById('destination-display').textContent = currentPlan.destination;
-        document.getElementById('date-display').textContent = formatDateRange(currentPlan.startDate, currentPlan.endDate);
-        document.getElementById('current-plan-info').style.display = 'block';
-        document.getElementById('no-plan-alert').style.display = 'none';
-        
-        // Initially generate tabs (they may be empty until recommendations load).
-        generateItineraryTabs();
-        
-        // For each day, fetch recommendations using the city name.
-        const dayCount = currentPlan.perDayCityMap.length;
-        const fetchPromises = [];
-        for (let i = 0; i < dayCount; i++) {
-          const city = currentPlan.perDayCityMap[i];
-          const promise = fetch(`/api/places?location=${encodeURIComponent(city)}&type=attraction`)
-            .then(res => res.json())
-            .then(result => {
-              itineraryRecommendations[i] = result.results || [];
-            });
-          fetchPromises.push(promise);
-        }
-        
-        Promise.all(fetchPromises).then(() => {
-          // Once all recommendations are fetched, regenerate the tabs.
-          generateItineraryTabs();
-          
-          // Re-center the map on the first day's city.
-          if (currentPlan.perDayCityMap.length > 0) {
-            const firstCity = currentPlan.perDayCityMap[0];
-            const geocoder = new google.maps.Geocoder();
-            geocoder.geocode({ address: firstCity }, (results, status) => {
-              if (status === 'OK' && results[0]) {
-                map.setCenter(results[0].geometry.location);
-                map.setZoom(12);
-              }
-            });
-            // Optionally run a search for the first city's attractions.
-            originalSearchAttractions('', firstCity);
-          }
-        });
-        
-        // Optionally load weather info.
-        fetch(`/api/weather?city=${encodeURIComponent(currentPlan.destination)}`)
-          .then(res => res.json())
-          .then(weather => {
-            rainDays = weather.rainDays || [];
-          })
-          .catch(err => {
-            console.error('Failed to fetch weather:', err);
-          });
-      } else {
-        document.getElementById('no-plan-alert').style.display = 'block';
-        document.getElementById('current-plan-info').style.display = 'none';
-      }
-    })
-    .catch(error => {
-      console.error('Error loading plan:', error);
-      document.getElementById('no-plan-alert').style.display = 'block';
-    });
-}
-    // Auth functions for Add to Itenerary
-    // This checks if user is logged in before allowing add to itinerary
+
     function checkAuthBeforeAddToItinerary(placeData) {
-      // Check if the user is authenticated
       const authUser = localStorage.getItem('authUser');
-      
       if (!authUser) {
-        // User is not authenticated, show login prompt
         showLoginRequiredModal();
         return false;
       }
-      
-      // User is authenticated, proceed with adding to itinerary
       return true;
     }
 
-    // Function to show login required modal
     function showLoginRequiredModal() {
-      // Show a notification at the top of the page
       const notificationHtml = `
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
           <i class="bi bi-exclamation-triangle-fill me-2"></i>
@@ -1653,22 +1217,17 @@
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
       `;
-      
       const notificationContainer = document.createElement('div');
       notificationContainer.className = 'position-fixed top-0 start-0 end-0 p-3 text-center';
       notificationContainer.style.zIndex = '5000';
       notificationContainer.innerHTML = notificationHtml;
       document.body.appendChild(notificationContainer);
-      
-      // Auto remove after showing the modal
       setTimeout(() => {
         if (notificationContainer.parentNode) {
           notificationContainer.querySelector('.alert').classList.remove('show');
           setTimeout(() => notificationContainer.remove(), 300);
         }
       }, 5000);
-      
-      // Create modal HTML
       const modalHtml = `
         <div class="modal fade" id="loginRequiredModal" tabindex="-1" aria-labelledby="loginRequiredModalLabel" aria-hidden="true">
           <div class="modal-dialog">
@@ -1693,50 +1252,33 @@
           </div>
         </div>
       `;
-      
-      // Append modal to body if it doesn't exist
       if (!document.getElementById('loginRequiredModal')) {
         const modalContainer = document.createElement('div');
         modalContainer.innerHTML = modalHtml;
         document.body.appendChild(modalContainer.firstChild);
       }
-      
-      // Show the modal with a slight delay to ensure notification is seen first
       setTimeout(() => {
         const loginModal = new bootstrap.Modal(document.getElementById('loginRequiredModal'));
         loginModal.show();
       }, 500);
     }
 
-    
-    // Display search results
     function displayResults(places) {
       const resultsContainer = document.getElementById('results-container');
       resultsContainer.innerHTML = '';
-      
-      // Create results list
       places.forEach((place, index) => {
-        // Create marker
         const marker = new google.maps.Marker({
           position: place.geometry.location,
           map: map,
           title: place.name,
           animation: google.maps.Animation.DROP
         });
-        
-        // Add to markers array
         markers.push(marker);
-        
-        // Add click listener
         marker.addListener('click', () => showPlaceDetails(place));
-        
-        // Create result card
         const col = document.createElement('div');
-        col.className = 'col-md-6 col-lg-4'; // 2 per row on md, 3 per row on lg+
-
+        col.className = 'col-md-6 col-lg-4';
         const card = document.createElement('div');
-        card.className = 'card attraction-card h-100'; // keep styling
-
+        card.className = 'card attraction-card h-100';
         card.innerHTML = `
           <div class="attraction-image" style="background-image: url('https://source.unsplash.com/300x200/?${encodeURIComponent(place.name)}')"></div>
           <div class="card-body">
@@ -1748,49 +1290,17 @@
             <button class="btn btn-sm btn-outline-primary view-details-btn">View Details</button>
           </div>
         `;
-
-
         col.appendChild(card);
-
-
-        
-        // Add click event to the button
         card.querySelector('.view-details-btn').addEventListener('click', () => {
           showPlaceDetails(place);
         });
-        
         resultsContainer.appendChild(col);
       });
     }
 
-    function computePerDayCityMap(plan) {
-      const perDayCityMap = [];
-      if (plan.cities && plan.cities.length > 0) {
-        plan.cities.forEach(city => {
-          for (let i = 0; i < city.days; i++) {
-            perDayCityMap.push(city.name);
-          }
-        });
-      } else {
-        // If it's a single-city plan, repeat the destination for each trip day.
-        const start = new Date(plan.startDate);
-        const end = new Date(plan.endDate);
-        const totalDays = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
-        for (let i = 0; i < totalDays; i++) {
-          perDayCityMap.push(plan.destination);
-        }
-      }
-      return perDayCityMap;
-    }
-    
-    // Show place details in modal
     function showPlaceDetails(place) {
       selectedPlace = place;
-      
-      // Update modal title
       document.getElementById('modal-title').textContent = place.name;
-      
-      // Show loading in modal
       document.getElementById('modal-body').innerHTML = `
         <div class="text-center my-4">
           <div class="spinner-border text-primary" role="status">
@@ -1799,21 +1309,14 @@
           <p class="mt-2">Loading details...</p>
         </div>
       `;
-      
-      // Show modal
       attractionModal.show();
-      
-      // Fetch place details
       fetch(`/api/places/${place.place_id}`)
         .then(response => response.json())
         .then(data => {
           if (data.status === 'OK' && data.result) {
             const details = data.result;
-            
-            // Update modal content
             document.getElementById('modal-body').innerHTML = `
               <div class="place-photo" style="background-image: url('https://source.unsplash.com/600x400/?${encodeURIComponent(place.name)}'); height: 200px; background-size: cover; background-position: center;"></div>
-              
               <div class="mb-4">
                 <h4>${details.name}</h4>
                 <p>
@@ -1823,14 +1326,12 @@
                 ${details.formatted_phone_number ? `<p><strong>Phone:</strong> ${details.formatted_phone_number}</p>` : ''}
                 ${details.website ? `<p><strong>Website:</strong> <a href="${details.website}" target="_blank">${details.website}</a></p>` : ''}
               </div>
-              
               ${details.description ? `
                 <div class="mb-4">
                   <h5>About</h5>
                   <p>${details.description}</p>
                 </div>
               ` : ''}
-              
               ${details.opening_hours && details.opening_hours.weekday_text ? `
                 <div class="mb-4">
                   <h5>Opening Hours</h5>
@@ -1839,7 +1340,6 @@
                   </ul>
                 </div>
               ` : ''}
-              
               <div class="mb-3">
                 <h5>Add Notes</h5>
                 <textarea id="place-notes" class="form-control" rows="3" placeholder="Add any notes about this place..."></textarea>
@@ -1871,32 +1371,22 @@
           `;
         });
     }
-    
-    // Clear all markers from the map
+
     function clearMarkers() {
       markers.forEach(marker => marker.setMap(null));
       markers = [];
     }
-    
-    // Event listeners
+
     document.addEventListener('DOMContentLoaded', function() {
-      // Form submission
       document.getElementById('search-form').addEventListener('submit', function(e) {
         e.preventDefault();
         const keyword = document.getElementById('keyword').value;
         originalSearchAttractions(keyword);
       });
       
-      // Save attraction button
       document.getElementById('save-attraction-btn').addEventListener('click', function() {
         if (!selectedPlace) return;
-        
-        // Check if user is authenticated
-        if (!checkAuthBeforeAddToItinerary(selectedPlace)) {
-          return; // Stop if user is not authenticated
-        }
-        
-        // Set the selected place for day selection
+        if (!checkAuthBeforeAddToItinerary(selectedPlace)) return;
         selectedPlaceForDaySelection = {
           placeId: selectedPlace.place_id,
           name: selectedPlace.name,
@@ -1904,261 +1394,74 @@
           notes: document.getElementById('place-notes').value,
           indoor: document.getElementById('indoor-toggle').checked
         };
-        
-        // Close the details modal
         attractionModal.hide();
-        
-        // Get trip dates to create day options
         fetch('/api/plan')
           .then(response => response.json())
           .then(data => {
             if (data.plan && data.plan.startDate && data.plan.endDate) {
               const startDate = new Date(data.plan.startDate);
               const endDate = new Date(data.plan.endDate);
-              
-              // Calculate total days
               const dayCount = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-              
-              // Update place name in modal
               document.getElementById('place-name-display').textContent = selectedPlaceForDaySelection.name;
-              
-              // Generate day buttons
               const buttonsContainer = document.getElementById('day-selection-buttons');
               buttonsContainer.innerHTML = '';
-              
               for (let i = 0; i < dayCount; i++) {
                 const currentDay = new Date(startDate);
                 currentDay.setDate(startDate.getDate() + i);
-                
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.className = 'btn btn-outline-primary';
                 button.innerHTML = `Day ${i + 1} <small>(${currentDay.toLocaleDateString()})</small>`;
                 button.dataset.dayIndex = i;
-                
                 button.addEventListener('click', function() {
                   addToItineraryForDay(selectedPlaceForDaySelection, i);
                   const daySelectionModal = bootstrap.Modal.getInstance(document.getElementById('daySelectionModal'));
                   daySelectionModal.hide();
                 });
-                
                 buttonsContainer.appendChild(button);
               }
-              
-              // Open the day selection modal
               const daySelectionModal = new bootstrap.Modal(document.getElementById('daySelectionModal'));
               daySelectionModal.show();
             } else {
-              // Fallback if no date range is set
               addToItineraryWithoutDay(selectedPlaceForDaySelection);
             }
           })
           .catch(error => {
             console.error('Error loading plan for day selection:', error);
-            // Fallback to default behavior
             addToItineraryWithoutDay(selectedPlaceForDaySelection);
           });
       });
     });
+    
     document.getElementById('indoor-toggle').addEventListener('change', (e) => {
-  const keywordInput = document.getElementById('keyword');
-
-  if (e.target.checked) {
-    keywordInput.value = 'indoors';
-  } else {
-    keywordInput.value = '';
-  }
-
-  originalSearchAttractions(keywordInput.value);
-});
-
-
+      const keywordInput = document.getElementById('keyword');
+      if (e.target.checked) {
+        keywordInput.value = 'indoors';
+      } else {
+        keywordInput.value = '';
+      }
+      originalSearchAttractions(keywordInput.value);
+    });
   </script>
   
-  
-  <!-- Load Google Maps API -->
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA50XLfiUNfyrpqF_iRrCT1mcNzRJyePFg&callback=initMap" async defer></script>
-
-
-  <!-- Weather Stuff-->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="/js/weather.js"></script>
-<script>
-  // Fetch current plan
-  fetch('/api/plan')
-    .then(res => res.json())
-    .then(data => {
-      if (data.plan && data.plan.destination) {
-        const { destination, startDate, endDate } = data.plan;
-        fetch(`/api/weather?city=${encodeURIComponent(destination)}`)
-          .then(res => res.json())
-          .then(weatherData => {
-            showWeatherForDateRange(weatherData.forecast, startDate, endDate, '.main-content');
-          });
-      }
-    })
-    .catch(err => console.error('Weather load error:', err));
-</script>
-
-
-<script>
-
-// Function to add to itinerary for a specific day
-function addToItineraryForDay(place, dayIndex) {
-  // Add day information to the request
-  const payload = {
-    placeId: place.placeId,
-    name: place.name,
-    address: place.address,
-    category: 'attraction',
-    notes: place.notes,
-    indoor: place.indoor,
-    dayIndex: dayIndex  // Include the selected day index
-  };
-  
-  fetch('/api/plan/places', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload)
-  })
-  .then(response => response.json())
-  .then(data => {
-    showResultNotification(data, place.name, dayIndex);
-  })
-  .catch(error => {
-    console.error('Error adding to itinerary:', error);
-    alert('Error adding to itinerary. Please try again later.');
-  });
-}
-
-// Fallback function without day selection
-function addToItineraryWithoutDay(place) {
-  fetch('/api/plan/places', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      placeId: place.placeId,
-      name: place.name,
-      address: place.address,
-      category: 'attraction',
-      notes: place.notes,
-      indoor: place.indoor
-    })
-  })
-  .then(response => response.json())
-  .then(data => {
-    showResultNotification(data, place.name);
-  })
-  .catch(error => {
-    console.error('Error adding to itinerary:', error);
-    alert('Error adding to itinerary. Please try again later.');
-  });
-}
-
-// Show notification after adding to itinerary
-function showResultNotification(data, placeName, dayIndex) {
-  let alertClass = 'alert-success';
-  let dayMessage = dayIndex !== undefined ? ` for Day ${dayIndex + 1}` : '';
-  let alertMessage = `<strong>Success!</strong> "${placeName}" added to your itinerary${dayMessage}.`;
-  
-  if (data.duplicate) {
-    alertClass = 'alert-warning';
-    alertMessage = `<strong>Note:</strong> ${data.message}`;
-  }
-  
-  const alertHtml = `
-    <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
-      ${alertMessage}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  `;
-  
-  const alertContainer = document.createElement('div');
-  alertContainer.className = 'position-fixed top-0 start-0 end-0 p-3 text-center';
-  alertContainer.style.zIndex = '5000';
-  alertContainer.innerHTML = alertHtml;
-  document.body.appendChild(alertContainer);
-  
-  setTimeout(() => {
-    if (alertContainer.parentNode) {
-      alertContainer.querySelector('.alert').classList.remove('show');
-      setTimeout(() => alertContainer.remove(), 300);
-    }
-  }, 3000);
-}
-
-// Also modify the addToItinerary function used for recommended places
-function addToItinerary(placeId, dayIndex) {
-  const place = itineraryRecommendations[dayIndex].find(p => p.place_id === placeId);
-  if (!place) return;
-
-  // Check if user is authenticated
-  if (!checkAuthBeforeAddToItinerary(place)) {
-    return; // Stop if not authenticated
-  }
-
-  fetch('/api/plan/places', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      placeId: place.place_id,
-      name: place.name,
-      address: place.formatted_address,
-      category: 'attraction',
-      notes: '',
-      indoor: document.getElementById('indoor-toggle').checked,
-      dayIndex: dayIndex  // Include the day index
-    })
-  })
-  .then(response => response.json())
-  .then(data => {
-    showResultNotification(data, place.name, dayIndex);
-  })
-  .catch(error => {
-    console.error('Error adding to itinerary:', error);
-    alert('Error adding to itinerary. Please try again later.');
-  });
-}
-function addDaySelectionModal() {
-  // Create the modal if it doesn't exist
-  if (!document.getElementById('daySelectionModal')) {
-    const modalHTML = `
-      <div class="modal fade" id="daySelectionModal" tabindex="-1" aria-labelledby="daySelectionModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="daySelectionModalLabel">Choose Day to Add Attraction</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <p>Select which day you'd like to add <strong id="place-name-display"></strong> to:</p>
-              <div id="day-selection-buttons" class="d-grid gap-2">
-                <!-- Day buttons will be added here dynamically -->
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-    
-    const modalContainer = document.createElement('div');
-    modalContainer.innerHTML = modalHTML;
-    document.body.appendChild(modalContainer);
-  }
-}
-</script>
-
-<script src="/js/auth.js"></script>
-
-
+  <script>
+    fetch('/api/plan')
+      .then(res => res.json())
+      .then(data => {
+        if (data.plan && data.plan.destination) {
+          const { destination, startDate, endDate } = data.plan;
+          fetch(`/api/weather?city=${encodeURIComponent(destination)}`)
+            .then(res => res.json())
+            .then(weatherData => {
+              showWeatherForDateRange(weatherData.forecast, startDate, endDate, '.main-content');
+            });
+        }
+      })
+      .catch(err => console.error('Weather load error:', err));
+  </script>
+  <script src="/js/auth.js"></script>
 </body>
 </html>
