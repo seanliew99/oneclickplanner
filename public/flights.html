@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flights - Travel Planner</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-color: #f8f9fa;
+    }
+    
+    .main-content {
+      flex: 1;
+    }
+    
+    .navbar-brand {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    
+    .page-header {
+      background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://source.unsplash.com/1600x900/?airplane,flight');
+      background-size: cover;
+      background-position: center;
+      color: white;
+      padding: 60px 0;
+      margin-bottom: 30px;
+    }
+    
+    .search-container {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+    
+    #flights-container {
+      margin-top: 30px;
+    }
+    
+    .flight-card {
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    
+    .flight-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .flight-header {
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #e9ecef;
+    }
+    
+    .flight-body {
+      padding: 20px;
+    }
+    
+    .flight-price {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #0d6efd;
+    }
+    
+    .flight-airline {
+      color: #6c757d;
+    }
+    
+    .flight-segment {
+      padding: 15px;
+      border-bottom: 1px solid #e9ecef;
+    }
+    
+    .flight-segment:last-child {
+      border-bottom: none;
+    }
+    
+    .flight-time {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    
+    .flight-duration {
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+    
+    .flight-airport {
+      font-size: 0.9rem;
+      color: #6c757d;
+    }
+    
+    .flight-airline-logo {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      margin-right: 10px;
+    }
+    
+    .loading-spinner {
+      display: flex;
+      justify-content: center;
+      margin: 50px 0;
+    }
+    
+    .airport-suggestion {
+      padding: 10px;
+      cursor: pointer;
+      border-bottom: 1px solid #e9ecef;
+    }
+    
+    .airport-suggestion:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .suggestion-container {
+      position: absolute;
+      z-index: 1000;
+      background-color: white;
+      width: 100%;
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ced4da;
+      border-radius: 0 0 5px 5px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      display: none;
+    }
+    
+    .suggestion-item {
+      padding: 10px;
+      cursor: pointer;
+      border-bottom: 1px solid #e9ecef;
+    }
+    
+    .suggestion-item:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .suggestion-city {
+      font-weight: bold;
+    }
+    
+    .suggestion-code {
+      font-weight: bold;
+      color: #0d6efd;
+    }
+    
+    .suggestion-type {
+      font-size: 0.8rem;
+      color: #6c757d;
+    }
+    
+    footer {
+      background-color: #343a40;
+      color: white;
+      padding: 20px 0;
+      margin-top: auto;
+    }
+    
+    .no-flights {
+      text-align: center;
+      padding: 50px 0;
+    }
+    
+    .flight-journey {
+      display: flex;
+      align-items: center;
+    }
+    
+    .journey-line {
+      flex-grow: 1;
+      height: 2px;
+      background-color: #dee2e6;
+      margin: 0 10px;
+      position: relative;
+    }
+    
+    .journey-line::after {
+      content: '✈️';
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.2rem;
+    }
+    
+    /* Tabs styling */
+    .nav-tabs .nav-link {
+      border: none;
+      color: #6c757d;
+      padding: 10px 15px;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s;
+    }
+    
+    .nav-tabs .nav-link.active {
+      color: #0d6efd;
+      background-color: transparent;
+      border-bottom: 3px solid #0d6efd;
+    }
+    
+    .nav-tabs .nav-link:hover {
+      border-color: transparent;
+      border-bottom: 3px solid #dee2e6;
+    }
+    
+    /* Price analysis card */
+    .price-analysis-card {
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .price-stats {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    
+    .price-stat {
+      text-align: center;
+    }
+    
+    .price-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    
+    .price-label {
+      font-size: 0.9rem;
+      color: #6c757d;
+    }
+    
+    .price-chart {
+      height: 200px;
+      margin-top: 20px;
+    }
+
+    .travel-class-select {
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ced4da;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" href="/">Travel Planner</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/flights">Flights</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/attractions">Attractions</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/restaurants">Restaurants</a>
+          </li>
+          <!-- Auth buttons - these will be replaced by user info when logged in -->
+          <li class="nav-item ms-3">
+            <a class="btn btn-outline-light" href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/login?client_id=3anj5rhtknc7i97jq3jgknai71&response_type=code&scope=email+openid+phone&redirect_uri=http%3A%2F%2Flocalhost%3A3000">Login</a>
+          </li>
+          <li class="nav-item ms-2">
+            <a class="btn btn-outline-light" href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/signup?client_id=3anj5rhtknc7i97jq3jgknai71&redirect_uri=http%3A%2F%2Flocalhost%3A3000&response_type=code&scope=email+openid+phone">Sign Up</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Page Header -->
+    <header class="page-header text-center">
+      <div class="container">
+        <h1 class="display-4">Find the Best Flight Deals</h1>
+        <p class="lead">Compare prices and book your next journey</p>
+      </div>
+    </header>
+
+    <div class="container">
+      <!-- Flight Search Form -->
+      <div class="search-container">
+        <form id="flight-search-form">
+          <div class="row mb-3">
+            <div class="col-md-6 mb-3">
+              <label for="origin" class="form-label">From</label>
+              <div class="position-relative">
+                <input type="text" class="form-control" id="origin" placeholder="City or airport code" autocomplete="off" required>
+                <input type="hidden" id="origin-code">
+                <div id="origin-suggestions" class="suggestion-container"></div>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="destination" class="form-label">To</label>
+              <div class="position-relative">
+                <input type="text" class="form-control" id="destination" placeholder="City or airport code" autocomplete="off" required>
+                <input type="hidden" id="destination-code">
+                <div id="destination-suggestions" class="suggestion-container"></div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row mb-3">
+            <div class="col-md-3 mb-3">
+              <label for="departure-date" class="form-label">Departure Date</label>
+              <input type="date" class="form-control" id="departure-date" required>
+            </div>
+            <div class="col-md-3 mb-3">
+              <label for="return-date" class="form-label">Return Date (optional)</label>
+              <input type="date" class="form-control" id="return-date">
+            </div>
+            <div class="col-md-2 mb-3">
+              <label for="adults" class="form-label">Passengers</label>
+              <select class="form-select" id="adults">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+              </select>
+            </div>
+            <div class="col-md-2 mb-3">
+              <label for="travel-class" class="form-label">Class</label>
+              <select class="form-select" id="travel-class">
+                <option value="ECONOMY">Economy</option>
+                <option value="PREMIUM_ECONOMY">Premium Economy</option>
+                <option value="BUSINESS">Business</option>
+                <option value="FIRST">First</option>
+              </select>
+            </div>
+            <div class="col-md-2 mb-3">
+              <label class="form-label d-block">Non-Stop</label>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="non-stop">
+                <label class="form-check-label" for="non-stop">Direct flights only</label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="text-center">
+            <button type="submit" class="btn btn-primary btn-lg px-5">
+              <i class="bi bi-search me-2"></i>Search Flights
+            </button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- Price Analysis (Hidden by default) -->
+      <div id="price-analysis" class="price-analysis-card" style="display: none;">
+        <h3>Price Analysis</h3>
+        <div id="price-stats" class="price-stats">
+          <!-- Price stats will be populated here -->
+        </div>
+        <div class="price-chart-container">
+          <canvas id="price-chart" class="price-chart"></canvas>
+        </div>
+      </div>
+      
+      <!-- Flight Results -->
+      <div id="flights-container">
+        <!-- Loading Spinner (Hidden by default) -->
+        <div id="loading-spinner" class="loading-spinner" style="display: none;">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading flights...</span>
+          </div>
+        </div>
+        
+        <!-- Results Tabs (Hidden by default) -->
+        <div id="results-tabs" style="display: none;">
+          <ul class="nav nav-tabs mb-4" id="flightTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="outbound-tab" data-bs-toggle="tab" data-bs-target="#outbound" type="button" role="tab" aria-controls="outbound" aria-selected="true">
+                Outbound <span id="outbound-date" class="ms-2 text-muted"></span>
+              </button>
+            </li>
+            <li class="nav-item" role="presentation" id="return-tab-container" style="display: none;">
+              <button class="nav-link" id="return-tab" data-bs-toggle="tab" data-bs-target="#return" type="button" role="tab" aria-controls="return" aria-selected="false">
+                Return <span id="return-date-display" class="ms-2 text-muted"></span>
+              </button>
+            </li>
+          </ul>
+          <div class="tab-content" id="flightTabsContent">
+            <div class="tab-pane fade show active" id="outbound" role="tabpanel" aria-labelledby="outbound-tab">
+              <div id="outbound-flights"></div>
+            </div>
+            <div class="tab-pane fade" id="return" role="tabpanel" aria-labelledby="return-tab">
+              <div id="return-flights"></div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- No Flights Message (Hidden by default) -->
+        <div id="no-flights" class="no-flights" style="display: none;">
+          <i class="bi bi-exclamation-circle text-warning" style="font-size: 3rem;"></i>
+          <h3 class="mt-3">No flights found</h3>
+          <p class="text-muted">Try different dates or locations</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flight Details Modal -->
+  <div class="modal fade" id="flightModal" tabindex="-1" aria-labelledby="flightModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="flightModalLabel">Flight Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="flight-modal-body">
+          <!-- Flight details will be populated here -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="save-flight-btn">
+            <i class="bi bi-bookmark-plus me-1"></i>Save Flight
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="text-center py-4">
+    <div class="container">
+      <p class="mb-0">© 2025 Travel Planner. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Global variables
+    let flightResults = [];
+    let selectedFlight = null;
+    let airlines = {}; // To store airline info
+    let currentQuery = {}; // To store current search parameters
+    
+    // Set min date for date inputs to today
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set min date for departure date (today)
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('departure-date').setAttribute('min', today);
+      document.getElementById('departure-date').value = today;
+      
+      // Handle departure date change to set min return date
+      document.getElementById('departure-date').addEventListener('change', function() {
+        const departureDate = this.value;
+        document.getElementById('return-date').setAttribute('min', departureDate);
+        
+        // If return date is before departure date, update it
+        const returnDate = document.getElementById('return-date');
+        if (returnDate.value && returnDate.value < departureDate) {
+          returnDate.value = departureDate;
+        }
+      });
+      
+      // Set up event listeners
+      document.getElementById('flight-search-form').addEventListener('submit', searchFlights);
+      
+      // Set up airport search
+      document.getElementById('origin').addEventListener('input', function(e) {
+        searchAirports(e.target.value, 'origin-suggestions');
+      });
+      
+      document.getElementById('destination').addEventListener('input', function(e) {
+        searchAirports(e.target.value, 'destination-suggestions');
+      });
+      
+      // Handle click outside of suggestion containers
+      document.addEventListener('click', function(e) {
+        if (!e.target.closest('#origin') && !e.target.closest('#origin-suggestions')) {
+          document.getElementById('origin-suggestions').style.display = 'none';
+        }
+        if (!e.target.closest('#destination') && !e.target.closest('#destination-suggestions')) {
+          document.getElementById('destination-suggestions').style.display = 'none';
+        }
+      });
+      
+      // Save flight button
+      document.getElementById('save-flight-btn').addEventListener('click', saveFlight);
+    });
+    
+    // Debounce function for airport search
+    function debounce(func, wait) {
+      let timeout;
+      return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+      };
+    }
+    
+    // Search airports with debounce
+    const searchAirports = debounce(function(query, containerId) {
+    if (query.length < 2) {
+        document.getElementById(containerId).style.display = 'none';
+        return;
+    }
+    
+    // Use only AIRPORT and CITY, not COUNTRY
+    fetch(`/api/flights/locations/search?keyword=${encodeURIComponent(query)}&subType=AIRPORT,CITY`)
+        .then(response => response.json())
+        .then(data => {
+        const container = document.getElementById(containerId);
+        
+        if (data.status === 'OK' && data.results && data.results.length > 0) {
+            container.innerHTML = '';
+            
+            data.results.forEach(location => {
+            const item = document.createElement('div');
+            item.className = 'suggestion-item';
+            
+            // Handle city names with fallbacks
+            const cityName = location.address?.cityName || location.name || '';
+            // Get country name if available
+            const countryName = location.address?.countryName || '';
+            // Get the IATA code
+            const iataCode = location.iataCode || '';
+            // Get location type
+            const locationType = location.subType || '';
+            
+            // Only show items with IATA codes
+            if (iataCode) {
+                item.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                    <span class="suggestion-city">${cityName}</span>${countryName ? `, ${countryName}` : ''}
+                    <div class="suggestion-type">${locationType}</div>
+                    </div>
+                    <span class="suggestion-code">${iataCode}</span>
+                </div>
+                `;
+                
+                item.addEventListener('click', function() {
+                const inputId = containerId === 'origin-suggestions' ? 'origin' : 'destination';
+                const codeId = containerId === 'origin-suggestions' ? 'origin-code' : 'destination-code';
+                
+                document.getElementById(inputId).value = `${cityName} (${iataCode})`;
+                document.getElementById(codeId).value = iataCode;
+                container.style.display = 'none';
+                });
+                
+                container.appendChild(item);
+            }
+            });
+            
+            // If no locations with IATA codes were found
+            if (container.children.length === 0) {
+            container.innerHTML = '<div class="suggestion-item">No airports found with code</div>';
+            }
+            
+            container.style.display = 'block';
+        } else {
+            container.innerHTML = '<div class="suggestion-item">No airports found</div>';
+            container.style.display = 'block';
+        }
+        })
+        .catch(error => {
+        console.error('Error searching airports:', error);
+        const container = document.getElementById(containerId);
+        container.innerHTML = '<div class="suggestion-item">Error searching airports</div>';
+        container.style.display = 'block';
+        });
+    }, 300);
+    
+    // Search flights
+    function searchFlights(e) {
+      e.preventDefault();
+      
+      // Get form values
+      const originCode = document.getElementById('origin-code').value;
+      const destinationCode = document.getElementById('destination-code').value;
+      const departureDate = document.getElementById('departure-date').value;
+      const returnDate = document.getElementById('return-date').value;
+      const adults = document.getElementById('adults').value;
+      const travelClass = document.getElementById('travel-class').value;
+      const nonStop = document.getElementById('non-stop').checked;
+      
+      // Validate airport codes
+      if (!originCode || !destinationCode) {
+        alert('Please select valid airports from the suggestions');
+        return;
+      }
+      
+      // Save current query parameters
+      currentQuery = {
+        originCode,
+        destinationCode,
+        departureDate,
+        returnDate,
+        adults,
+        travelClass,
+        nonStop
+      };
+      
+      // Show loading spinner
+      document.getElementById('loading-spinner').style.display = 'flex';
+      document.getElementById('results-tabs').style.display = 'none';
+      document.getElementById('no-flights').style.display = 'none';
+      document.getElementById('price-analysis').style.display = 'none';
+      
+      // Format date for display
+      document.getElementById('outbound-date').textContent = formatDateForDisplay(departureDate);
+      
+      // Show/hide return tab based on return date
+      if (returnDate) {
+        document.getElementById('return-tab-container').style.display = 'block';
+        document.getElementById('return-date-display').textContent = formatDateForDisplay(returnDate);
+      } else {
+        document.getElementById('return-tab-container').style.display = 'none';
+      }
+      
+      // Build query string
+      let queryString = `originLocationCode=${originCode}&destinationLocationCode=${destinationCode}&departureDate=${departureDate}&adults=${adults}&travelClass=${travelClass}&nonStop=${nonStop}`;
+      
+      if (returnDate) {
+        queryString += `&returnDate=${returnDate}`;
+      }
+      
+      // Fetch flights
+      fetch(`/api/flights/search?${queryString}`)
+        .then(response => response.json())
+        .then(data => {
+          // Hide loading spinner
+          document.getElementById('loading-spinner').style.display = 'none';
+          
+          if (data.status === 'OK' && data.results && data.results.length > 0) {
+            // Store results
+            flightResults = data.results;
+            
+            // Show results tabs
+            document.getElementById('results-tabs').style.display = 'block';
+            
+            // Separate outbound and return flights
+            const outboundFlights = document.getElementById('outbound-flights');
+            const returnFlights = document.getElementById('return-flights');
+            
+            outboundFlights.innerHTML = '';
+            returnFlights.innerHTML = '';
+            
+            // Display flights
+            flightResults.forEach((flight, index) => {
+              // Create flight card for outbound
+              const outboundCard = createFlightCard(flight, 0, index);
+              outboundFlights.appendChild(outboundCard);
+              
+              // Create flight card for return if exists
+              if (returnDate && flight.itineraries.length > 1) {
+                const returnCard = createFlightCard(flight, 1, index);
+                returnFlights.appendChild(returnCard);
+              }
+            });
+            
+            // Fetch price analysis
+            fetchPriceAnalysis(originCode, destinationCode, departureDate);
+          } else {
+            // Show no flights message
+            document.getElementById('no-flights').style.display = 'block';
+          }
+        })
+        .catch(error => {
+          console.error('Error searching flights:', error);
+          document.getElementById('loading-spinner').style.display = 'none';
+          document.getElementById('no-flights').style.display = 'block';
+        });
+    }
+    
+    // Format date for display
+    function formatDateForDisplay(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { 
+        weekday: 'short', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    }
+    
+    // Create flight card
+    function createFlightCard(flight, itineraryIndex, flightIndex) {
+      const itinerary = flight.itineraries[itineraryIndex];
+      const segments = itinerary.segments;
+      const firstSegment = segments[0];
+      const lastSegment = segments[segments.length - 1];
+      
+      const departureTime = new Date(firstSegment.departure.at);
+      const arrivalTime = new Date(lastSegment.arrival.at);
+      
+      // Calculate total duration in minutes
+      const durationMs = arrivalTime - departureTime;
+      const durationMinutes = Math.floor(durationMs / 60000);
+      const hours = Math.floor(durationMinutes / 60);
+      const minutes = durationMinutes % 60;
+      
+      // Format duration
+      const formattedDuration = `${hours}h ${minutes}m`;
+      
+      // Format times
+      const formattedDepartureTime = departureTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      const formattedArrivalTime = arrivalTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      
+      // Create flight card
+      const card = document.createElement('div');
+      card.className = 'flight-card mb-3';
+      card.innerHTML = `
+        <div class="flight-header d-flex justify-content-between align-items-center">
+          <div class="flight-airline">
+            ${segments.map(s => s.carrierCode).join(' / ')}
+          </div>
+          <div class="flight-price">
+            ${flight.price.currency} ${parseFloat(flight.price.total).toFixed(2)}
+          </div>
+        </div>
+        <div class="flight-body">
+          <div class="flight-journey mb-3">
+            <div class="text-center">
+              <div class="flight-time">${formattedDepartureTime}</div>
+              <div class="flight-airport">${firstSegment.departure.iataCode}</div>
+            </div>
+            <div class="journey-line"></div>
+            <div class="text-center">
+              <div class="flight-time">${formattedArrivalTime}</div>
+              <div class="flight-airport">${lastSegment.arrival.iataCode}</div>
+            </div>
+          </div>
+          <div class="d-flex justify-content-between mb-3">
+            <div class="flight-duration">
+              <i class="bi bi-clock me-1"></i> ${formattedDuration}
+            </div>
+            <div class="flight-stops">
+              ${segments.length === 1 ? 'Direct' : `${segments.length - 1} stop${segments.length > 2 ? 's' : ''}`}
+            </div>
+          </div>
+          <button class="btn btn-outline-primary w-100 view-details-btn" 
+                  data-flight-index="${flightIndex}" 
+                  data-itinerary-index="${itineraryIndex}">
+            View Details
+          </button>
+        </div>
+      `;
+      
+      // Add event listener to view details button
+      card.querySelector('.view-details-btn').addEventListener('click', function() {
+        const flightIndex = this.getAttribute('data-flight-index');
+        const itineraryIndex = this.getAttribute('data-itinerary-index');
+        showFlightDetails(flightIndex, itineraryIndex);
+      });
+      
+      return card;
+    }
+    
+    // Show flight details in modal
+    function showFlightDetails(flightIndex, itineraryIndex) {
+    // Convert string values to integers
+    flightIndex = parseInt(flightIndex);
+    itineraryIndex = parseInt(itineraryIndex);
+    
+    console.log("Showing details for flight:", flightIndex, "itinerary:", itineraryIndex);
+    console.log("Flight results array length:", flightResults.length);
+    
+    // Check if indices are valid
+    if (flightResults.length <= flightIndex || flightIndex < 0) {
+        console.error("Invalid flight index:", flightIndex);
+        alert("Could not display flight details - invalid flight index");
+        return;
+    }
+    
+    const flight = flightResults[flightIndex];
+    console.log("Selected flight:", flight);
+    
+    if (!flight.itineraries || flight.itineraries.length <= itineraryIndex) {
+        console.error("Invalid itinerary index or missing itineraries:", itineraryIndex);
+        alert("Could not display flight details - invalid itinerary data");
+        return;
+    }
+    
+    const itinerary = flight.itineraries[itineraryIndex];
+    selectedFlight = { flight, itineraryIndex };
+    
+    console.log("Selected itinerary:", itinerary);
+    
+    const modalBody = document.getElementById('flight-modal-body');
+    
+    // Check if we have the necessary data
+    if (!itinerary.segments || itinerary.segments.length === 0) {
+        modalBody.innerHTML = '<div class="alert alert-warning">No flight segments found in the selected itinerary.</div>';
+        const flightModal = new bootstrap.Modal(document.getElementById('flightModal'));
+        flightModal.show();
+        return;
+    }
+    
+    // Regular render code follows...
+    modalBody.innerHTML = `
+        <div class="card">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="mb-0">${itinerary.segments[0].departure.iataCode} to ${itinerary.segments[itinerary.segments.length - 1].arrival.iataCode}</h5>
+            </div>
+            <div class="flight-price">
+                ${flight.price.currency} ${parseFloat(flight.price.total).toFixed(2)}
+            </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <h6 class="mb-3">Flight Details</h6>
+            <div id="segments-container">
+            ${renderSegments(itinerary.segments)}
+            </div>
+            <hr>
+            <div class="row">
+            <div class="col-md-6">
+                <h6>Price Breakdown</h6>
+                <p><strong>Base Fare:</strong> ${flight.price.currency} ${parseFloat(flight.travelerPricings[0].price.base || 0).toFixed(2)}</p>
+                <p><strong>Taxes:</strong> ${flight.price.currency} ${parseFloat(flight.travelerPricings[0].price.taxes && flight.travelerPricings[0].price.taxes[0]?.amount || 0).toFixed(2)}</p>
+                <p><strong>Total:</strong> ${flight.price.currency} ${parseFloat(flight.price.total).toFixed(2)}</p>
+            </div>
+            <div class="col-md-6">
+                <h6>Additional Information</h6>
+                <p><strong>Booking Class:</strong> ${flight.travelerPricings[0].fareDetailsBySegment && flight.travelerPricings[0].fareDetailsBySegment[0] ? flight.travelerPricings[0].fareDetailsBySegment[0].cabin : 'Not specified'}</p>
+                <p><strong>Available Seats:</strong> ${flight.numberOfBookableSeats || 'Not specified'}</p>
+            </div>
+            </div>
+        </div>
+        </div>
+    `;
+    
+    // Show modal
+    const flightModal = new bootstrap.Modal(document.getElementById('flightModal'));
+    flightModal.show();
+    }
+    
+    // Render flight segments
+    function renderSegments(segments) {
+      let html = '';
+      
+      segments.forEach((segment, index) => {
+        const departureTime = new Date(segment.departure.at);
+        const arrivalTime = new Date(segment.arrival.at);
+        
+        // Calculate duration in minutes
+        const durationMinutes = segment.duration.replace('PT', '')
+          .replace('H', ' hours ')
+          .replace('M', ' minutes');
+        
+        html += `
+          <div class="flight-segment">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div class="segment-airline">
+                <strong>${segment.carrierCode} ${segment.number}</strong>
+              </div>
+              <div class="segment-duration">
+                ${durationMinutes}
+              </div>
+            </div>
+            <div class="flight-journey mb-3">
+              <div class="text-center">
+                <div class="flight-time">${departureTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</div>
+                <div class="flight-date">${departureTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
+                <div class="flight-airport">${segment.departure.iataCode}</div>
+                ${segment.departure.terminal ? `<div class="flight-terminal">Terminal ${segment.departure.terminal}</div>` : ''}
+              </div>
+              <div class="journey-line"></div>
+              <div class="text-center">
+                <div class="flight-time">${arrivalTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</div>
+                <div class="flight-date">${arrivalTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
+                <div class="flight-airport">${segment.arrival.iataCode}</div>
+                ${segment.arrival.terminal ? `<div class="flight-terminal">Terminal ${segment.arrival.terminal}</div>` : ''}
+              </div>
+            </div>
+            <div class="text-center text-muted">
+              <small>Aircraft: ${segment.aircraft.code}</small>
+            </div>
+          </div>
+        `;
+        
+        // Add connection information if not the last segment
+        if (index < segments.length - 1) {
+          const currentArrival = new Date(segment.arrival.at);
+          const nextDeparture = new Date(segments[index + 1].departure.at);
+          const connectionMinutes = Math.floor((nextDeparture - currentArrival) / 60000);
+          const connectionHours = Math.floor(connectionMinutes / 60);
+          const connectionMins = connectionMinutes % 60;
+          
+          html += `
+            <div class="connection-info text-center py-2 mb-3 bg-light">
+              <i class="bi bi-arrow-down"></i>
+              <div>Connection time: ${connectionHours}h ${connectionMins}m at ${segment.arrival.iataCode}</div>
+            </div>
+          `;
+        }
+      });
+      
+      return html;
+    }
+    
+    // Fetch price analysis
+    function fetchPriceAnalysis(originCode, destinationCode, departureDate) {
+      fetch(`/api/flights/prices/analysis?originIataCode=${originCode}&destinationIataCode=${destinationCode}&departureDate=${departureDate}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'OK' && data.results) {
+            const priceAnalysis = document.getElementById('price-analysis');
+            const priceStats = document.getElementById('price-stats');
+            
+            // Format currency
+            const currencyFormat = new Intl.NumberFormat('en-US', {
+              style: 'currency',
+              currency: data.results.currencyCode || 'USD'
+            });
+            
+            // Update price stats
+            priceStats.innerHTML = `
+              <div class="price-stat">
+                <div class="price-value">${currencyFormat.format(data.results.priceMetrics[0].amount)}</div>
+                <div class="price-label">Minimum</div>
+              </div>
+              <div class="price-stat">
+                <div class="price-value">${currencyFormat.format(data.results.priceMetrics[1].amount)}</div>
+                <div class="price-label">First Quartile</div>
+              </div>
+              <div class="price-stat">
+                <div class="price-value">${currencyFormat.format(data.results.priceMetrics[2].amount)}</div>
+                <div class="price-label">Median</div>
+              </div>
+              <div class="price-stat">
+                <div class="price-value">${currencyFormat.format(data.results.priceMetrics[3].amount)}</div>
+                <div class="price-label">Third Quartile</div>
+              </div>
+              <div class="price-stat">
+                <div class="price-value">${currencyFormat.format(data.results.priceMetrics[4].amount)}</div>
+                <div class="price-label">Maximum</div>
+              </div>
+            `;
+            
+            // Create price chart
+            const ctx = document.getElementById('price-chart').getContext('2d');
+            
+            // Destroy previous chart if exists
+            if (window.priceChart) {
+              window.priceChart.destroy();
+            }
+            
+            // Create data for chart
+            const labels = ['Min', 'Q1', 'Median', 'Q3', 'Max'];
+            const values = data.results.priceMetrics.map(metric => metric.amount);
+            
+            window.priceChart = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                labels: labels,
+                datasets: [{
+                  label: 'Price Distribution',
+                  data: values,
+                  backgroundColor: [
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)',
+                    'rgba(255, 99, 132, 0.2)'
+                  ],
+                  borderColor: [
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)',
+                    'rgba(255, 99, 132, 1)'
+                  ],
+                  borderWidth: 1
+                }]
+              },
+              options: {
+                responsive: true,
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    ticks: {
+                      callback: function(value) {
+                        return currencyFormat.format(value);
+                      }
+                    }
+                  }
+                },
+                plugins: {
+                  tooltip: {
+                    callbacks: {
+                      label: function(context) {
+                        return currencyFormat.format(context.raw);
+                      }
+                    }
+                  }
+                }
+              }
+            });
+            
+            // Show price analysis
+            priceAnalysis.style.display = 'block';
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching price analysis:', error);
+        });
+    }
+    
+    // Save flight to itinerary
+    function saveFlight() {
+      if (!selectedFlight) {
+        return;
+      }
+      
+      // Check if user is authenticated
+      const authUser = localStorage.getItem('authUser');
+      
+      if (!authUser) {
+        // Show login required modal
+        const loginModal = new bootstrap.Modal(document.getElementById('loginRequiredModal'));
+        loginModal.show();
+        return;
+      }
+      
+      const flight = selectedFlight.flight;
+      const itinerary = flight.itineraries[selectedFlight.itineraryIndex];
+      const segments = itinerary.segments;
+      
+      // Create flight data for saving
+      const flightData = {
+        id: flight.id,
+        price: flight.price,
+        departureAirport: segments[0].departure.iataCode,
+        arrivalAirport: segments[segments.length - 1].arrival.iataCode,
+        departureTime: segments[0].departure.at,
+        arrivalTime: segments[segments.length - 1].arrival.at,
+        airline: segments.map(s => s.carrierCode).join(' / '),
+        duration: itinerary.duration,
+        stops: segments.length - 1,
+        class: flight.travelerPricings[0].fareDetailsBySegment[0].cabin,
+        addedAt: new Date().toISOString()
+      };
+      
+      // Save to itinerary
+      fetch('/api/plan/flights', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          flight: flightData,
+          notes: ''
+        }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Close modal
+        const flightModal = bootstrap.Modal.getInstance(document.getElementById('flightModal'));
+        flightModal.hide();
+        
+        // Show success message
+        const alertContainer = document.createElement('div');
+        alertContainer.className = 'position-fixed top-0 start-0 end-0 p-3 text-center';
+        alertContainer.style.zIndex = '5000';
+        alertContainer.innerHTML = `
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>Success!</strong> Flight added to your itinerary!
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        `;
+        
+        document.body.appendChild(alertContainer);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+          if (alertContainer.parentNode) {
+            alertContainer.querySelector('.alert').classList.remove('show');
+            setTimeout(() => alertContainer.remove(), 300);
+          }
+        }, 3000);
+      })
+      .catch(error => {
+        console.error('Error saving flight:', error);
+        alert('Error saving to itinerary. Please try again.');
+      });
+    }
+  </script>
+  
+  <script src="/js/auth.js"></script>
+</body>
+</html>
