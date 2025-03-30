@@ -20,39 +20,60 @@
     }
     
     body {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      background-color: var(--light-color);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(to bottom right, #0a0f1f, #1a2b55); /* dark navy to rich blue */
+}
+
     
     .main-content {
       flex: 1;
     }
     
-    /* Navigation */
     .navbar {
-      background-color: var(--primary-color);
-      padding: 15px 0;
-    }
-    
-    .navbar-brand {
-      font-size: 1.6rem;
-      font-weight: bold;
-      color: white;
-    }
-    
-    .nav-link {
-      color: rgba(255, 255, 255, 0.85);
-      font-weight: 500;
-      transition: color 0.3s;
-    }
-    
-    .nav-link:hover {
-      color: white;
-    }
-    
+  background-color: rgba(15, 15, 20, 0.6) !important;
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  transition: background-color 0.4s ease;
+}
+
+.navbar-brand {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #4db8ff !important; /* glowing blue */
+  text-shadow: 0 0 10px #4db8ff88;
+}
+
+.logo-img {
+  width: 80px;
+  height: auto;
+  border-radius: 12px;
+  object-fit: contain;
+  background-color: transparent;
+  
+}
+
+.nav-link {
+  color: white !important;
+  font-weight: 500;
+  position: relative;
+  padding: 0.5rem 1rem;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #ff1f4b !important;
+  text-shadow: 0 0 10px #ff1f4b88;
+}
+
+.btn-outline-light:hover {
+  background-color: #ff1f4b !important;
+  color: white !important;
+  border-color: #ff1f4b !important;
+  box-shadow: 0 0 12px #ff1f4b, 0 0 24px #ff1f4baa;
+}
     .nav-link.active {
       color: white;
       font-weight: 600;
@@ -99,7 +120,9 @@
     
     /* Trip Info Card */
     .trip-info-card {
-      background-color: white;
+      background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  color: white;
       border-radius: 10px;
       box-shadow: var(--shadow);
       padding: 25px;
@@ -125,7 +148,8 @@
     }
     
     .stat-item {
-      background-color: #f8f9fa;
+      background: rgba(0, 0, 0, 0.3);
+      color: white;
       padding: 15px;
       border-radius: 8px;
       flex: 1;
@@ -169,8 +193,8 @@
     
     .section-title {
       font-size: 1.4rem;
-      font-weight: 700;
-      color: var(--dark-color);
+  font-weight: 700;
+  color: white !important;
       margin: 0;
       display: flex;
       align-items: center;
@@ -183,7 +207,9 @@
     }
     
     .section-card {
-      background-color: white;
+      background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  color: white;
       border-radius: 10px;
       box-shadow: var(--shadow);
       margin-bottom: 40px;
@@ -203,7 +229,9 @@
     
     .item-card {
       display: flex;
-      background-color: #f8f9fa;
+      background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(6px);
+  color: white;
       border-radius: 8px;
       overflow: hidden;
       transition: transform 0.3s, box-shadow 0.3s;
@@ -249,10 +277,9 @@
     }
     
     .item-date {
-      font-size: 0.8rem;
-      color: #6c757d;
-    }
-    
+  color: white !important;
+}
+
     .item-delete {
       position: absolute;
       top: 15px;
@@ -288,7 +315,9 @@
     
     /* Export Card */
     .export-card {
-      background-color: white;
+      background: rgba(253, 253, 253, 0.05);
+  backdrop-filter: blur(10px);
+  color: white;
       border-radius: 10px;
       box-shadow: var(--shadow);
       padding: 25px;
@@ -414,6 +443,134 @@
   }
 }
 
+/* Active tab: dark background, clean white text */
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-link:focus,
+.nav-tabs .nav-link.show {
+  background-color: rgba(0, 0, 0, 0.6) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+  font-weight: bold;
+}
+
+.nav-tabs .nav-link small {
+  color: white !important;
+}
+
+
+/* Inactive tab: white text on transparent background */
+.nav-tabs .nav-link {
+  background-color: transparent;
+  color: white;
+  border: none;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+/* Inactive tab on hover: subtle blur/gray effect */
+.nav-tabs .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.08); /* soft light hover */
+  color: white;
+}
+
+#toggle-smart-planner {
+  color: white !important;
+}
+
+#weather-summary {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(8px);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.accordion-button {
+  background-color: rgba(0, 0, 0, 0.4) !important;
+  color: white;
+}
+
+.accordion-button:not(.collapsed) {
+  background-color: rgba(0, 0, 0, 0.6) !important;
+  color: white;
+}
+
+.accordion-body {
+  background-color: rgba(255, 255, 255, 0.03);
+  color: white;
+}
+
+.list-group-item {
+  background-color: rgba(0, 0, 0, 0.4) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.1); /* optional: subtle border */
+}
+.list-group-item:hover {
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+  transition: all 0.2s ease;
+}
+
+.list-group-item {
+  background-color: rgba(0, 0, 0, 0.4) !important;
+  color: white;
+}
+
+.list-group-item strong {
+  color: #ffffff;
+}
+
+.list-group-item small,
+.list-group-item .text-muted {
+  color: #cccccc !important;
+}
+
+
+#attractions-container,
+#attractions-container .item-card,
+#attractions-container .item-title,
+#attractions-container .item-address,
+#attractions-container .item-notes,
+#attractions-container .item-date {
+  color: white !important;
+}
+
+
+
+#attractions-container .item-card {
+  background: rgba(255, 255, 255, 0.05); /* translucent dark */
+  backdrop-filter: blur(10px);
+  border: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+.export-option {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+}
+
+.export-option:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.export-label {
+  color: white !important;
+}
+
+#typewriter-itinerary::after {
+  content: '|';
+  animation: blink 0.8s infinite;
+  margin-left: 2px;
+  font-weight: 400;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
 
   </style>
 </head>
@@ -421,7 +578,11 @@
   <!-- Navigation -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container">
-      <a class="navbar-brand" href="/">Travel Planner</a>
+      <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+        <img src="/assets/logo.png" alt="Logo" class="logo-img" />
+        One Click Planner
+      </a>
+      
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -455,7 +616,8 @@
     <!-- Page Header -->
     <header class="page-header">
       <div class="header-content">
-        <h1 class="page-title">My Travel Itinerary</h1>
+        <h1 class="page-title"><span id="typewriter-itinerary"></span></h1>
+
         <p class="page-subtitle">Plan, organize, and review your travel plans in one place</p>
       </div>
     </header>
@@ -587,12 +749,7 @@
               </div>
               <div class="export-label">PDF</div>
             </div>
-            <div class="export-option" id="export-calendar">
-              <div class="export-icon">
-                <i class="bi bi-calendar-event"></i>
-              </div>
-              <div class="export-label">Calendar</div>
-            </div>
+           
             <div class="export-option" id="export-email">
               <div class="export-icon">
                 <i class="bi bi-envelope"></i>
@@ -629,7 +786,6 @@
       // Set up event listeners
       document.getElementById('print-btn').addEventListener('click', printItinerary);
       document.getElementById('export-pdf').addEventListener('click', exportPDF);
-      document.getElementById('export-calendar').addEventListener('click', exportCalendar);
       document.getElementById('export-email').addEventListener('click', exportEmail);
     });
     
@@ -1017,21 +1173,52 @@ function formatICSDate(date) {
     // Export via Email
     function exportEmail() {
   const subject = 'My Travel Itinerary';
-  const body = encodeURIComponent(generatePlainTextItinerary(currentPlan.smartPlan || {}));
+  const body = encodeURIComponent(generatePlainTextItinerary(currentPlan));
+
   window.location.href = `mailto:?subject=${subject}&body=${body}`;
 }
 
 function generatePlainTextItinerary(plan) {
   let text = 'Here’s my travel itinerary:\n\n';
-  for (const [date, blocks] of Object.entries(plan)) {
-    text += `📅 ${date}\n`;
+
+  // Smart Planner activities
+  for (const [date, blocks] of Object.entries(plan.smartPlan || {})) {
+    const readableDate = new Date(date).toLocaleDateString();
+    text += `📅 ${readableDate}\n`;
+
     for (const [block, place] of Object.entries(blocks)) {
       if (place) {
         text += `  - ${capitalize(block)}: ${place.name} (${place.address || 'No address'})\n`;
       }
     }
+
     text += '\n';
   }
+
+  // Attractions grouped by dayIndex
+  const attractions = plan.attractions || [];
+  const grouped = {};
+
+  attractions.forEach(place => {
+    if (place.dayIndex != null) {
+      if (!grouped[place.dayIndex]) grouped[place.dayIndex] = [];
+      grouped[place.dayIndex].push(place);
+    }
+  });
+
+  const startDate = new Date(plan.startDate);
+  Object.entries(grouped).forEach(([dayIndex, places]) => {
+    const date = new Date(startDate);
+    date.setDate(date.getDate() + parseInt(dayIndex));
+    const readableDate = date.toLocaleDateString();
+
+    text += `📍 Attractions on ${readableDate}:\n`;
+    places.forEach(p => {
+      text += `  - ${p.name} (${p.address || 'No address'})\n`;
+    });
+    text += '\n';
+  });
+
   return text;
 }
 
@@ -1394,6 +1581,23 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // Rotate the icon
     plannerIcon.style.transform = isShown ? 'rotate(-90deg)' : 'rotate(0deg)';
+  });
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const text = "My Travel Itinerary";
+    const element = document.getElementById("typewriter-itinerary");
+    let index = 0;
+
+    function type() {
+      if (index < text.length) {
+        element.textContent += text.charAt(index);
+        index++;
+        setTimeout(type, 100); // typing speed
+      }
+    }
+
+    type();
   });
 </script>
 

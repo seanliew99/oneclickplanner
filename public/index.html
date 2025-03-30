@@ -3,158 +3,430 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Travel Planner</title>
+  <title>One Click Planner</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
 <style>
-  body {
-    font-family: 'Segoe UI', Roboto, sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background: linear-gradient(to bottom right, #0f2027, #203a43, #2c5364);
-    color: #f1f1f1;
-    overflow-x: hidden;
-  }
+body {
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(to bottom right, #0a0f1f, #1a2b55); /* deep navy to rich blue */
+  color: #f1f1f1;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
 
-  .navbar {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  }
+#typewriter-text::after {
+  content: '|';
+  animation: blink 0.8s infinite;
+  margin-left: 2px;
+}
 
-  .navbar-brand {
-    font-size: 1.75rem;
-    font-weight: 700;
-    text-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
-  }
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
 
-  .hero-section {
-    background: linear-gradient(rgba(10, 10, 10, 0.6), rgba(10, 10, 10, 0.6)),
-                url('https://source.unsplash.com/1600x900/?futuristic,travel');
-    background-size: cover;
-    background-position: center;
-    color: white;
-    padding: 100px 0;
-    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
-  }
+/* Animate just the logo image */
+.logo-img {
+  width: 80px;
+  height: auto;
+  border-radius: 12px;
+  object-fit: contain;
+  background-color: transparent;
+  animation: clickBounce 0.4s ease-out 1.2s forwards;
+  transform-origin: center;
+}
 
-  .hero-section h1 {
-    font-size: 3rem;
-    animation: fadeInDown 1s ease-out;
-  }
 
-  .hero-section p {
-    font-size: 1.25rem;
-    opacity: 0.85;
-    animation: fadeInUp 1.2s ease-out;
-  }
+@keyframes clickBounce {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(0.9); }
+  60%  { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
 
-  .planning-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    padding: 40px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-  }
 
-  input, .form-control, .btn {
-    border-radius: 8px !important;
-  }
+.navbar {
+  background-color: rgba(15, 15, 20, 0.6) !important;
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  transition: background-color 0.4s ease;
+}
 
-  .btn-primary {
-    background: linear-gradient(45deg, #00c6ff, #0072ff);
-    border: none;
-    font-weight: bold;
-    box-shadow: 0 4px 14px rgba(0, 114, 255, 0.4);
-    transition: all 0.3s ease-in-out;
+/* Animate navbar brand (logo + text) */
+.navbar-brand {
+  opacity: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #4db8ff !important;
+  text-shadow: 0 0 10px #5b0fd688;
+  animation: floatInGlow 1.2s ease-out forwards;
+  animation-delay: 0.3s;
+  transform: translateY(-10px) scale(0.95);
+}
+/* Keyframes */
+@keyframes floatInGlow {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+    text-shadow: 0 0 0 transparent;
   }
-
-  .btn-primary:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 20px rgba(0, 114, 255, 0.6);
+  70% {
+    opacity: 1;
+    transform: translateY(2px) scale(1.03);
+    text-shadow: 0 0 14px #4db8ff88;
   }
-
-  .feature-card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(8px);
-    transition: all 0.3s ease;
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    text-shadow: 0 0 10px #5b0fd688;
   }
+}
 
-  .feature-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  }
 
-  .feature-icon {
-    font-size: 2.75rem;
-    color: #00c6ff;
-    filter: drop-shadow(0 0 6px #00c6ff88);
-  }
+/* Glow underline animation for nav links */
+.nav-link {
+  color: #fff !important;
+  position: relative;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
 
-  footer {
-    background-color: #111;
-    color: #aaa;
-    padding: 30px 0;
-    text-align: center;
-    font-size: 0.9rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-  }
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 10%;
+  bottom: 5px;
+  width: 80%;
+  height: 2px;
+  background: #7409f0;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.3s ease;
+}
 
+.nav-link::after {
+  background: #ff1f4b;
+}
+
+
+.nav-link:hover {
+  color: #ff1f4b !important;
+  text-shadow: 0 0 10px #ff1f4baa;
+}
+
+
+.hero-section {
+  background: linear-gradient(rgba(10, 10, 10, 0.6), rgba(10, 10, 10, 0.6)),
+              url('https://source.unsplash.com/1600x900/?travel,landscape');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  padding: 100px 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.hero-section h1 {
+  font-size: 3.5rem;
+  animation: fadeInDown 1s ease-out;
+}
+
+.hero-section p {
+  font-size: 1.4rem;
+  opacity: 0.9;
+  animation: fadeInUp 1.2s ease-out;
+}
+
+
+
+.planning-card {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(16px);
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease-in-out;
+}
+
+input, .form-control, .btn {
+  border-radius: 10px !important;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  border: none;
+  font-weight: 600;
+  box-shadow: 0 6px 20px rgba(0, 114, 255, 0.5);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: scale(1.06);
+  box-shadow: 0 8px 28px rgba(0, 114, 255, 0.7);
+}
+
+.btn-outline-light {
+  border-color: #fff;
+  color: #fff;
+  transition: all 0.s ease;
+}
+
+.btn-outline-light:hover {
+  background-color: #ff1f4b !important;
+  color: white !important;
+  border-color: #ff1f4b !important;
+  box-shadow: 0 0 12px #ff1f4b, 0 0 24px #ff1f4baa;
+}
+
+
+.feature-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.feature-card:hover {
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 0 0 16px rgba(255, 31, 75, 0.4), 0 0 40px rgba(255, 31, 75, 0.3);
+  border-color: #ff1f4b88;
+}
+
+
+.feature-icon {
+  font-size: 3rem;
+  color: #00e0ff;
+  filter: drop-shadow(0 0 10px #00e0ff88);
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+
+footer {
+  background-color: #111;
+  color: #ccc;
+  padding: 30px 0;
+  font-size: 0.9rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* Category buttons */
+.btn-attractions, .btn-restaurants, .btn-itinerary {
+  font-weight: 600;
+  padding: 0.5rem 1.25rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 0 4px transparent;
+}
+
+/* Base glow */
 .btn-attractions {
   border: 2px solid #ff6f61;
   color: #ff6f61;
-}
-
-.btn-attractions:hover {
-  background: #ff6f61;
-  color: white;
-  box-shadow: 0 0 12px #ff6f61aa;
+  box-shadow: 0 0 6px #ff6f6155;
 }
 
 .btn-restaurants {
   border: 2px solid #ffcc00;
   color: #ffcc00;
-}
-
-.btn-restaurants:hover {
-  background: #ffcc00;
-  color: black;
-  box-shadow: 0 0 12px #ffcc00aa;
+  box-shadow: 0 0 6px #ffcc0055;
 }
 
 .btn-itinerary {
   border: 2px solid #66ff99;
   color: #66ff99;
+  box-shadow: 0 0 6px #66ff9955;
+}
+
+/* Glow on hover */
+.btn-attractions:hover {
+  background: #ff6f61;
+  color: black;
+  box-shadow: 0 0 12px #ff6f61, 0 0 24px #ff6f61aa;
+}
+
+.btn-restaurants:hover {
+  background: #ffcc00;
+  color: black;
+  box-shadow: 0 0 12px #ffcc00, 0 0 24px #ffcc00aa;
 }
 
 .btn-itinerary:hover {
   background: #66ff99;
   color: black;
-  box-shadow: 0 0 12px #66ff99aa;
+  box-shadow: 0 0 12px #66ff99, 0 0 24px #66ff99aa;
 }
 
 
 
 
-  /* Animations */
-  @keyframes fadeInDown {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+/* Icon animations */
+.feature-icon {
+  font-size: 3rem;
+  color: #00e0ff;
+  filter: drop-shadow(0 0 10px #00e0ff88);
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
 
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+
+.feature-card:hover .feature-icon {
+  filter: drop-shadow(0 0 14px #00e0ffcc);
+  transform: scale(1.1);
+}
+
+
+.feature-icon {
+  animation: iconPulse 3s ease-in-out infinite;
+}
+
+
+.circle-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.circle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(0, 132, 255, 0.1);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 0 40px rgba(0, 132, 255, 0.3);
+  animation: floaty 10s infinite ease-in-out alternate;
+  transform-origin: center;
+  color: #4db8ff !important;
+  text-shadow: 0 0 10px #4db8ff88;
+}
+
+.circle1 {
+  width: 80px;
+  height: 80px;
+  top: 10%;
+  left: 15%;
+  animation-delay: 0s;
+}
+
+.circle2 {
+  width: 120px;
+  height: 120px;
+  top: 18%; /* moved up from 30% */
+  left: 65%;
+  animation-delay: 1s;
+}
+
+.circle3 {
+  width: 60px;
+  height: 60px;
+  top: 55%;
+  left: 40%;
+  animation-delay: 2s;
+}
+
+.circle4 {
+  width: 100px;
+  height: 100px;
+  top: 70%;
+  left: 80%;
+  animation-delay: 3s;
+}
+
+@keyframes floaty {
+  0% {
+    transform: translateY(0px) translateX(0px) scale(1) rotate(0deg);
+    opacity: 0.4;
   }
+  50% {
+    transform: translateY(-40px) translateX(20px) scale(1.1) rotate(15deg);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(30px) translateX(-20px) scale(1) rotate(-10deg);
+    opacity: 0.4;
+  }
+}
+
+
+@keyframes iconPulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.1); }
+}
+
+@keyframes bounceIcon {
+  0%   { transform: translateY(0); }
+  30%  { transform: translateY(-8px); }
+  60%  { transform: translateY(4px); }
+  100% { transform: translateY(0); }
+}
+
+/* Animations */
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+[data-scroll] {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+[data-scroll].scrolled {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Dark themed input and date fields */
+.form-control {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.form-control::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.form-control:focus {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: #4db8ff;
+  box-shadow: 0 0 0 0.2rem rgba(77, 184, 255, 0.25);
+  color: white;
+}
+
 </style>
 
 </head>
 <body>
+  <div class="page-wrapper d-flex flex-column min-vh-100">
   <!-- Navigation -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container">
-      <a class="navbar-brand" href="/">Travel Planner</a>
+      <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+        <img src="/assets/logo.png" alt="Logo" class="logo-img" />
+        <span class="brand-text" id="brand-text"></span>
+      </a>
+      
+      
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -186,7 +458,14 @@
     <!-- Hero Section -->
     <section class="hero-section text-center">
       <div class="container">
-        <h1 class="display-4">Plan Your Perfect Trip</h1>
+        <div class="circle-bg">
+          <div class="circle circle1"></div>
+          <div class="circle circle2"></div>
+          <div class="circle circle3"></div>
+          <div class="circle circle4"></div>
+        </div>
+        <h1 class="display-4"><span id="typewriter-text"></span></h1>
+
         <p class="lead">Discover amazing places to visit and restaurants to try at your next destination.</p>
       </div>
     </section>
@@ -196,7 +475,7 @@
       <div class="row justify-content-center">
         <div class="col-md-8">
           <div class="planning-card">
-            <h2 class="text-center mb-4">Create Your Trip Plan</h2>
+            <h2 class="text-center mb-4" data-scroll>Create Your Trip Plan</h2>
             <form id="plan-form">
               <!-- Country -->
               <div class="mb-3">
@@ -326,10 +605,11 @@
   <!-- Footer -->
   <footer class="text-center py-4">
     <div class="container">
-      <p class="mb-0">© 2025 Travel Planner. All rights reserved.</p>
+      <p class="mb-0">© 2025 One Click Planner. All rights reserved.</p>
     </div>
   </footer>
 
+    </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script>
   document.addEventListener('DOMContentLoaded', function() {
@@ -932,6 +1212,25 @@ document.getElementById('get-weather-btn').addEventListener('click', () => {
 
 
   </script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const text = "Plan Your Perfect Trip";
+    const element = document.getElementById("typewriter-text");
+    let index = 0;
+  
+    function type() {
+      if (index < text.length) {
+        element.textContent += text.charAt(index);
+        index++;
+        setTimeout(type, 100); // typing speed
+      }
+    }
+  
+    type();
+  });
+  </script>
+  
   
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -952,6 +1251,44 @@ document.getElementById('get-weather-btn').addEventListener('click', () => {
     })
     .catch(err => console.error('Weather load error:', err));
 </script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const scrollElements = document.querySelectorAll('[data-scroll]');
+  
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('scrolled');
+        }
+      });
+    }, { threshold: 0.2 });
+  
+    scrollElements.forEach(el => observer.observe(el));
+  });
+  </script>
+
+  // one click planner
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const brandText = "One Click Planner";
+      const target = document.getElementById("brand-text");
+  
+      let i = 0;
+      setTimeout(() => {
+        const typeInterval = setInterval(() => {
+          if (i < brandText.length) {
+            target.textContent += brandText.charAt(i);
+            target.style.opacity = 1;
+            i++;
+          } else {
+            clearInterval(typeInterval);
+          }
+        }, 80); // speed of typing
+      }, 1400); // wait until logo finishes bounce
+    });
+  </script>
+  
 
 
 <script src="/js/auth.js"></script>

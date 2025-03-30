@@ -7,22 +7,98 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
   <style>
-    body {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      background-color: #f8f9fa;
-    }
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(to bottom right, #0a0f1f, #1a2b55); /* dark navy to rich blue */
+}
+
     
     .main-content {
       flex: 1;
     }
+
+    .navbar {
+  background-color: rgba(15, 15, 20, 0.6) !important;
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  transition: background-color 0.4s ease;
+}
+.nav-tabs .nav-link {
+  background-color: transparent;
+  color: white;
+  border: 1px solid #ff1f4b44;
+  transition: all 0.3s ease;
+}
+
+.nav-tabs .nav-link {
+  background-color: transparent;
+  color: white;
+  border: 1px solid #ff1f4b44;
+  transition: all 0.3s ease;
+}
+
+.nav-tabs .nav-link:hover {
+  background-color: rgba(255, 31, 75, 0.1);
+  color: #ff1f4b;
+}
+
+.logo-img {
+  width: 80px;
+  height: auto;
+  border-radius: 12px;
+  object-fit: contain;
+  background-color: transparent;
+ 
+}
+
     
-    .navbar-brand {
-      font-size: 1.5rem;
-      font-weight: bold;
-    }
-    
+.navbar-brand {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #4db8ff !important; /* nice glowing blue */
+  text-shadow: 0 0 10px #4db8ff88;
+}
+
+
+.nav-link:hover {
+  color: #ff1f4b !important;
+  text-shadow: 0 0 10px #ff1f4b88;
+}
+
+
+/* Active tab (Day 1, etc.) */
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-link:focus,
+.nav-tabs .nav-link.show {
+  background-color: #000 !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 0 8px #000;
+  font-weight: bold;
+}
+
+/* Inactive tabs — clean and minimal */
+.nav-tabs .nav-link {
+  background-color: transparent;
+  color: white;
+  border: none;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+/* Optional: On hover, a soft black background */
+.nav-tabs .nav-link:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+  color: #ff1f4b;
+}
+
+body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .nav-link, .lead {
+  color: white !important;
+}
+
     .page-header {
       background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://source.unsplash.com/1600x900/?landmark,attraction');
       background-size: cover;
@@ -33,12 +109,31 @@
     }
     
     .search-container {
-      background-color: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-      margin-bottom: 30px;
-    }
+  background-color: rgba(255, 255, 255, 0.05); /* translucent dark */
+  color: white;
+  backdrop-filter: blur(12px);
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  padding: 20px;
+}
+
+.search-container input,
+.search-container .form-control {
+  background-color: rgba(0, 0, 0, 0.4);
+  color: white;
+  border: none;
+}
+
+.search-container input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.search-container .form-check-label {
+  color: rgb(44, 31, 161);
+}
+
+
     
     #map {
       height: 400px;
@@ -48,22 +143,25 @@
     }
     
     .attraction-card {
-      border: none;
-      border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      transition: transform 0.2s ease;
-      margin-bottom: 20px;
-      overflow: hidden;
-      height: 100%;
-    }
-    
-    .attraction-card:hover {
-      transform: translateY(-5px);
-    }
+  background: rgba(255, 255, 255, 0.05); /* dark glassy look */
+  backdrop-filter: blur(10px);
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  color: white;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 100%;
+}
+
+.attraction-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 0 16px rgba(255, 31, 75, 0.4), 0 0 40px rgba(255, 31, 75, 0.3);
+  border: 1px solid #ff1f4b88;
+}
+
     
     .attraction-image {
       height: 180px;
-      background-color: #dee2e6;
       background-size: cover;
       background-position: center;
     }
@@ -116,13 +214,114 @@
       background-color: #218838;
       color: white;
     }
+
+    .tab-pane .card {
+  background: rgba(255, 255, 255, 0.05); /* translucent dark glass */
+  backdrop-filter: blur(10px);
+  border: none;
+  color: white;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+}
+
+.list-group-item {
+  background-color: rgba(0, 0, 0, 0.4); /* dark transparent background */
+  color: white;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+.list-group-item:hover {
+  background-color: rgba(255, 31, 75, 0.08); /* subtle red glow on hover */
+}
+
+.result-count {
+  font-weight: 600;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.3); /* subtle dark background */
+  padding: 10px 16px;
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+  display: inline-block;
+}
+
+
+.modal-content {
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 0 20px rgba(255, 31, 75, 0.2);
+}
+
+.modal-header,
+.modal-body,
+.modal-footer {
+  border: none;
+  color: white;
+}
+
+.modal-title {
+  color: #ff1f4b;
+  text-shadow: 0 0 8px #ff1f4b88;
+}
+
+.modal-body .form-control {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: white;
+  border: 1px solid #ff1f4b44;
+}
+
+.modal-body .form-control::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.modal-body a {
+  color: #ff4b6e;
+  text-decoration: underline;
+}
+
+.modal-body a:hover {
+  color: #ff1f4b;
+}
+
+.modal-body ul {
+  padding-left: 1rem;
+}
+
+.modal-body li {
+  color: white;
+  margin-bottom: 4px;
+}
+
+.rating {
+  color: #ffc107;
+  font-weight: bold;
+}
+
+#typewriter-attractions::after {
+  content: '|';
+  animation: blink 0.8s infinite;
+  margin-left: 2px;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
+
+
   </style>
 </head>
 <body>
   <!-- Navigation -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container">
-      <a class="navbar-brand" href="/">Travel Planner</a>
+      <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+        <img src="/assets/logo.png" alt="Logo" class="logo-img" />
+        One Click Planner
+      </a>
+      
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -154,7 +353,8 @@
     <!-- Page Header -->
     <header class="page-header text-center">
       <div class="container">
-        <h1 class="display-4">Discover Attractions</h1>
+        <h1 class="display-4"><span id="typewriter-attractions"></span></h1>
+
         <p class="lead">Find the best places to visit at your destination</p>
       </div>
     </header>
@@ -570,7 +770,7 @@
         pane.id = tabId;
         pane.role = 'tabpanel';
         pane.innerHTML = `
-          <div class="card p-3 bg-light border">
+          <div class="card p-3">
             <h5>Recommended Places in ${dayCity}</h5>
             <ul class="list-group">${listItems || '<li class="list-group-item text-muted">No recommendations yet.</li>'}</ul>
           </div>
@@ -1494,6 +1694,28 @@
       })
       .catch(err => console.error('Weather load error:', err));
   </script>
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const text = "Discover Attractions";
+    const element = document.getElementById("typewriter-attractions");
+    let index = 0;
+  
+    function type() {
+      if (index < text.length) {
+        element.textContent += text.charAt(index);
+        index++;
+        setTimeout(type, 100); // typing speed
+      }
+    }
+  
+    type();
+  });
+  </script>
+
+
   <script src="/js/auth.js"></script>
+
 </body>
 </html>
