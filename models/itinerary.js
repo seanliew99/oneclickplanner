@@ -21,6 +21,7 @@ const ItineraryModel = {
         destination: itineraryData.destination,
         startDate: itineraryData.startDate,
         endDate: itineraryData.endDate,
+        country: itineraryData.country || '',
         attractions: itineraryData.attractions || [],
         restaurants: itineraryData.restaurants || [],
         updatedAt: new Date().toISOString(),

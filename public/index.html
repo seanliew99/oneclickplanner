@@ -262,7 +262,9 @@
           <!-- Current Plan Alert (hidden by default) -->
           <div id="current-plan-alert" class="alert alert-success current-plan-alert" role="alert" style="display: none;">
             <h4 class="alert-heading">Your current trip plan:</h4>
-            <p id="current-plan-details">You're planning a trip to <span id="plan-destination"></span> from <span id="plan-dates"></span>.</p>
+            <p id="current-plan-details">
+              You're planning a trip to <span id="plan-destination"></span> from <span id="plan-dates"></span>.
+            </p>
             <hr>
             <div class="d-flex justify-content-between">
               <a href="/itinerary" class="btn btn-outline-success">View Itinerary</a>
@@ -355,6 +357,84 @@
     destinationInput.setAttribute('required', 'required');
   }
 
+  function displayCurrentPlan(plan) {
+    if (!plan || !plan.destination) return;
+    
+    // Format destination with country
+    let destinationText = plan.destination;
+    if (plan.country) {
+      destinationText = `${plan.destination} in ${plan.country}`;
+    }
+    
+    // Update DOM elements
+    document.getElementById('plan-destination').textContent = destinationText;
+    document.getElementById('plan-dates').textContent = formatDateRange(plan.startDate, plan.endDate);
+    document.getElementById('current-plan-alert').style.display = 'block';
+    
+    // Pre-fill form if needed
+    if (document.getElementById('country')) {
+      document.getElementById('country').value = plan.country || '';
+    }
+    
+    // Check if this is a multi-city plan
+    if (plan.cities && plan.cities.length > 1) {
+      // 1. Set the toggle to checked
+      const cityToggle = document.getElementById('city-selection-toggle');
+      cityToggle.checked = true;
+      
+      // 2. Trigger the UI update for multi-city mode
+      document.getElementById('single-city-wrapper').classList.add('d-none');
+      document.getElementById('multi-city-wrapper').classList.remove('d-none');
+      
+      // 3. Populate multi-city UI with the cities from the plan
+      setupMultiCityUI(plan.cities);
+    } else {
+      // Single city mode
+      // If destination is a single city (no commas, no city count indicators)
+      if (document.getElementById('destination') && (!plan.destination.includes(',') || plan.cities?.length === 1)) {
+        // Extract city name if it has a format like "Tokyo (2d)"
+        let cityName = plan.destination;
+        if (cityName.includes('(')) {
+          cityName = cityName.split('(')[0].trim();
+        }
+        document.getElementById('destination').value = cityName;
+      }
+    }
+  }
+
+  // Add/improve the setupMultiCityUI function if it doesn't exist or needs enhancement
+  function setupMultiCityUI(cities) {
+    // 1. Show multi-city UI
+    document.getElementById('single-city-wrapper').classList.add('d-none');
+    document.getElementById('multi-city-wrapper').classList.remove('d-none');
+    
+    // 2. Clear existing entries and add cities
+    const citiesContainer = document.getElementById('cities-container');
+    citiesContainer.innerHTML = '';
+    
+    // 3. Add each city with its day allocation
+    cities.forEach(city => {
+      const entry = document.createElement('div');
+      entry.className = 'row mb-2 city-entry';
+      entry.innerHTML = `
+        <div class="col-md-6">
+          <input type="text" class="form-control city-name" value="${city.name}" placeholder="City name" required />
+        </div>
+        <div class="col-md-4">
+          <input type="number" class="form-control city-days" value="${city.days}" placeholder="Days" min="1" required />
+        </div>
+        <div class="col-md-2">
+          <button type="button" class="btn btn-danger remove-city w-100">−</button>
+        </div>
+      `;
+      citiesContainer.appendChild(entry);
+    });
+    
+    // 4. Setup listeners for the new entries
+    attachCityDaysListeners();
+    updateAddCityBtnState();
+  }
+
 
   function attachCityDaysListeners() {
   const dayInputs = document.querySelectorAll('.city-days');
@@ -412,40 +492,69 @@
   attachCityDaysListeners(); // for the initial city-days input on page load
 
 
-  cityToggle.addEventListener('change', () => {
-  const isMulti = cityToggle.checked;
-  singleCityWrapper.classList.toggle('d-none', isMulti);
-  multiCityWrapper.classList.toggle('d-none', !isMulti);
-
-  // ✅ Avoid validation error
-  const destinationInput = document.getElementById('destination');
-  if (isMulti) {
-    destinationInput.removeAttribute('required');
-  } else {
-    destinationInput.setAttribute('required', 'required');
-  }
-});
-
+  cityToggle.addEventListener('change', function() {
+    const isMulti = this.checked;
+    console.log("Toggle changed to:", isMulti ? "multi-city" : "single-city");
+    
+    // Update UI visibility
+    singleCityWrapper.classList.toggle('d-none', isMulti);
+    multiCityWrapper.classList.toggle('d-none', !isMulti);
+    
+    // Update validation requirements
+    const destinationInput = document.getElementById('destination');
+    if (isMulti) {
+      destinationInput.removeAttribute('required');
+      
+      // If switching to multi-city mode and there are no entries, add one
+      const citiesContainer = document.getElementById('cities-container');
+      if (citiesContainer.children.length === 0) {
+        const entry = document.createElement('div');
+        entry.className = 'row mb-2 city-entry';
+        entry.innerHTML = `
+          <div class="col-md-6">
+            <input type="text" class="form-control city-name" placeholder="City name" required />
+          </div>
+          <div class="col-md-4">
+            <input type="number" class="form-control city-days" placeholder="Days" min="1" required />
+          </div>
+          <div class="col-md-2">
+            <button type="button" class="btn btn-danger remove-city w-100">−</button>
+          </div>
+        `;
+        citiesContainer.appendChild(entry);
+        attachCityDaysListeners();
+        updateAddCityBtnState();
+      }
+    } else {
+      destinationInput.setAttribute('required', 'required');
+      
+      // If switching back to single city, try to use the first city name
+      const cityInputs = document.querySelectorAll('.city-name');
+      if (cityInputs.length > 0 && cityInputs[0].value) {
+        destinationInput.value = cityInputs[0].value;
+      }
+    }
+  });
 
 
   // Add new city entry
   addCityBtn.addEventListener('click', () => {
-  const entry = document.createElement('div');
-  entry.className = 'row mb-2 city-entry';
-  entry.innerHTML = `
-    <div class="col-md-6">
-      <input type="text" class="form-control city-name" placeholder="City name" required />
-    </div>
-    <div class="col-md-4">
-      <input type="number" class="form-control city-days" placeholder="Days" min="1" required />
-    </div>
-    <div class="col-md-2">
-      <button type="button" class="btn btn-danger remove-city w-100">−</button>
-    </div>
-  `;
-  citiesContainer.appendChild(entry);
-  attachCityDaysListeners(); // <== CALL HERE
-  updateAddCityBtnState();
+    const entry = document.createElement('div');
+    entry.className = 'row mb-2 city-entry';
+    entry.innerHTML = `
+      <div class="col-md-6">
+        <input type="text" class="form-control city-name" placeholder="City name" required />
+      </div>
+      <div class="col-md-4">
+        <input type="number" class="form-control city-days" placeholder="Days" min="1" required />
+      </div>
+      <div class="col-md-2">
+        <button type="button" class="btn btn-danger remove-city w-100">−</button>
+      </div>
+    `;
+    citiesContainer.appendChild(entry);
+    attachCityDaysListeners(); // <== CALL HERE
+    updateAddCityBtnState();
   });
 
 
@@ -587,34 +696,88 @@ function validateCityDaysExactly() {
 }
 
 
-  // Check if there's an existing plan
-  fetch('/api/plan')
-    .then(response => response.json())
-    .then(data => {
-      if (data.plan) {
-        // Pre-fill the form
-        document.getElementById('destination').value = data.plan.destination || '';
-        
-        // Set start date if it exists
-        if (data.plan.startDate) {
-          startDateInput.value = data.plan.startDate;
-          // Enable end date if start date exists
-          endDateInput.removeAttribute('disabled');
-          endDateInput.setAttribute('min', startDateInput.value);
-        }
-        
-        // Set end date if it exists
-        if (data.plan.endDate) {
-          endDateInput.value = data.plan.endDate;
-        }
-        
-        // Show current plan alert
-        planDestination.textContent = data.plan.destination;
-        planDates.textContent = formatDateRange(data.plan.startDate, data.plan.endDate);
-        currentPlanAlert.style.display = 'block';
+// Check if there's an existing plan
+fetch('/api/plan')
+  .then(response => response.json())
+  .then(data => {
+    if (data.plan) {
+      
+      // Fill in basic fields
+      if (data.plan.country) {
+        document.getElementById('country').value = data.plan.country;
       }
-    })
-    .catch(error => console.error('Error loading plan:', error));
+      
+      if (data.plan.startDate) {
+        startDateInput.value = data.plan.startDate;
+        endDateInput.removeAttribute('disabled');
+        endDateInput.setAttribute('min', startDateInput.value);
+      }
+      
+      if (data.plan.endDate) {
+        endDateInput.value = data.plan.endDate;
+      }
+      
+      // Make city section visible
+      if (data.plan.startDate && data.plan.endDate) {
+        document.getElementById('city-details-wrapper').classList.remove('d-none');
+        document.getElementById('date-required-warning').classList.add('d-none');
+      }
+      
+      // Enhanced check for multiple cities
+      let hasMultipleCities = false;
+      
+      // First check for cities array
+      if (Array.isArray(data.plan.cities) && data.plan.cities.length > 1) {
+        console.log("Multiple cities detected from cities array:", data.plan.cities);
+        hasMultipleCities = true;
+      } 
+      // Fallback: Check destination string for comma-separated format
+      else if (data.plan.destination && data.plan.destination.includes(',')) {
+        console.log("Multiple cities detected from destination string:", data.plan.destination);
+        
+        // Parse cities from the destination string as a fallback
+        const cityParts = data.plan.destination.split(',').map(part => part.trim());
+        const parsedCities = cityParts.map(part => {
+          const match = part.match(/(.+?)\s*\((\d+)d\)/);
+          if (match) {
+            return { name: match[1].trim(), days: parseInt(match[2]) };
+          }
+          return { name: part, days: 0 };
+        });
+        
+        console.log("Parsed cities from destination:", parsedCities);
+        // Only replace cities if we've actually found multiple
+        if (parsedCities.length > 1) {
+          data.plan.cities = parsedCities;
+          hasMultipleCities = true;
+        }
+      }
+      
+      if (hasMultipleCities) {
+        // First force the toggle to be checked
+        const cityToggle = document.getElementById('city-selection-toggle');
+        cityToggle.checked = true;
+        
+        // Then manually show/hide the appropriate sections
+        document.getElementById('single-city-wrapper').classList.add('d-none');
+        document.getElementById('multi-city-wrapper').classList.remove('d-none');
+        
+        // Setup the multi-city UI
+        setupMultiCityUI(data.plan.cities);
+      } else if (data.plan.destination) {
+        // Single city case
+        let cityName = data.plan.destination;
+        if (cityName.includes('(')) {
+          cityName = cityName.split('(')[0].trim();
+        }
+        document.getElementById('destination').value = cityName;
+      }
+      
+      // Display current plan alert
+      displayCurrentPlan(data.plan);
+    }
+  })
+  .catch(error => console.error('Error loading plan:', error));
 
 // Handle form submission
 planForm.addEventListener('submit', function (e) {
@@ -622,6 +785,7 @@ planForm.addEventListener('submit', function (e) {
 
   const startDate = startDateInput.value;
   const endDate = endDateInput.value;
+  const country = document.getElementById('country').value.trim();
 
   if (!startDate || !endDate) {
     alert('Please select both a start and end date.');
@@ -655,12 +819,11 @@ planForm.addEventListener('submit', function (e) {
     destination = cities.map(city => `${city.name} (${city.days}d)`).join(', ');
   }
 
-    // Disable unused multi-city inputs if single-city mode is active
+  // Disable unused multi-city inputs if single-city mode is active
   if (!cityToggle.checked) {
     const hiddenInputs = multiCityWrapper.querySelectorAll('input');
     hiddenInputs.forEach(input => input.disabled = true);
   }
-
 
   // Send plan to server
   fetch('/api/plan', {
@@ -673,13 +836,14 @@ planForm.addEventListener('submit', function (e) {
       cities,
       startDate,
       endDate,
+      country,
     }),
   })
     .then(response => response.json())
     .then(data => {
       if (data.success) {
-        // Update current plan UI
-        planDestination.textContent = destination;
+        // Update current plan UI - INCLUDE COUNTRY
+        planDestination.textContent = country ? `${destination} in ${country}` : destination;
         planDates.textContent = formatDateRange(startDate, endDate);
         currentPlanAlert.style.display = 'block';
 
@@ -690,7 +854,7 @@ planForm.addEventListener('submit', function (e) {
             showWeatherForDateRange(weatherData.forecast, startDate, endDate);
           });
 
-        // ✅ Redirect to attractions
+        // Redirect to attractions
         window.location.href = '/attractions';
       } else {
         console.error('Plan submission failed:', data);
