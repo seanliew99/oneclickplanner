@@ -610,16 +610,48 @@
       const perDayCityMap = [];
       if (plan.cities && plan.cities.length > 0) {
         plan.cities.forEach(city => {
+          // Extract just the city name if it contains parentheses (like "Tokyo (2d)")
+          const cityName = typeof city.name === 'string' && city.name.includes('(') 
+            ? city.name.split('(')[0].trim() 
+            : city.name;
+            
           for (let i = 0; i < city.days; i++) {
-            perDayCityMap.push(city.name);
+            perDayCityMap.push(cityName);
           }
         });
       } else {
+        // For plans without explicit cities array, create entries based on date range
         const start = new Date(plan.startDate);
         const end = new Date(plan.endDate);
         const totalDays = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+        
+        // Extract just the destination name if it contains parentheses or commas
+        let destinationName = plan.destination;
+        if (typeof destinationName === 'string') {
+          // Handle comma-separated list like "Tokyo (2d), Osaka (2d)"
+          if (destinationName.includes(',')) {
+            const destinations = destinationName.split(',');
+            for (let i = 0; i < totalDays; i++) {
+              // Distribute days evenly among destinations (simplified approach)
+              const destIndex = Math.min(Math.floor(i / Math.ceil(totalDays / destinations.length)), destinations.length - 1);
+              let dest = destinations[destIndex].trim();
+              // Remove any day notation like "(2d)"
+              if (dest.includes('(')) {
+                dest = dest.split('(')[0].trim();
+              }
+              perDayCityMap.push(dest);
+            }
+            return perDayCityMap;
+          }
+          // Handle single destination with days notation like "Tokyo (2d)"
+          else if (destinationName.includes('(')) {
+            destinationName = destinationName.split('(')[0].trim();
+          }
+        }
+        
+        // Use the clean destination name for all days
         for (let i = 0; i < totalDays; i++) {
-          perDayCityMap.push(plan.destination);
+          perDayCityMap.push(destinationName);
         }
       }
       return perDayCityMap;
