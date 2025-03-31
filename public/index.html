@@ -1184,24 +1184,60 @@ planForm.addEventListener('submit', function (e) {
 // Handle clear plan button
 clearPlanBtn.addEventListener('click', function () {
   if (confirm('Are you sure you want to clear your current trip plan?')) {
+    // Call the new DELETE endpoint
     fetch('/api/plan', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        destination: '',
-        startDate: '',
-        endDate: '',
-      }),
+      method: 'DELETE',
     })
-      .then(() => {
-        // Reset form
-        planForm.reset();
-        endDateInput.setAttribute('disabled', true);
-        currentPlanAlert.style.display = 'none';
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          console.log('Plan cleared successfully');
+          
+          // Reset form and UI
+          planForm.reset();
+          endDateInput.setAttribute('disabled', true);
+          currentPlanAlert.style.display = 'none';
+          
+          // Reset any city entries in multi-city mode
+          if (document.getElementById('cities-container')) {
+            document.getElementById('cities-container').innerHTML = '';
+          }
+          
+          // Make sure the city details wrapper is hidden
+          if (document.getElementById('city-details-wrapper')) {
+            document.getElementById('city-details-wrapper').classList.add('d-none');
+          }
+          
+          // Show the date required warning
+          if (document.getElementById('date-required-warning')) {
+            document.getElementById('date-required-warning').classList.remove('d-none');
+          }
+          
+          // Reset city toggle if it exists
+          const cityToggle = document.getElementById('city-selection-toggle');
+          if (cityToggle) {
+            cityToggle.checked = false;
+            
+            // Reset single/multi city visibility
+            const singleCityWrapper = document.getElementById('single-city-wrapper');
+            const multiCityWrapper = document.getElementById('multi-city-wrapper');
+            if (singleCityWrapper && multiCityWrapper) {
+              singleCityWrapper.classList.remove('d-none');
+              multiCityWrapper.classList.add('d-none');
+            }
+          }
+          
+          // Optional: reload the page to ensure everything is reset
+          window.location.reload();
+        } else {
+          console.error('Failed to clear plan:', data);
+          alert('Failed to clear your plan. Please try again.');
+        }
       })
-      .catch(error => console.error('Error clearing plan:', error));
+      .catch(error => {
+        console.error('Error clearing plan:', error);
+        alert('Error clearing your plan. Please try again.');
+      });
   }
 });
 

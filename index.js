@@ -527,6 +527,32 @@ app.delete('/api/plan/places/:id', async (req, res) => {
   res.json({ success: true, plan: req.session.plan });
 });
 
+// Route to completely clear a travel plan
+app.delete('/api/plan', async (req, res) => {
+  console.log('Clearing plan from session');
+  
+  // Completely remove the plan from session
+  delete req.session.plan;
+  
+  // If user is authenticated, also update in database
+  if (req.session.user && req.session.user.sub) {
+    try {
+      const userId = req.session.user.sub;
+      const existingItinerary = await ItineraryModel.getItineraryByUserId(userId);
+      
+      if (existingItinerary) {
+        console.log(`Clearing itinerary for user ${userId} from database`);
+        await ItineraryModel.deleteItinerary(userId, existingItinerary.itineraryId);
+      }
+    } catch (error) {
+      console.error('Error clearing itinerary from database:', error);
+      // Continue even if DB operation fails - at least it's removed from the session
+    }
+  }
+  
+  res.json({ success: true, message: 'Plan cleared successfully' });
+});
+
 
 app.post('/api/plan/migrate', isAuthenticated, async (req, res) => {
   try {
