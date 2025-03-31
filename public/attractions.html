@@ -702,6 +702,7 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
                 <div class="modal-body">
                   <p>Select which day you'd like to add <strong id="place-name-display"></strong> to:</p>
                   <div id="day-selection-buttons" class="d-grid gap-2">
+                    <!-- Buttons will be dynamically inserted here -->
                   </div>
                 </div>
                 <div class="modal-footer">
@@ -924,6 +925,176 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
       });
     }
 
+    function addAllRecommendationsToItinerary() {
+      // Collect all recommendations
+      const allRecommendations = [];
+      
+      // Gather recommendations from each day
+      Object.entries(itineraryRecommendations).forEach(([dayIndex, places]) => {
+        console.log(`Day ${dayIndex} has ${places ? places.length : 0} recommendations`);
+        
+        if (!places || !Array.isArray(places)) {
+          console.error(`Invalid places for day ${dayIndex}:`, places);
+          return;
+        }
+        
+        places.forEach(place => {
+          // Skip places that have been removed
+          if (removedAttractions.has(place.place_id)) {
+            console.log(`Skipping place ${place.name} (${place.place_id}) as it's in removedAttractions`);
+            return;
+          }
+          
+          // Check if place is valid
+          if (!place || typeof place !== 'object') {
+            console.error('Invalid place object:', place);
+            return;
+          }
+          
+          // Ensure required fields are present
+          if (!place.place_id) {
+            console.error('Missing place_id for place:', place);
+            return; // Skip this place
+          }
+          
+          allRecommendations.push({
+            placeId: place.place_id,
+            name: place.name || 'Unknown Place',
+            address: place.formatted_address || '',
+            category: 'attraction',
+            notes: '',
+            indoor: document.getElementById('indoor-toggle').checked,
+            dayIndex: parseInt(dayIndex)
+          });
+        });
+      });
+      
+      console.log('Total recommendations to add:', allRecommendations.length);
+      
+      if (allRecommendations.length === 0) {
+        showNotification('warning', 'No recommendations available to add.');
+        return;
+      }
+      
+      // Show initial loading notification with progress bar
+      const initialNotification = createNotification('info', `Adding ${allRecommendations.length} attractions to your itinerary...`);
+      
+      // Create a progress bar in the notification
+      const progressBar = document.createElement('div');
+      progressBar.className = 'progress mt-2';
+      progressBar.innerHTML = `
+        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+            role="progressbar" 
+            style="width: 0%" 
+            aria-valuenow="0" 
+            aria-valuemin="0" 
+            aria-valuemax="100">0%</div>
+      `;
+      initialNotification.querySelector('.alert').appendChild(progressBar);
+      
+      // Process attractions one by one for maximum reliability
+      addAttractionsOneByOne(allRecommendations, progressBar, initialNotification);
+      
+      // Function to add attractions one by one with progress bar
+      function addAttractionsOneByOne(attractions, progressBar, notification) {
+        let currentIndex = 0;
+        let successCount = 0;
+        let duplicateCount = 0;
+        let errorCount = 0;
+        
+        function addNext() {
+          if (currentIndex >= attractions.length) {
+            // All done
+            console.log(`Completed adding attractions. Success: ${successCount}, Duplicates: ${duplicateCount}, Errors: ${errorCount}`);
+            
+            // Update notification with success message
+            if (successCount > 0) {
+              let message = `Successfully added ${successCount} attractions to your itinerary!`;
+              if (duplicateCount > 0) {
+                message += ` (${duplicateCount} were already in your plan)`;
+              }
+              updateNotificationWithResult(notification, 'success', message);
+            } else if (duplicateCount > 0 && errorCount === 0) {
+              updateNotificationWithResult(notification, 'warning', 'All attractions were already in your itinerary.');
+            } else if (errorCount > 0) {
+              updateNotificationWithResult(notification, 'warning', 
+                `Added ${successCount} attractions, but ${errorCount} failed. Check console for details.`);
+            }
+            
+            // Reload the page after a short delay
+            setTimeout(() => {
+              window.location.reload();
+            }, 2000);
+            return;
+          }
+          
+          const attraction = attractions[currentIndex];
+          
+          // Log progress
+          console.log(`Adding ${currentIndex + 1}/${attractions.length}: ${attraction.name} (Day ${attraction.dayIndex})`);
+          
+          // Update progress bar
+          updateProgress(progressBar, currentIndex, attractions.length);
+          
+          // Add the attraction
+          fetch('/api/plan/places', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(attraction)
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`Server error ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+          })
+          .then(data => {
+            if (data.success) {
+              successCount++;
+              console.log(`Successfully added: ${attraction.name}`);
+            } else if (data.duplicate) {
+              duplicateCount++;
+              console.log(`Attraction already exists: ${attraction.name}`);
+            } else {
+              console.warn(`Unexpected response for ${attraction.name}:`, data);
+              errorCount++;
+            }
+            
+            // Move to next attraction
+            currentIndex++;
+            
+            // Update progress bar
+            updateProgress(progressBar, currentIndex, attractions.length);
+            
+            // Update notification message to show progress
+            const progressMessage = `Adding attractions to your itinerary... (${currentIndex}/${attractions.length})`;
+            updateNotificationMessage(notification, 'info', progressMessage, progressBar);
+            
+            // Wait a bit before next request to avoid overloading the server
+            setTimeout(addNext, 300);
+          })
+          .catch(error => {
+            errorCount++;
+            console.error(`Error adding ${attraction.name}:`, error);
+            
+            // Continue to next attraction even if this one failed
+            currentIndex++;
+            
+            // Update progress bar even on error
+            updateProgress(progressBar, currentIndex, attractions.length);
+            
+            setTimeout(addNext, 300);
+          });
+        }
+        
+        // Start the process
+        addNext();
+      }
+    }
+
+
     function setupAddAllButton() {
       const addAllBtn = document.getElementById('add-all-recommendations');
       if (!addAllBtn) return;
@@ -1014,6 +1185,7 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
             aria-valuemax="100">0%</div>
       `;
       loadingNotification.querySelector('.alert').appendChild(progressBar);
+      
       fetch('/api/plan')
         .then(response => response.json())
         .then(data => {
@@ -1022,20 +1194,26 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
           }
           const plan = data.plan;
           updateNotificationMessage(loadingNotification, 'info', 'Clearing existing attractions...');
+          
           if (!plan.attractions || plan.attractions.length === 0) {
             updateNotificationMessage(loadingNotification, 'info', 'No existing attractions to clear. Adding recommendations...');
-            addAllRecommendationsToItinerary();
+            // Remove the current notification before starting the next phase
             loadingNotification.remove();
+            addAllRecommendationsToItinerary();
             return;
           }
+          
           updateProgress(progressBar, 0, plan.attractions.length);
+          
           const fastDeletePromise = fetch(`/api/plan/itinerary/${plan.itineraryId}`, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' }
           });
+          
           const timeoutPromise = new Promise((_, reject) => {
             setTimeout(() => reject(new Error('Delete operation timeout')), 1000);
           });
+          
           Promise.race([fastDeletePromise, timeoutPromise])
             .then(response => {
               if (!response.ok) {
@@ -1063,8 +1241,14 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
               return response.json();
             })
             .then(() => {
-              addAllRecommendationsToItinerary();
-              loadingNotification.remove();
+              // Important: Remove the notification completely before starting the next phase
+              if (loadingNotification.parentNode) {
+                loadingNotification.remove();
+              }
+              // Small delay to ensure UI updates correctly
+              setTimeout(() => {
+                addAllRecommendationsToItinerary();
+              }, 100);
             })
             .catch(error => {
               console.log('Fast delete approach failed, falling back to sequential deletion:', error);
@@ -1075,11 +1259,12 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
         .catch(error => {
           console.error('Error fetching plan:', error);
           updateNotificationWithResult(loadingNotification, 'error', 'Failed to fetch current itinerary. Please try again.');
+          // Ensure the notification is removed after error
           setTimeout(() => {
             if (loadingNotification.parentNode) {
               loadingNotification.remove();
             }
-          }, 1000);
+          }, 3000);
         });
     }
 
@@ -1087,11 +1272,22 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
       if (!attractions || index >= attractions.length) {
         console.log('Finished deleting all attractions sequentially');
         updateNotificationMessage(notification, 'success', 'Successfully cleared all attractions! Adding recommendations...');
-        addAllRecommendationsToItinerary();
+        
+        // Important: Remove the notification completely before starting the next phase
+        if (notification.parentNode) {
+          notification.remove();
+        }
+        
+        // Small delay to ensure UI updates correctly
+        setTimeout(() => {
+          addAllRecommendationsToItinerary();
+        }, 100);
         return;
       }
+      
       updateProgress(progressBar, index, total);
       const attraction = attractions[index];
+      
       fetch(`/api/plan/places/${attraction.id}?category=attraction`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' }
@@ -1151,7 +1347,7 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
       return alertContainer;
     }
 
-    function updateNotificationMessage(notificationElement, type, message) {
+    function updateNotificationMessage(notificationElement, type, message, progressBar) {
       const alertClass = {
         'success': 'alert-success',
         'error': 'alert-danger',
@@ -1168,11 +1364,19 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
       
       const alertElement = notificationElement.querySelector('.alert');
       if (!alertElement) return;
+      
+      // Save progress bar if it exists
+      const oldProgressBar = alertElement.querySelector('.progress');
+      
+      // Change alert class
       alertElement.className = `alert ${alertClass} fade show`;
-      const progressBar = alertElement.querySelector('.progress');
+      
+      // Change icon and message
       alertElement.innerHTML = `<i class="bi ${iconClass} me-2"></i>${message}`;
-      if (progressBar) {
-        alertElement.appendChild(progressBar);
+      
+      // Re-add progress bar if it exists
+      if (oldProgressBar || progressBar) {
+        alertElement.appendChild(progressBar || oldProgressBar);
       }
     }
 
@@ -1620,51 +1824,74 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
     }
 
     document.addEventListener('DOMContentLoaded', function() {
+      // Call addDaySelectionModal to ensure the modal is created
+      addDaySelectionModal();
+      
       document.getElementById('search-form').addEventListener('submit', function(e) {
         e.preventDefault();
         const keyword = document.getElementById('keyword').value;
         originalSearchAttractions(keyword);
       });
       
+      // This is the crucial part to update - the save button handler
       document.getElementById('save-attraction-btn').addEventListener('click', function() {
         if (!selectedPlace) return;
         if (!checkAuthBeforeAddToItinerary(selectedPlace)) return;
+        
         selectedPlaceForDaySelection = {
           placeId: selectedPlace.place_id,
           name: selectedPlace.name,
-          address: selectedPlace.formatted_address,
+          address: selectedPlace.formatted_address || '',
           notes: document.getElementById('place-notes').value,
           indoor: document.getElementById('indoor-toggle').checked
         };
+        
+        // Hide the attraction details modal
         attractionModal.hide();
+        
+        // Check if the user has a trip with dates
         fetch('/api/plan')
           .then(response => response.json())
           .then(data => {
             if (data.plan && data.plan.startDate && data.plan.endDate) {
+              // Show day selection if the trip has dates
               const startDate = new Date(data.plan.startDate);
               const endDate = new Date(data.plan.endDate);
               const dayCount = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+              
+              // Update the place name in the modal
               document.getElementById('place-name-display').textContent = selectedPlaceForDaySelection.name;
+              
+              // Generate day selection buttons
               const buttonsContainer = document.getElementById('day-selection-buttons');
               buttonsContainer.innerHTML = '';
+              
               for (let i = 0; i < dayCount; i++) {
                 const currentDay = new Date(startDate);
                 currentDay.setDate(startDate.getDate() + i);
+                
+                // Create a button for each day
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.className = 'btn btn-outline-primary';
                 button.innerHTML = `Day ${i + 1} <small>(${currentDay.toLocaleDateString()})</small>`;
                 button.dataset.dayIndex = i;
+                
+                // Add click handler for the button
                 button.addEventListener('click', function() {
                   addToItineraryForDay(selectedPlaceForDaySelection, i);
                   const daySelectionModal = bootstrap.Modal.getInstance(document.getElementById('daySelectionModal'));
                   daySelectionModal.hide();
                 });
+                
                 buttonsContainer.appendChild(button);
               }
+              
+              // Show the day selection modal
               const daySelectionModal = new bootstrap.Modal(document.getElementById('daySelectionModal'));
               daySelectionModal.show();
             } else {
+              // If no dates, just add without day selection
               addToItineraryWithoutDay(selectedPlaceForDaySelection);
             }
           })
@@ -1672,6 +1899,16 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
             console.error('Error loading plan for day selection:', error);
             addToItineraryWithoutDay(selectedPlaceForDaySelection);
           });
+      });
+      
+      document.getElementById('indoor-toggle').addEventListener('change', (e) => {
+        const keywordInput = document.getElementById('keyword');
+        if (e.target.checked) {
+          keywordInput.value = 'indoors';
+        } else {
+          keywordInput.value = '';
+        }
+        originalSearchAttractions(keywordInput.value);
       });
     });
     
