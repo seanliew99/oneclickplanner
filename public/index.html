@@ -447,6 +447,20 @@ footer {
   color: white;
 }
 
+.trip-duration-badge {
+  background-color: rgba(0, 114, 255, 0.2);
+  color: #4db8ff;
+  border: 1px solid rgba(77, 184, 255, 0.3);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 0.9rem;
+  display: inline-block;
+  margin-top: 10px;
+  backdrop-filter: blur(5px);
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
 </style>
 
 </head>
@@ -525,6 +539,9 @@ footer {
                 <div class="col-md-6">
                   <label for="end-date" class="form-label">End Date</label>
                   <input type="date" class="form-control" id="end-date" required>
+                </div>
+                <div class="col-12">
+                  <div id="trip-duration" class="trip-duration-badge" style="display: none;"></div>
                 </div>
               </div>
 
@@ -763,27 +780,52 @@ footer {
 
 
   function validateCityDaysInput(e) {
-  const totalTripDays = calculateTripDays(startDateInput.value, endDateInput.value);
-  const currentInput = e.target;
-  const allInputs = document.querySelectorAll('.city-days');
+    const totalTripDays = calculateTripDays(startDateInput.value, endDateInput.value);
+    const currentInput = e.target;
+    const allInputs = document.querySelectorAll('.city-days');
 
-  let usedSoFar = 0;
-  allInputs.forEach(input => {
-    if (input !== currentInput) {
-      const val = parseInt(input.value);
-      if (!isNaN(val)) usedSoFar += val;
+    let usedSoFar = 0;
+    allInputs.forEach(input => {
+      if (input !== currentInput) {
+        const val = parseInt(input.value);
+        if (!isNaN(val)) usedSoFar += val;
+      }
+    });
+
+    let value = parseInt(currentInput.value);
+    if (isNaN(value) || value < 1) value = 1;
+
+    // Cap the current input to not exceed the total trip days
+    const maxAllowed = totalTripDays - usedSoFar;
+    if (value > maxAllowed) {
+      currentInput.value = maxAllowed > 0 ? maxAllowed : 1;
     }
-  });
-
-  let value = parseInt(currentInput.value);
-  if (isNaN(value) || value < 1) value = 1;
-
-  // Cap the current input to not exceed the total trip days
-  const maxAllowed = totalTripDays - usedSoFar;
-  if (value > maxAllowed) {
-    currentInput.value = maxAllowed > 0 ? maxAllowed : 1;
   }
+
+  function updateTripDuration() {
+    const startDate = document.getElementById('start-date').value;
+    const endDate = document.getElementById('end-date').value;
+    
+    // Get the container where we'll show the duration (we'll create this in HTML)
+    const durationElement = document.getElementById('trip-duration');
+    
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      
+      // Calculate the difference in days
+      const diffTime = Math.abs(end - start);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Include both start and end days
+      
+      // Display the duration
+      durationElement.innerHTML = `<i class="bi bi-calendar-check"></i> Trip Duration: <strong>${diffDays} day${diffDays !== 1 ? 's' : ''}</strong>`;
+      durationElement.style.display = 'block';
+    } else {
+      // Hide the element if either date is not set
+      durationElement.style.display = 'none';
+    }
   }
+
 
 
   function toggleCitySectionVisibility() {
@@ -805,6 +847,13 @@ footer {
   document.getElementById('end-date').addEventListener('change', toggleCitySectionVisibility);
   attachCityDaysListeners(); // for the initial city-days input on page load
 
+  document.getElementById('start-date').addEventListener('change', updateTripDuration);
+  document.getElementById('end-date').addEventListener('change', updateTripDuration);
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initial call to set up the display
+    updateTripDuration();
+  });
 
   cityToggle.addEventListener('change', function() {
     const isMulti = this.checked;
