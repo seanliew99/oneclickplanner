@@ -373,6 +373,94 @@
       font-weight: 600;
       color: var(--dark-color);
     }
+
+    .modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.custom-modal {
+  background: rgba(30, 39, 64, 0.95);
+  border: 1px solid rgba(77, 184, 255, 0.3);
+  border-radius: 16px;
+  padding: 25px 30px;
+  width: 90%;
+  max-width: 450px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(77, 184, 255, 0.2);
+  text-align: center;
+  transform: translateY(0);
+  animation: modal-in 0.3s ease-out;
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-icon {
+  font-size: 3rem;
+  color: #ff6f61;
+  margin-bottom: 15px;
+}
+
+.modal-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 15px;
+}
+
+.modal-message {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 25px;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.modal-btn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-cancel {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #ff6f61, #ff427f);
+  color: white;
+  box-shadow: 0 4px 15px rgba(255, 111, 97, 0.4);
+}
+
+.btn-danger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 111, 97, 0.6);
+}
     
     /* Footer */
     footer {
@@ -1185,58 +1273,120 @@
   a.download = 'itinerary.ics';
   a.click();
 }
+
 function formatICSDate(date) {
   return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 }
 
     
     // Export via Email
-    function exportEmail() {
-  const subject = 'My Travel Itinerary';
-  const body = encodeURIComponent(generatePlainTextItinerary(currentPlan));
+  function exportEmail() {
+    const subject = 'My Travel Itinerary';
+    const body = encodeURIComponent(generatePlainTextItinerary(currentPlan));
 
-  window.location.href = `mailto:?subject=${subject}&body=${body}`;
-}
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  }
 
-function clearPlan() {
-  if (confirm('Are you sure you want to clear your current trip plan?')) {
-    // Use a much simpler request format - exactly matching the index.html implementation
-    fetch('/api/plan', {
-      method: 'DELETE', // Try DELETE instead of POST
-    })
-    .then(response => {
-      if (response.ok) {
-        // Successfully cleared - redirect to home
-        window.location.href = '/';
-      } else {
-        // If DELETE failed, try the POST approach from the index page
-        return fetch('/api/plan', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            destination: '',
-            startDate: '',
-            endDate: '',
-          }),
+  function clearPlan() {
+    // Use our custom confirm dialog instead of the browser's default
+    showCustomConfirmDialog('Are you sure you want to clear your current trip plan?', function(confirmed) {
+      if (confirmed) {
+        // Use a much simpler request format - exactly matching the index.html implementation
+        fetch('/api/plan', {
+          method: 'DELETE',
+        })
+        .then(response => {
+          if (response.ok) {
+            // Successfully cleared - redirect to home
+            window.location.href = '/';
+          } else {
+            // If DELETE failed, try the POST approach as fallback
+            return fetch('/api/plan', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                destination: '',
+                startDate: '',
+                endDate: '',
+              }),
+            });
+          }
+        })
+        .then(response => {
+          if (response && response.ok) {
+            // Successfully cleared with POST approach - redirect to home
+            window.location.href = '/';
+          } else if (response) {
+            throw new Error('Failed to clear plan with both methods');
+          }
+        })
+        .catch(error => {
+          console.error('Error clearing plan:', error);
+          alert('Could not clear the plan. Please try again or return to the home page.');
         });
       }
-    })
-    .then(response => {
-      if (response && response.ok) {
-        // Successfully cleared with POST approach - redirect to home
-        window.location.href = '/';
-      } else if (response) {
-        throw new Error('Failed to clear plan with both methods');
-      }
-    })
-    .catch(error => {
-      console.error('Error clearing plan:', error);
-      alert('Could not clear the plan. Please try again or return to the home page.');
     });
   }
-}
+
+  function showCustomConfirmDialog(message, callback) {
+    // Create modal backdrop
+    const modalBackdrop = document.createElement('div');
+    modalBackdrop.className = 'modal-backdrop';
+    
+    // Create modal content
+    const modalContent = document.createElement('div');
+    modalContent.className = 'custom-modal';
+    
+    // Add modal content
+    modalContent.innerHTML = `
+      <div class="modal-icon">
+        <i class="bi bi-exclamation-circle"></i>
+      </div>
+      <h3 class="modal-title">Confirm Action</h3>
+      <p class="modal-message">${message}</p>
+      <div class="modal-buttons">
+        <button class="modal-btn btn-cancel" id="confirmCancel">Cancel</button>
+        <button class="modal-btn btn-danger" id="confirmOk">Clear Plan</button>
+      </div>
+    `;
+    
+    // Add modal to DOM
+    modalBackdrop.appendChild(modalContent);
+    document.body.appendChild(modalBackdrop);
+    
+    // Add event listeners to buttons
+    document.getElementById('confirmCancel').addEventListener('click', function() {
+      document.body.removeChild(modalBackdrop);
+      if (callback) callback(false);
+    });
+    
+    document.getElementById('confirmOk').addEventListener('click', function() {
+      document.body.removeChild(modalBackdrop);
+      if (callback) callback(true);
+    });
+    
+    // Prevent clicks on the backdrop from closing the modal
+    modalBackdrop.addEventListener('click', function(e) {
+      if (e.target === modalBackdrop) {
+        document.getElementById('confirmCancel').click();
+      }
+    });
+    
+    // Add keyboard support (Esc to cancel, Enter to confirm)
+    const keyHandler = function(e) {
+      if (e.key === 'Escape') {
+        document.getElementById('confirmCancel').click();
+        document.removeEventListener('keydown', keyHandler);
+      } else if (e.key === 'Enter') {
+        document.getElementById('confirmOk').click();
+        document.removeEventListener('keydown', keyHandler);
+      }
+    };
+    document.addEventListener('keydown', keyHandler);
+  }
+
 
 function generatePlainTextItinerary(plan) {
   let text = 'Here’s my travel itinerary:\n\n';
