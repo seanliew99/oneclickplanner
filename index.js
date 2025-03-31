@@ -45,22 +45,33 @@ app.get('/api/config', (req, res) => {
 
 // Save or update travel plan
 app.post('/api/plan', async (req, res) => {
-  const { destination, cities = [], startDate, endDate, country } = req.body;
+  // Extract data from request body (either from form submission or import)
+  const { 
+    destination, 
+    cities = [], 
+    startDate, 
+    endDate, 
+    country,
+    attractions = [],
+    restaurants = []
+  } = req.body;
   
   if (!destination) {
     return res.status(400).json({ error: 'Destination is required' });
   }
   
-  // Store the plan in session as before (for non-authenticated users)
+  // Create plan object, preserving any imported attractions/restaurants
+  // This allows importing an entire itinerary including saved places
   req.session.plan = {
-    destination, // still keep for quick display
-    cities,      // <-- array of { name, days }
+    destination,
+    cities,
     startDate,
     endDate,
     country,
     createdAt: new Date().toISOString(),
-    attractions: req.session.plan?.attractions || [],
-    restaurants: req.session.plan?.restaurants || []
+    // Use imported attractions/restaurants or fallback to existing ones
+    attractions: attractions.length > 0 ? attractions : (req.session.plan?.attractions || []),
+    restaurants: restaurants.length > 0 ? restaurants : (req.session.plan?.restaurants || [])
   };
   
   // If user is authenticated, also save to DynamoDB
@@ -80,6 +91,15 @@ app.post('/api/plan', async (req, res) => {
         existingItinerary.endDate = endDate;  
         existingItinerary.country = country;
         existingItinerary.updatedAt = new Date().toISOString();
+        
+        // Update attractions and restaurants if imported
+        if (attractions.length > 0) {
+          existingItinerary.attractions = attractions;
+        }
+        if (restaurants.length > 0) {
+          existingItinerary.restaurants = restaurants;
+        }
+        
         savedItinerary = await ItineraryModel.saveItinerary(userId, existingItinerary);
       } else {
         // Create new itinerary
