@@ -230,7 +230,7 @@ function checkAuthState() {
         setAuthenticatedUser(data.user);
         
         // Migrate any session plan to DynamoDB
-        migratePlanToDynamoDB();
+        migratePlanToDB();
       } else {
         // Check for auth token in URL (Cognito redirect with code)
         const urlParams = new URLSearchParams(window.location.search);
@@ -314,7 +314,7 @@ function verifyAuthentication(userData) {
         updateUIForAuthenticatedUser(userData);
         
         // Migrate any session plan to DynamoDB
-        migratePlanToDynamoDB();
+        migratePlanToDB();
       } else {
         // No longer authenticated, clear state
         clearAuthState(false); // Don't redirect
@@ -331,7 +331,7 @@ function verifyAuthentication(userData) {
 }
 
 // Migrate session plan to DynamoDB after login
-function migratePlanToDynamoDB() {
+function migratePlanToDB() {
   fetch('/api/plan/migrate', {
     method: 'POST',
     headers: {

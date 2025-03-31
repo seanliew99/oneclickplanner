@@ -989,6 +989,46 @@
   font-weight: 400;
 }
 
+#import-no-plan-btn {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #4361ee;
+  border-color: #4361ee;
+}
+
+#import-no-plan-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px rgba(67, 97, 238, 0.3);
+  background-color: rgba(67, 97, 238, 0.1);
+}
+
+/* Ripple effect for the button */
+#import-no-plan-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%, -50%);
+  transform-origin: 50% 50%;
+}
+
+#import-no-plan-btn:focus:not(:active)::after {
+  animation: ripple 1s ease-out;
+}
+
+/* Make the no-plan-alert more visually consistent with the site's dark theme */
+.no-plan-alert {
+  background: rgba(255, 243, 205, 0.9);
+  backdrop-filter: blur(10px);
+}
+
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50%      { opacity: 0; }
@@ -1048,15 +1088,20 @@
       
     <div class="container">
       <!-- No Plan Alert (Hidden by default) -->
-      <div id="no-plan-alert" class="no-plan-alert" role="alert" style="display: none;">
+      <div id="no-plan-alert" class="no-plan-alert" role="alert">
         <div class="d-flex">
           <div class="me-3">
             <i class="bi bi-exclamation-triangle-fill fs-3"></i>
           </div>
           <div>
             <h4 class="alert-heading">No trip plan found!</h4>
-            <p>You haven't created a trip plan yet. Start by setting your destination and travel dates.</p>
-            <a href="/" class="btn btn-warning">Create Trip Plan</a>
+            <p>You haven't created a trip plan yet. Start by setting your destination and travel dates or import an existing itinerary.</p>
+            <div class="d-flex gap-2">
+              <a href="/" class="btn btn-warning">Create Trip Plan</a>
+              <button id="import-no-plan-btn" class="btn btn-outline-primary import-export-btn">
+                <i class="bi bi-upload me-1"></i>Import Itinerary
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1515,7 +1560,12 @@
       restaurantsContainer.innerHTML = errorMessage;
     }
 
-    // Replace loadCurrentPlan to use our new organization function
+    const importNoPlanBtn = document.getElementById('import-no-plan-btn');
+    if (importNoPlanBtn) {
+      importNoPlanBtn.addEventListener('click', importItinerary);
+    }
+
+    // Initialize current plan
     function loadCurrentPlan() {
       fetch('/api/plan')
         .then(response => response.json())
@@ -1538,12 +1588,18 @@
             document.getElementById('restaurants-count').textContent = restaurantsCount;
             document.getElementById('days-count').textContent = daysCount;
             
-            // Use our new day-based organization function
+            // Use our day-based organization function
             organizeItineraryByDay();
           } else {
             // No plan found
             document.getElementById('no-plan-alert').style.display = 'block';
             document.getElementById('trip-info').style.display = 'none';
+            
+            // Set up the import button when no plan exists
+            const importNoPlanBtn = document.getElementById('import-no-plan-btn');
+            if (importNoPlanBtn) {
+              importNoPlanBtn.addEventListener('click', importItinerary);
+            }
           }
         })
         .catch(error => {
@@ -2327,7 +2383,7 @@ function showToast(type, message) {
       }
     }, 300);
   }, 3000);
-}
+}C
 
 
   </script>
