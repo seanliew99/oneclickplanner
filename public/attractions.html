@@ -310,6 +310,14 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
   50%      { opacity: 0; }
 }
 
+#map {
+  max-width: 100%;
+  height: 400px;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
 
   </style>
 </head>
@@ -405,20 +413,22 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
       <!-- Map and Results Container -->
       <div class="row">
         <!-- Map Column -->
-        <div class="col-lg-6 mb-4">
-          <div id="map"></div>
+        <div class="text-center mb-4">
+          <div id="map" style="max-width: 800px; margin: 0 auto;"></div>
         </div>
-        <!-- Results Column -->
-        <div class="col-lg-6">
+        
+        <div class="text-center">
           <div id="result-count" class="result-count"></div>
-          <div id="spinner" class="spinner-container" style="display: none;">
-            <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
-          </div>
-          <div id="results-container" class="row g-4"></div>
         </div>
-      </div>
+        
+        <div id="spinner" class="spinner-container" style="display: none;">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+        
+        <div id="results-container" class="row g-4 justify-content-center"></div>
+        
     </div>
   </div>
 

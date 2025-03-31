@@ -480,22 +480,26 @@ body {
       </div>
 
       <!-- Map and Results Container -->
-      <div class="row">
-        <!-- Map Column -->
-        <div class="col-lg-6 mb-4">
-          <div id="map"></div>
-        </div>
-        <!-- Results Column -->
-        <div class="col-lg-6">
-          <div id="result-count" class="result-count"></div>
-          <div id="spinner" class="spinner-container" style="display: none;">
-            <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
-          </div>
-          <div id="results-container" class="row g-4"></div>
-        </div>
-      </div>
+   <!-- Centered Map -->
+<div class="text-center mb-4">
+  <div id="map" style="max-width: 800px; margin: 0 auto;"></div>
+</div>
+
+<!-- Result Count -->
+<div class="text-center">
+  <div id="result-count" class="result-count"></div>
+</div>
+
+<!-- Spinner -->
+<div id="spinner" class="spinner-container" style="display: none;">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+</div>
+
+<!-- Restaurant Results -->
+<div id="results-container" class="row g-4 justify-content-center"></div>
+
     </div>
   </div>
 
