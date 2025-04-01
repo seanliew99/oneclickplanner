@@ -1906,79 +1906,89 @@ card.innerHTML = `
 }
 
 
-    function showPlaceDetails(place) {
-      selectedPlace = place;
-      document.getElementById('modal-title').textContent = place.name;
-      document.getElementById('modal-body').innerHTML = `
-        <div class="text-center my-4">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
+function showPlaceDetails(place) {
+  selectedPlace = place;
+  document.getElementById('modal-title').textContent = place.name;
+  document.getElementById('modal-body').innerHTML = `
+    <div class="text-center my-4">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-2">Loading details...</p>
+    </div>
+  `;
+  attractionModal.show();
+
+  fetch(`/api/places/${place.place_id}`)
+    .then(response => response.json())
+    .then(data => {
+      let photoUrl;
+
+      if (place.photos && place.photos.length > 0) {
+        const photoName = place.photos[0].name;
+        photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${apiKey}&maxWidthPx=600`;
+      } else {
+        photoUrl = `https://source.unsplash.com/600x400/?${encodeURIComponent(place.name)}`;
+      }
+
+      if (data.status === 'OK' && data.result) {
+        const details = data.result;
+
+        document.getElementById('modal-body').innerHTML = `
+          <img src="${photoUrl}" alt="${place.name}" class="img-fluid rounded mb-3" style="max-height: 300px; object-fit: cover; width: 100%;">
+          <div class="mb-4">
+            <h4>${details.name}</h4>
+            <p>${details.rating ? `<span class="rating">★ ${details.rating}</span>` : ''}</p>
+            <p>${details.formatted_address || ''}</p>
+            ${details.formatted_phone_number ? `<p><strong>Phone:</strong> ${details.formatted_phone_number}</p>` : ''}
+            ${details.website ? `<p><strong>Website:</strong> <a href="${details.website}" target="_blank">${details.website}</a></p>` : ''}
           </div>
-          <p class="mt-2">Loading details...</p>
+          ${details.description ? `
+            <div class="mb-4">
+              <h5>About</h5>
+              <p>${details.description}</p>
+            </div>
+          ` : ''}
+          ${details.opening_hours && details.opening_hours.weekday_text ? `
+            <div class="mb-4">
+              <h5>Opening Hours</h5>
+              <ul class="list-unstyled">
+                ${details.opening_hours.weekday_text.map(day => `<li>${day}</li>`).join('')}
+              </ul>
+            </div>
+          ` : ''}
+          <div class="mb-3">
+            <h5>Add Notes</h5>
+            <textarea id="place-notes" class="form-control" rows="3" placeholder="Add any notes about this place..."></textarea>
+          </div>
+        `;
+      } else {
+        document.getElementById('modal-body').innerHTML = `
+          <div class="alert alert-warning">
+            Could not load detailed information for this place.
+          </div>
+          <img src="${photoUrl}" alt="${place.name}" class="img-fluid rounded mb-3" style="max-height: 300px; object-fit: cover; width: 100%;">
+          <div class="mb-3">
+            <h4>${place.name}</h4>
+            <p>${place.formatted_address || ''}</p>
+          </div>
+          <div class="mb-3">
+            <h5>Add Notes</h5>
+            <textarea id="place-notes" class="form-control" rows="3" placeholder="Add any notes about this place..."></textarea>
+          </div>
+        `;
+      }
+    })
+    .catch(error => {
+      console.error('Error fetching place details:', error);
+      document.getElementById('modal-body').innerHTML = `
+        <div class="alert alert-danger">
+          Error loading place details. Please try again later.
         </div>
       `;
-      attractionModal.show();
-      fetch(`/api/places/${place.place_id}`)
-        .then(response => response.json())
-        .then(data => {
-          if (data.status === 'OK' && data.result) {
-            const details = data.result;
-            document.getElementById('modal-body').innerHTML = `
-              <div class="place-photo" style="background-image: url('https://source.unsplash.com/600x400/?${encodeURIComponent(place.name)}'); height: 200px; background-size: cover; background-position: center;"></div>
-              <div class="mb-4">
-                <h4>${details.name}</h4>
-                <p>
-                  ${details.rating ? `<span class="rating">★ ${details.rating}</span>` : ''}
-                </p>
-                <p>${details.formatted_address || ''}</p>
-                ${details.formatted_phone_number ? `<p><strong>Phone:</strong> ${details.formatted_phone_number}</p>` : ''}
-                ${details.website ? `<p><strong>Website:</strong> <a href="${details.website}" target="_blank">${details.website}</a></p>` : ''}
-              </div>
-              ${details.description ? `
-                <div class="mb-4">
-                  <h5>About</h5>
-                  <p>${details.description}</p>
-                </div>
-              ` : ''}
-              ${details.opening_hours && details.opening_hours.weekday_text ? `
-                <div class="mb-4">
-                  <h5>Opening Hours</h5>
-                  <ul class="list-unstyled">
-                    ${details.opening_hours.weekday_text.map(day => `<li>${day}</li>`).join('')}
-                  </ul>
-                </div>
-              ` : ''}
-              <div class="mb-3">
-                <h5>Add Notes</h5>
-                <textarea id="place-notes" class="form-control" rows="3" placeholder="Add any notes about this place..."></textarea>
-              </div>
-            `;
-          } else {
-            document.getElementById('modal-body').innerHTML = `
-              <div class="alert alert-warning">
-                Could not load detailed information for this place.
-              </div>
-              <div class="place-photo" style="background-image: url('https://source.unsplash.com/600x400/?${encodeURIComponent(place.name)}'); height: 200px; background-size: cover; background-position: center;"></div>
-              <div class="mb-3">
-                <h4>${place.name}</h4>
-                <p>${place.formatted_address || ''}</p>
-              </div>
-              <div class="mb-3">
-                <h5>Add Notes</h5>
-                <textarea id="place-notes" class="form-control" rows="3" placeholder="Add any notes about this place..."></textarea>
-              </div>
-            `;
-          }
-        })
-        .catch(error => {
-          console.error('Error fetching place details:', error);
-          document.getElementById('modal-body').innerHTML = `
-            <div class="alert alert-danger">
-              Error loading place details. Please try again later.
-            </div>
-          `;
-        });
-    }
+    });
+}
+
 
     function clearSearchMarkers() {
       // Only clear the "found" markers, NOT the recommended ones
