@@ -773,14 +773,119 @@ footer {
   const addCityBtn = document.getElementById('add-city-btn');
   const cityToggle = document.getElementById('city-selection-toggle');
 
-  // ✅ Initial destination input required toggle based on checkbox
-  const isMulti = cityToggle.checked;
+
+  // This function properly toggles form validation based on the city selection mode
+function toggleCityInputValidation() {
+  const isMulti = document.getElementById('city-selection-toggle').checked;
+  const singleCityWrapper = document.getElementById('single-city-wrapper');
+  const multiCityWrapper = document.getElementById('multi-city-wrapper');
+  
+  // Update UI visibility
+  singleCityWrapper.classList.toggle('d-none', isMulti);
+  multiCityWrapper.classList.toggle('d-none', !isMulti);
+  
+  // Single city input
   const destinationInput = document.getElementById('destination');
-  if (isMulti) {
-    destinationInput.removeAttribute('required');
-  } else {
-    destinationInput.setAttribute('required', 'required');
+  
+  // Handle single city mode
+  if (!isMulti) {
+    // Enable single city input and make it required
+    destinationInput.disabled = false;
+    destinationInput.required = true;
+    
+    // Disable all multi-city inputs
+    const multiCityInputs = multiCityWrapper.querySelectorAll('input');
+    multiCityInputs.forEach(input => {
+      input.disabled = true;
+      input.required = false;
+    });
+  } 
+  // Handle multi-city mode
+  else {
+    // Disable single city input
+    destinationInput.disabled = true;
+    destinationInput.required = false;
+    
+    // Enable all multi-city inputs
+    const multiCityInputs = multiCityWrapper.querySelectorAll('input');
+    multiCityInputs.forEach(input => {
+      input.disabled = false;
+      input.required = true;
+    });
+    
+    
+    // If switching to multi-city mode and there are no entries, add one
+// If switching to multi-city mode and there are no entries, add one
+const citiesContainer = document.getElementById('cities-container');
+if (citiesContainer.children.length === 0) {
+  const entry = document.createElement('div');
+  entry.className = 'row mb-2 city-entry';
+  entry.innerHTML = `
+    <div class="col-md-6">
+      <input type="text" class="form-control city-name" placeholder="City name" required />
+    </div>
+    <div class="col-md-4">
+      <input type="number" class="form-control city-days" placeholder="Days" min="1" required />
+    </div>
+    <div class="col-md-2">
+      <button type="button" class="btn btn-danger remove-city w-100">−</button>
+    </div>
+  `;
+  citiesContainer.appendChild(entry);
+  attachCityDaysListeners();
+  updateAddCityBtnState();
+}
   }
+}
+
+
+// Add a new city entry
+function addCityEntry() {
+  const citiesContainer = document.getElementById('cities-container');
+  const entry = document.createElement('div');
+  entry.className = 'row mb-2 city-entry';
+  entry.innerHTML = `
+    <div class="col-md-6">
+      <input type="text" class="form-control city-name" placeholder="City name" required />
+    </div>
+    <div class="col-md-4">
+      <input type="number" class="form-control city-days" placeholder="Days" min="1" required />
+    </div>
+    <div class="col-md-2">
+      <button type="button" class="btn btn-danger remove-city w-100">−</button>
+    </div>
+  `;
+  citiesContainer.appendChild(entry);
+  attachCityDaysListeners();
+  updateAddCityBtnState();
+}
+
+// Initial form validation setup based on selection mode
+const isMulti = cityToggle.checked;
+const destinationInput = document.getElementById('destination');
+const multiCityInputs = document.getElementById('multi-city-wrapper').querySelectorAll('input');
+
+if (isMulti) {
+  // Multi-city mode: disable single city input
+  destinationInput.disabled = true;
+  destinationInput.required = false;
+  
+  // Enable all multi-city inputs
+  multiCityInputs.forEach(input => {
+    input.disabled = false;
+    input.required = true;
+  });
+} else {
+  // Single city mode: enable single city input
+  destinationInput.disabled = false;
+  destinationInput.required = true;
+  
+  // Disable all multi-city inputs
+  multiCityInputs.forEach(input => {
+    input.disabled = true;
+    input.required = false;
+  });
+}
 
   function displayCurrentPlan(plan) {
     if (!plan || !plan.destination) return;
@@ -951,6 +1056,17 @@ footer {
 
   cityToggle.addEventListener('change', function() {
     const isMulti = this.checked;
+
+    toggleCityInputValidation();
+  
+  // If switching back to single city, try to use the first city name
+  if (!this.checked) {
+    const cityInputs = document.querySelectorAll('.city-name');
+    if (cityInputs.length > 0 && cityInputs[0].value) {
+      document.getElementById('destination').value = cityInputs[0].value;
+    }
+  }
+
     console.log("Toggle changed to:", isMulti ? "multi-city" : "single-city");
     
     // Update UI visibility
@@ -1360,6 +1476,9 @@ planForm.addEventListener('submit', function (e) {
     hiddenInputs.forEach(input => input.disabled = true);
   }
 
+  // Check if this is an update (button says "Update Plan") or a new plan
+  const isUpdating = document.querySelector('#plan-form button[type="submit"]').textContent === 'Update Plan';
+
   // Send plan to server
   fetch('/api/plan', {
     method: 'POST',
@@ -1382,15 +1501,28 @@ planForm.addEventListener('submit', function (e) {
         planDates.textContent = formatDateRange(startDate, endDate);
         currentPlanAlert.style.display = 'block';
 
-        // Show forecast (optional)
-        fetch(`/api/weather?city=${encodeURIComponent(destination)}`)
-          .then(res => res.json())
-          .then(weatherData => {
-            showWeatherForDateRange(weatherData.forecast, startDate, endDate);
-          });
+        if (isUpdating) {
+          // Show update confirmation popup
+          showCustomMessage('Success', 'Your trip plan has been updated successfully!');
+          
+          // Reset the form modified state (to change button back to "Start Planning")
+          const formModified = false;
+          const submitButton = document.querySelector('#plan-form button[type="submit"]');
+          submitButton.textContent = 'Start Planning';
+          submitButton.classList.remove('btn-success');
+          submitButton.classList.add('btn-primary');
+        } else {
+          // For new plans, redirect to attractions as before
+          // Show forecast (optional)
+          fetch(`/api/weather?city=${encodeURIComponent(destination)}`)
+            .then(res => res.json())
+            .then(weatherData => {
+              showWeatherForDateRange(weatherData.forecast, startDate, endDate);
+            });
 
-        // Redirect to attractions
-        window.location.href = '/attractions';
+          // Redirect to attractions
+          window.location.href = '/attractions';
+        }
       } else {
         console.error('Plan submission failed:', data);
         alert('Failed to save plan.');
@@ -1401,6 +1533,54 @@ planForm.addEventListener('submit', function (e) {
       alert('Error saving plan.');
     });
 });
+
+// Add a new function to show a custom success message popup
+function showCustomMessage(title, message) {
+  // Create modal backdrop
+  const modalBackdrop = document.createElement('div');
+  modalBackdrop.className = 'modal-backdrop';
+  
+  // Create modal content
+  const modalContent = document.createElement('div');
+  modalContent.className = 'custom-modal';
+  
+  // Add modal content
+  modalContent.innerHTML = `
+    <div class="modal-icon">
+      <i class="bi bi-check-circle" style="color: #66ff99;"></i>
+    </div>
+    <h3 class="modal-title">${title}</h3>
+    <p class="modal-message">${message}</p>
+    <div class="modal-buttons">
+      <button class="modal-btn" id="confirmOk" style="background: linear-gradient(135deg, #00c6ff, #0072ff); color: white;">OK</button>
+    </div>
+  `;
+  
+  // Add modal to DOM
+  modalBackdrop.appendChild(modalContent);
+  document.body.appendChild(modalBackdrop);
+  
+  // Add event listener to OK button
+  document.getElementById('confirmOk').addEventListener('click', function() {
+    document.body.removeChild(modalBackdrop);
+  });
+  
+  // Close on backdrop click
+  modalBackdrop.addEventListener('click', function(e) {
+    if (e.target === modalBackdrop) {
+      document.body.removeChild(modalBackdrop);
+    }
+  });
+  
+  // Close on Escape key
+  const keyHandler = function(e) {
+    if (e.key === 'Escape' || e.key === 'Enter') {
+      document.body.removeChild(modalBackdrop);
+      document.removeEventListener('keydown', keyHandler);
+    }
+  };
+  document.addEventListener('keydown', keyHandler);
+}
 
 // Handle clear plan button
 clearPlanBtn.addEventListener('click', function() {
@@ -1466,6 +1646,143 @@ clearPlanBtn.addEventListener('click', function() {
 });
 
 attachCityDaysListeners();
+
+// Function to set up change detection on all form inputs
+function setupChangeDetection() {
+  // Get the submit button
+  const submitButton = document.querySelector('#plan-form button[type="submit"]');
+  
+  // Original button styles (save these for reference)
+  const originalButtonText = 'Start Planning';
+  const originalButtonClass = 'btn-primary';
+  
+  // Change flag to track if form has been modified
+  let formModified = false;
+  
+  // Trip exists flag - we'll set this based on the presence of the current plan alert
+  let tripExists = document.getElementById('current-plan-alert').style.display !== 'none';
+  
+  // Function to update button appearance
+function updateButtonAppearance() {
+  // Only show "Update Plan" if a trip exists AND the form was modified
+  if (tripExists && formModified) {
+    // Change to "Update Plan" and green style
+    submitButton.textContent = 'Update Plan';
+    submitButton.classList.remove(originalButtonClass);
+    submitButton.classList.add('btn-success');
+    
+    // Ensure the same hover and glow effects as the original button
+    submitButton.style.background = 'linear-gradient(135deg, #00e676, #00c853)';
+    submitButton.style.border = 'none';
+    submitButton.style.fontWeight = '600';
+    submitButton.style.boxShadow = '0 6px 20px rgba(0, 200, 83, 0.5)';
+    submitButton.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
+  } else {
+    // Restore original appearance
+    submitButton.textContent = originalButtonText;
+    submitButton.classList.remove('btn-success');
+    submitButton.classList.add(originalButtonClass);
+    
+    // Reset any inline styles we may have applied
+    submitButton.style.background = '';
+    submitButton.style.border = '';
+    submitButton.style.fontWeight = '';
+    submitButton.style.boxShadow = '';
+    submitButton.style.transition = '';
+  }
+}
+  
+  // Function to handle input changes
+  function handleInputChange() {
+    formModified = true;
+    updateButtonAppearance();
+  }
+  
+  // Add event listeners to all form inputs
+  const formInputs = document.querySelectorAll('#plan-form input, #plan-form select, #plan-form textarea');
+  formInputs.forEach(input => {
+    input.addEventListener('input', handleInputChange);
+    input.addEventListener('change', handleInputChange);
+  });
+  
+  // Also detect changes when add/remove city buttons are clicked
+  const addCityBtn = document.getElementById('add-city-btn');
+  if (addCityBtn) {
+    addCityBtn.addEventListener('click', handleInputChange);
+  }
+  
+  // For city removal, use event delegation since these elements are dynamic
+  const citiesContainer = document.getElementById('cities-container');
+  if (citiesContainer) {
+    citiesContainer.addEventListener('click', e => {
+      if (e.target.classList.contains('remove-city')) {
+        handleInputChange();
+      }
+    });
+  }
+  
+  // Handle the city toggle switch
+  const cityToggle = document.getElementById('city-selection-toggle');
+  if (cityToggle) {
+    cityToggle.addEventListener('change', handleInputChange);
+  }
+  
+  // Reset modified state after form submission
+  document.getElementById('plan-form').addEventListener('submit', () => {
+    formModified = false;
+    updateButtonAppearance();
+  });
+  
+  // Function to add listener to dynamically added city inputs
+  function addListenersToDynamicInputs() {
+    const cityInputs = document.querySelectorAll('.city-name, .city-days');
+    cityInputs.forEach(input => {
+      // Remove existing listeners to prevent duplicates
+      input.removeEventListener('input', handleInputChange);
+      input.removeEventListener('change', handleInputChange);
+      
+      // Add listeners
+      input.addEventListener('input', handleInputChange);
+      input.addEventListener('change', handleInputChange);
+    });
+  }
+  
+  // Make this function globally available
+  window.addListenersToDynamicInputs = addListenersToDynamicInputs;
+  
+  // Initial call to ensure existing inputs have listeners
+  addListenersToDynamicInputs();
+  
+  // Update trip exists flag when plan changes
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.attributeName === 'style') {
+        tripExists = document.getElementById('current-plan-alert').style.display !== 'none';
+        updateButtonAppearance();
+      }
+    });
+  });
+  
+  const currentPlanAlert = document.getElementById('current-plan-alert');
+  if (currentPlanAlert) {
+    observer.observe(currentPlanAlert, { attributes: true });
+  }
+}
+
+// Call setup function
+setupChangeDetection();
+
+// Modify the existing addCityEntry function to add our change listeners
+const originalAddCityEntry = addCityEntry;
+addCityEntry = function() {
+  // Call the original function
+  originalAddCityEntry();
+  
+  // Add our listeners to the new inputs
+  if (window.addListenersToDynamicInputs) {
+    window.addListenersToDynamicInputs();
+  }
+};
 
 });
 
