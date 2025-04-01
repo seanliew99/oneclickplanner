@@ -1011,11 +1011,32 @@ footer {
 
   // Remove city entry
   citiesContainer.addEventListener('click', e => {
-    if (e.target.classList.contains('remove-city')) {
-      const row = e.target.closest('.city-entry');
-      row.remove();
-    }
+  if (e.target.classList.contains('remove-city')) {
+    const row = e.target.closest('.city-entry');
+    const daysToRemove = parseInt(row.querySelector('.city-days').value); // Get days for the city being removed
+    row.remove();
+    updateAvailableDays(daysToRemove); // Update available days after deletion
+  }
   });
+
+  function updateAvailableDays(daysToRemove = 0) {
+  const totalDays = calculateTripDays(startDateInput.value, endDateInput.value);  // Get total trip days
+  const usedDays = getUsedCityDays() - daysToRemove;  // Subtract days from the removed city
+
+  // Enable or disable the "Add City" button based on available days
+  const addCityBtn = document.getElementById('add-city-btn');
+  addCityBtn.disabled = usedDays >= totalDays;
+}
+
+function getUsedCityDays() {
+  const dayInputs = document.querySelectorAll('.city-days');
+  let usedDays = 0;
+  dayInputs.forEach(input => {
+    const val = parseInt(input.value);
+    if (!isNaN(val)) usedDays += val;
+  });
+  return usedDays;
+}
 
   function calculateTripDays(start, end) {
   const s = new Date(start);
