@@ -395,10 +395,6 @@ function updateUIForAuthenticatedUser(userData) {
         </button>
         
         <div class="user-dropdown-menu" id="userDropdownMenu">
-          <a href="/profile" class="user-dropdown-item">
-            <i class="bi bi-person"></i>
-            My Profile
-          </a>
           <a href="/itinerary" class="user-dropdown-item">
             <i class="bi bi-map"></i>
             My Itinerary
