@@ -462,7 +462,9 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     let map;
-    let markers = [];
+    let searchMarkers = [];
+    let recommendedMarkers = [];
+    let recommendedPlaceIds = new Set();
     let currentPlan = null;
     let selectedPlace = null;
     let rainDays = [];
@@ -598,7 +600,7 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
     }
 
     function searchAttractionsByLocation(location) {
-      clearMarkers();
+      clearSearchMarkers();
       document.getElementById('spinner').style.display = 'flex';
       document.getElementById('results-container').innerHTML = '';
       document.getElementById('result-count').textContent = '';
@@ -634,7 +636,7 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
       document.getElementById('spinner').style.display = 'flex';
       document.getElementById('results-container').innerHTML = '';
       document.getElementById('result-count').textContent = '';
-      clearMarkers();
+      clearSearchMarkers();
       const location = locationOverride || currentPlan.destination;
       fetch(`/api/places?location=${encodeURIComponent(location)}&type=attraction&keyword=${encodeURIComponent(keyword)}`)
         .then(response => response.json())
@@ -644,7 +646,7 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
             document.getElementById('result-count').textContent = `Found ${data.results.length} attractions`;
             displayResults(data.results);
             const bounds = new google.maps.LatLngBounds();
-            markers.forEach(marker => bounds.extend(marker.getPosition()));
+            searchMarkers.forEach(marker => bounds.extend(marker.getPosition()));
             map.fitBounds(bounds);
           } else {
             document.getElementById('results-container').innerHTML = `
@@ -718,6 +720,24 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
       }
     }
 
+    function centerMapOnRecommended(dayIndex) {
+      // Gather all recommended markers that belong to the chosen day
+      const bounds = new google.maps.LatLngBounds();
+      let foundAny = false;
+
+      recommendedMarkers.forEach(obj => {
+        if (obj.dayIndex === dayIndex) {
+          bounds.extend(obj.marker.getPosition());
+          foundAny = true;
+        }
+      });
+
+      // Only fitBounds if there’s at least one recommended marker for that day
+      if (foundAny) {
+        map.fitBounds(bounds);
+      }
+    }
+
     // Generate itinerary tabs using pre-fetched recommendations.
     // Before generating, for days with the same city, remove duplicates already used in an earlier day.
     function generateItineraryTabs() {
@@ -787,8 +807,15 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
           </div>
         `;
         dayTabsContent.appendChild(pane);
+
+        tab.querySelector('button.nav-link').dataset.dayIndex = i; // store the day index
+
+        tab.querySelector('button.nav-link').addEventListener('click', function() {
+          const dayIndex = parseInt(this.dataset.dayIndex, 10);
+          centerMapOnRecommended(dayIndex);
+        });
       }
-      
+            
       // Add "Add All Recommendations" button to section title
       const sectionTitle = document.querySelector('#itinerary-section h4');
       if (sectionTitle) {
@@ -1585,7 +1612,6 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
             document.getElementById('date-display').textContent = formatDateRange(currentPlan.startDate, currentPlan.endDate);
             document.getElementById('current-plan-info').style.display = 'block';
             document.getElementById('no-plan-alert').style.display = 'none';
-            // Pre-generate tabs (they may be empty until recommendations load)
             generateItineraryTabs();
             const dayCount = currentPlan.perDayCityMap.length;
             const fetchPromises = [];
@@ -1615,6 +1641,8 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
                 });
               }
               generateItineraryTabs();
+              createRecommendedMarkers();
+              
               if (currentPlan.perDayCityMap.length > 0) {
                 const firstCity = currentPlan.perDayCityMap[0];
                 const geocoder = new google.maps.Geocoder();
@@ -1709,18 +1737,58 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
       }, 500);
     }
 
+    function createRecommendedMarkers() {
+      // Remove old recommended markers
+      recommendedMarkers.forEach(obj => obj.marker.setMap(null));
+      recommendedMarkers = [];
+      
+      // Clear and rebuild the recommended place ID set
+      recommendedPlaceIds.clear();
+
+      // Loop over each day’s recommended places
+      for (let dayIndex = 0; dayIndex < currentPlan.perDayCityMap.length; dayIndex++) {
+        const recs = itineraryRecommendations[dayIndex] || [];
+        recs.forEach(place => {
+          if (!place.geometry || !place.geometry.location) return;
+          
+          // Add place_id to the set so we know it's recommended
+          recommendedPlaceIds.add(place.place_id);
+          
+          // Create the recommended (blue) marker
+          const marker = new google.maps.Marker({
+            position: place.geometry.location,
+            map: map,
+            title: place.name,
+            icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+            zIndex: 999
+          });
+          
+          // **Attach the same click handler** so that clicking the blue marker shows the details modal
+          marker.addListener('click', () => showPlaceDetails(place));
+          
+          // Store both the marker and which day it belongs to
+          recommendedMarkers.push({ marker, dayIndex });
+        });
+      }
+    }
+
     function displayResults(places) {
       const resultsContainer = document.getElementById('results-container');
       resultsContainer.innerHTML = '';
       places.forEach((place, index) => {
-        const marker = new google.maps.Marker({
-          position: place.geometry.location,
-          map: map,
-          title: place.name,
-          animation: google.maps.Animation.DROP
-        });
-        markers.push(marker);
-        marker.addListener('click', () => showPlaceDetails(place));
+        if (recommendedPlaceIds.has(place.place_id)) {
+
+        }
+        else{
+          const marker = new google.maps.Marker({
+            position: place.geometry.location,
+            map: map,
+            title: place.name,
+            animation: google.maps.Animation.DROP
+          });
+          searchMarkers.push(marker);
+          marker.addListener('click', () => showPlaceDetails(place));
+        }
         const col = document.createElement('div');
         col.className = 'col-md-6 col-lg-4';
         const card = document.createElement('div');
@@ -1818,9 +1886,10 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
         });
     }
 
-    function clearMarkers() {
-      markers.forEach(marker => marker.setMap(null));
-      markers = [];
+    function clearSearchMarkers() {
+      // Only clear the "found" markers, NOT the recommended ones
+      searchMarkers.forEach(marker => marker.setMap(null));
+      searchMarkers = [];
     }
 
     document.addEventListener('DOMContentLoaded', function() {
