@@ -1843,12 +1843,11 @@ fetch('/api/config')
       }
     }
 
-     function displayResults(places) {
+    function displayResults(places) {
   const resultsContainer = document.getElementById('results-container');
   resultsContainer.innerHTML = '';
 
   places.forEach((place, index) => {
-    // Add marker unless it's a recommended place
     if (!recommendedPlaceIds.has(place.place_id)) {
       const marker = new google.maps.Marker({
         position: place.geometry.location,
@@ -1860,50 +1859,65 @@ fetch('/api/config')
       marker.addListener('click', () => showPlaceDetails(place));
     }
 
-    // Build photo URL with fallback
-let photoUrl;
+    // Use Google photo if available, else directly fallback to local logo
+    let photoUrl;
+    if (place.photos && place.photos.length > 0) {
+      const photoName = place.photos[0].name;
+      photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${apiKey}&maxWidthPx=600`;
+    } else {
+      photoUrl = '/assets/logo.png';
+    }
 
-if (place.photos && place.photos.length > 0) {
-  const photoName = place.photos[0].name;
-  photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${apiKey}&maxWidthPx=600`;
-  console.log(`✅ [${place.name}] Google photo used:`, photoUrl);
-} else {
-  photoUrl = `https://source.unsplash.com/300x200/?${encodeURIComponent(place.name)}`;
-  console.warn(`⚠️ [${place.name}] No photo found. Using fallback image.`);
-  console.log(`📷 [${place.name}] Photos array:`, place.photos);
-
-}
-
-
-    // Build card
     const col = document.createElement('div');
     col.className = 'col-md-6 col-lg-4';
+    col.style.opacity = 0;
+    col.style.transition = 'opacity 0.3s ease-in-out';
 
     const card = document.createElement('div');
     card.className = 'card attraction-card h-100';
 
-card.innerHTML = `
-  <img class="card-img-top attraction-image" src="${photoUrl}" alt="${place.name}" />
-  <div class="card-body">
-    <h5 class="card-title">${place.name}</h5>
-    <p class="card-text">
-      ${place.rating ? `<span class="rating">★ ${place.rating}</span>` : ''}
-    </p>
-    <p class="card-text text-truncate">${place.formatted_address || ''}</p>
-    <button class="btn btn-sm btn-outline-primary view-details-btn">View Details</button>
-  </div>
-`;
+    card.innerHTML = `
+      <div class="card-body">
+        <h5 class="card-title">${place.name}</h5>
+        <p class="card-text">
+          ${place.rating ? `<span class="rating">★ ${place.rating}</span>` : ''}
+        </p>
+        <p class="card-text text-truncate">${place.formatted_address || ''}</p>
+        <button class="btn btn-sm btn-outline-primary view-details-btn">View Details</button>
+      </div>
+    `;
 
+    const image = new Image();
+    image.src = photoUrl;
+    image.alt = place.name;
+    image.className = 'card-img-top attraction-image';
+    image.style.display = 'none';
 
-    // Add click listener
+    image.onload = () => {
+      image.style.display = 'block';
+      card.insertBefore(image, card.firstChild);
+      col.appendChild(card);
+      resultsContainer.appendChild(col);
+      setTimeout(() => col.style.opacity = 1, 10);
+    };
+
+    image.onerror = () => {
+      image.src = '/assets/logo.png'; // fallback to your local image
+      image.onload = () => {
+        image.style.display = 'block';
+        card.insertBefore(image, card.firstChild);
+        col.appendChild(card);
+        resultsContainer.appendChild(col);
+        setTimeout(() => col.style.opacity = 1, 10);
+      };
+    };
+
     card.querySelector('.view-details-btn').addEventListener('click', () => {
       showPlaceDetails(place);
     });
-
-    col.appendChild(card);
-    resultsContainer.appendChild(col);
   });
 }
+
 
 
 function showPlaceDetails(place) {
