@@ -2,267 +2,240 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flights - Travel Planner</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
-  <style>
-    body {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      background-color: #f8f9fa;
-    }
-    
-    .main-content {
-      flex: 1;
-    }
-    
-    .navbar-brand {
-      font-size: 1.5rem;
-      font-weight: bold;
-    }
-    
-    .page-header {
-      background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://source.unsplash.com/1600x900/?airplane,flight');
-      background-size: cover;
-      background-position: center;
-      color: white;
-      padding: 60px 0;
-      margin-bottom: 30px;
-    }
-    
-    .search-container {
-      background-color: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-      margin-bottom: 30px;
-    }
-    
-    #flights-container {
-      margin-top: 30px;
-    }
-    
-    .flight-card {
-      border: none;
-      border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      transition: transform 0.2s ease;
-      margin-bottom: 20px;
-      overflow: hidden;
-    }
-    
-    .flight-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-    }
-    
-    .flight-header {
-      padding: 15px;
-      background-color: #f8f9fa;
-      border-bottom: 1px solid #e9ecef;
-    }
-    
-    .flight-body {
-      padding: 20px;
-    }
-    
-    .flight-price {
-      font-size: 1.5rem;
-      font-weight: bold;
-      color: #0d6efd;
-    }
-    
-    .flight-airline {
-      color: #6c757d;
-    }
-    
-    .flight-segment {
-      padding: 15px;
-      border-bottom: 1px solid #e9ecef;
-    }
-    
-    .flight-segment:last-child {
-      border-bottom: none;
-    }
-    
-    .flight-time {
-      font-size: 1.2rem;
-      font-weight: bold;
-    }
-    
-    .flight-duration {
-      color: #6c757d;
-      font-size: 0.9rem;
-    }
-    
-    .flight-airport {
-      font-size: 0.9rem;
-      color: #6c757d;
-    }
-    
-    .flight-airline-logo {
-      width: 32px;
-      height: 32px;
-      object-fit: contain;
-      margin-right: 10px;
-    }
-    
-    .loading-spinner {
-      display: flex;
-      justify-content: center;
-      margin: 50px 0;
-    }
-    
-    .airport-suggestion {
-      padding: 10px;
-      cursor: pointer;
-      border-bottom: 1px solid #e9ecef;
-    }
-    
-    .airport-suggestion:hover {
-      background-color: #f8f9fa;
-    }
-    
-    .suggestion-container {
-      position: absolute;
-      z-index: 1000;
-      background-color: white;
-      width: 100%;
-      max-height: 200px;
-      overflow-y: auto;
-      border: 1px solid #ced4da;
-      border-radius: 0 0 5px 5px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      display: none;
-    }
-    
-    .suggestion-item {
-      padding: 10px;
-      cursor: pointer;
-      border-bottom: 1px solid #e9ecef;
-    }
-    
-    .suggestion-item:hover {
-      background-color: #f8f9fa;
-    }
-    
-    .suggestion-city {
-      font-weight: bold;
-    }
-    
-    .suggestion-code {
-      font-weight: bold;
-      color: #0d6efd;
-    }
-    
-    .suggestion-type {
-      font-size: 0.8rem;
-      color: #6c757d;
-    }
-    
-    footer {
-      background-color: #343a40;
-      color: white;
-      padding: 20px 0;
-      margin-top: auto;
-    }
-    
-    .no-flights {
-      text-align: center;
-      padding: 50px 0;
-    }
-    
-    .flight-journey {
-      display: flex;
-      align-items: center;
-    }
-    
-    .journey-line {
-      flex-grow: 1;
-      height: 2px;
-      background-color: #dee2e6;
-      margin: 0 10px;
-      position: relative;
-    }
-    
-    .journey-line::after {
-      content: '✈️';
-      position: absolute;
-      top: -12px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 1.2rem;
-    }
-    
-    /* Tabs styling */
-    .nav-tabs .nav-link {
-      border: none;
-      color: #6c757d;
-      padding: 10px 15px;
-      border-bottom: 3px solid transparent;
-      transition: all 0.3s;
-    }
-    
-    .nav-tabs .nav-link.active {
-      color: #0d6efd;
-      background-color: transparent;
-      border-bottom: 3px solid #0d6efd;
-    }
-    
-    .nav-tabs .nav-link:hover {
-      border-color: transparent;
-      border-bottom: 3px solid #dee2e6;
-    }
-    
-    /* Price analysis card */
-    .price-analysis-card {
-      border: none;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-      margin-bottom: 30px;
-    }
-    
-    .price-stats {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
-    
-    .price-stat {
-      text-align: center;
-    }
-    
-    .price-value {
-      font-size: 1.5rem;
-      font-weight: bold;
-    }
-    
-    .price-label {
-      font-size: 0.9rem;
-      color: #6c757d;
-    }
-    
-    .price-chart {
-      height: 200px;
-      margin-top: 20px;
-    }
-
-    .travel-class-select {
-      padding: 10px;
-      border-radius: 5px;
-      border: 1px solid #ced4da;
-      width: 100%;
-    }
-  </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flights - One Click Planner</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+      body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: linear-gradient(to bottom right, #0a0f1f, #1a2b55); /* dark navy to rich blue */
+      }
+      
+      .main-content {
+        flex: 1;
+      }
+      
+      .navbar {
+        background-color: rgba(15, 15, 20, 0.6) !important;
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        transition: background-color 0.4s ease;
+      }
+      
+      .navbar-brand {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #4db8ff !important; /* nice glowing blue */
+        text-shadow: 0 0 10px #4db8ff88;
+      }
+      
+      .logo-img {
+        width: 80px;
+        height: auto;
+        border-radius: 12px;
+        object-fit: contain;
+        background-color: transparent;
+      }
+      
+      .nav-link {
+        color: white !important;
+      }
+      
+      .nav-link:hover {
+        color: #ff1f4b !important;
+        text-shadow: 0 0 10px #ff1f4b88;
+      }
+      
+      .page-header {
+        background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://source.unsplash.com/1600x900/?airplane,flight');
+        background-size: cover;
+        background-position: center;
+        color: white;
+        padding: 60px 0;
+        margin-bottom: 30px;
+      }
+      
+      body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .nav-link, .lead {
+        color: white !important;
+      }
+      
+      .search-container {
+        background-color: rgba(255, 255, 255, 0.05); /* translucent dark */
+        color: white;
+        backdrop-filter: blur(12px);
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        padding: 20px;
+      }
+      
+      .search-container input,
+      .search-container .form-control {
+        background-color: rgba(0, 0, 0, 0.4);
+        color: white;
+        border: none;
+      }
+      
+      .search-container input::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+      }
+      
+      .flight-card {
+        background: rgba(255, 255, 255, 0.05); /* dark glassy look */
+        backdrop-filter: blur(10px);
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        color: white;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      
+      .flight-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 0 16px rgba(255, 31, 75, 0.4), 0 0 40px rgba(255, 31, 75, 0.3);
+        border: 1px solid #ff1f4b88;
+      }
+      
+      .result-count {
+        font-weight: 600;
+        color: white;
+        background-color: rgba(0, 0, 0, 0.3); /* subtle dark background */
+        padding: 10px 16px;
+        border-radius: 8px;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+        display: inline-block;
+      }
+      
+      .loading-spinner {
+        display: flex;
+        justify-content: center;
+        margin: 50px 0;
+      }
+      
+      .suggestion-container {
+        position: absolute;
+        z-index: 1000;
+        background-color: rgba(30, 39, 64, 0.9);
+        width: 100%;
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+      }
+      
+      .suggestion-item {
+        padding: 10px;
+        cursor: pointer;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        transition: background-color 0.3s ease;
+      }
+      
+      .suggestion-item:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+      
+      #typewriter-flights::after {
+        content: '|';
+        animation: blink 0.8s infinite;
+        margin-left: 2px;
+      }
+      
+      @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50%      { opacity: 0; }
+      }
+      
+      .price-analysis-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        color: white;
+        padding: 20px;
+      }
+      
+      .price-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+      
+      .price-stat {
+        text-align: center;
+      }
+      
+      .price-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #4db8ff;
+      }
+      
+      .price-label {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+      }
+      
+      .price-chart {
+        height: 200px;
+        margin-top: 20px;
+      }
+      
+      .travel-class-select {
+        background-color: rgba(0, 0, 0, 0.4);
+        color: white;
+        border: none;
+      }
+      
+      .modal-content {
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        backdrop-filter: blur(16px);
+        box-shadow: 0 0 20px rgba(255, 31, 75, 0.2);
+      }
+      
+      .modal-header,
+      .modal-body,
+      .modal-footer {
+        border: none;
+        color: white;
+      }
+      
+      .modal-title {
+        color: #ff1f4b;
+        text-shadow: 0 0 8px #ff1f4b88;
+      }
+      
+      .modal-body {
+        max-height: 70vh;
+        overflow-y: auto;
+      }
+      
+      footer {
+        background-color: #111;
+        color: #ccc;
+        padding: 30px 0;
+        font-size: 0.9rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.07);
+      }
+        </style>
 </head>
 <body>
   <!-- Navigation -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container">
-      <a class="navbar-brand" href="/">Travel Planner</a>
+      <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+        <img src="/assets/logo.png" alt="Logo" class="logo-img" />
+        One Click Planner
+      </a>
+      
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -278,12 +251,12 @@
             <a class="nav-link" href="/restaurants">Restaurants</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/flights">Flights</a>
+            <a class="nav-link active" href="/flights">Flights</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/hotels">Hotels</a>
           </li>
-          <!-- Auth buttons - these will be replaced by user info when logged in -->
+          <!-- Auth buttons -->
           <li class="nav-item ms-3">
             <a class="btn btn-outline-light" href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/login?client_id=3anj5rhtknc7i97jq3jgknai71&response_type=code&scope=email+openid+phone&redirect_uri=http%3A%2F%2Flocalhost%3A3000">Login</a>
           </li>
@@ -300,14 +273,14 @@
     <!-- Page Header -->
     <header class="page-header text-center">
       <div class="container">
-        <h1 class="display-4">Find the Best Flight Deals</h1>
-        <p class="lead">Compare prices and book your next journey</p>
+        <h1 class="display-4"><span id="typewriter-flights"></span></h1>
+        <p class="lead">Find the best flight deals for your journey</p>
       </div>
     </header>
 
     <div class="container">
       <!-- Flight Search Form -->
-      <div class="search-container">
+      <div class="search-container mb-4">
         <form id="flight-search-form">
           <div class="row mb-3">
             <div class="col-md-6 mb-3">
@@ -350,7 +323,7 @@
             </div>
             <div class="col-md-2 mb-3">
               <label for="travel-class" class="form-label">Class</label>
-              <select class="form-select" id="travel-class">
+              <select class="form-select travel-class-select" id="travel-class">
                 <option value="ECONOMY">Economy</option>
                 <option value="PREMIUM_ECONOMY">Premium Economy</option>
                 <option value="BUSINESS">Business</option>
@@ -374,27 +347,25 @@
         </form>
       </div>
       
-      <!-- Price Analysis (Hidden by default) -->
+      <!-- Price Analysis Section -->
       <div id="price-analysis" class="price-analysis-card" style="display: none;">
-        <h3>Price Analysis</h3>
-        <div id="price-stats" class="price-stats">
-          <!-- Price stats will be populated here -->
-        </div>
+        <h3 class="text-center mb-4">Price Analysis</h3>
+        <div id="price-stats" class="price-stats d-flex justify-content-between"></div>
         <div class="price-chart-container">
           <canvas id="price-chart" class="price-chart"></canvas>
         </div>
       </div>
       
-      <!-- Flight Results -->
+      <!-- Flight Results Section -->
       <div id="flights-container">
-        <!-- Loading Spinner (Hidden by default) -->
-        <div id="loading-spinner" class="loading-spinner" style="display: none;">
+        <!-- Loading Spinner -->
+        <div id="loading-spinner" class="spinner-container" style="display: none;">
           <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Loading flights...</span>
           </div>
         </div>
         
-        <!-- Results Tabs (Hidden by default) -->
+        <!-- Results Tabs -->
         <div id="results-tabs" style="display: none;">
           <ul class="nav nav-tabs mb-4" id="flightTabs" role="tablist">
             <li class="nav-item" role="presentation">
@@ -418,7 +389,28 @@
           </div>
         </div>
         
-        <!-- No Flights Message (Hidden by default) -->
+        <!-- Flight Details Modal -->
+          <div class="modal fade" id="flightModal" tabindex="-1" aria-labelledby="flightModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="flightModalLabel">Flight Details</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="flight-modal-body">
+                  <!-- Flight details will be populated here -->
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  <button type="button" class="btn btn-primary" id="save-flight-btn">
+                    <i class="bi bi-bookmark-plus me-1"></i>Save Flight
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        
+        <!-- No Flights Message -->
         <div id="no-flights" class="no-flights" style="display: none;">
           <i class="bi bi-exclamation-circle text-warning" style="font-size: 3rem;"></i>
           <h3 class="mt-3">No flights found</h3>
@@ -428,31 +420,10 @@
     </div>
   </div>
 
-  <!-- Flight Details Modal -->
-  <div class="modal fade" id="flightModal" tabindex="-1" aria-labelledby="flightModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="flightModalLabel">Flight Details</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body" id="flight-modal-body">
-          <!-- Flight details will be populated here -->
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" id="save-flight-btn">
-            <i class="bi bi-bookmark-plus me-1"></i>Save Flight
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- Footer -->
   <footer class="text-center py-4">
     <div class="container">
-      <p class="mb-0">© 2025 Travel Planner. All rights reserved.</p>
+      <p class="mb-0">© 2025 One Click Planner. All rights reserved.</p>
     </div>
   </footer>
 
@@ -1108,6 +1079,18 @@
         alert('Error saving to itinerary. Please try again.');
       });
     }
+
+    // Typewriter effect for page title
+    const typewriterText = "Find Your Flight";
+    let i = 0;
+    function typeWriterEffect() {
+      if (i < typewriterText.length) {
+        document.getElementById("typewriter-flights").innerHTML += typewriterText.charAt(i);
+        i++;
+        setTimeout(typeWriterEffect, 100);
+      }
+    }
+    window.addEventListener("DOMContentLoaded", typeWriterEffect);
   </script>
   
   <script src="/js/auth.js"></script>
