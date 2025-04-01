@@ -7,6 +7,7 @@ require('dotenv').config();
 
 const ItineraryModel = require('./models/itinerary');
 const flightsRoutes = require('./public/js/flights');
+const hotelsRoutes = require('./public/js/hotels');
 
 const isAuthenticated = (req, res, next) => {
   if (req.session.user && req.session.user.sub) {
@@ -45,6 +46,7 @@ app.get('/api/config', (req, res) => {
 });
 
 app.use('/api/flights', flightsRoutes);
+app.use('/api/hotels', hotelsRoutes);
 
 // Save or update travel plan
 app.post('/api/plan', async (req, res) => {
@@ -673,6 +675,10 @@ app.get('/itinerary', (req, res) => {
 
 app.get('/flights', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'flights.html'));
+});
+
+app.get('/hotels', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'hotels.html'));
 });
 
 // Start server
