@@ -637,7 +637,24 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
       document.getElementById('results-container').innerHTML = '';
       document.getElementById('result-count').textContent = '';
       clearSearchMarkers();
-      const location = locationOverride || currentPlan.destination;
+      
+      let location = locationOverride || currentPlan.destination;
+
+      // Clean the location string
+      if (typeof location === 'string') {
+        // If it's a comma-separated list, just use the first city's name
+        if (location.includes(',')) {
+          let firstCity = location.split(',')[0].trim();
+          if (firstCity.includes('(')) {
+            firstCity = firstCity.split('(')[0].trim();
+          }
+          location = firstCity;
+        } else if (location.includes('(')) {
+          location = location.split('(')[0].trim();
+        }
+      }
+
+      console.log('Searching in:', location, 'Keyword:', keyword);
       fetch(`/api/places?location=${encodeURIComponent(location)}&type=attraction&keyword=${encodeURIComponent(keyword)}`)
         .then(response => response.json())
         .then(data => {
