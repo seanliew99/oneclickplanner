@@ -1980,16 +1980,6 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
         originalSearchAttractions(keywordInput.value);
       });
     });
-    
-    document.getElementById('indoor-toggle').addEventListener('change', (e) => {
-      const keywordInput = document.getElementById('keyword');
-      if (e.target.checked) {
-        keywordInput.value = 'indoors';
-      } else {
-        keywordInput.value = '';
-      }
-      originalSearchAttractions(keywordInput.value);
-    });
   </script>
   
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA50XLfiUNfyrpqF_iRrCT1mcNzRJyePFg&callback=initMap" async defer></script>
