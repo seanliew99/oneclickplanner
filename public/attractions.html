@@ -36,6 +36,11 @@ body {
   transition: all 0.3s ease;
 }
 
+.nav-link.active {
+  color: #ff1f4b !important;
+  text-shadow: 0 0 10px #ff1f4baa;
+}
+
 .nav-tabs .nav-link {
   background-color: transparent;
   color: white;
@@ -324,6 +329,27 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
 
   </style>
 </head>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const currentPath = window.location.pathname;
+
+    // Loop through each nav link
+    document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
+      const linkPath = new URL(link.href).pathname;
+
+      // Match path and apply 'active' class
+      if (linkPath === currentPath || (linkPath === "/" && currentPath === "/index.html")) {
+        link.classList.add('active');
+        link.style.color = "#ff1f4b"; // optional: override color
+        link.style.textShadow = "0 0 10px #ff1f4baa";
+      } else {
+        link.classList.remove('active');
+      }
+    });
+  });
+</script>
+
 <body>
   <!-- Navigation -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
