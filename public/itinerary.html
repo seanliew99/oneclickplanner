@@ -1252,17 +1252,9 @@
   </div>
 
   <!-- Footer -->
-  <footer>
+  <footer class="text-center py-4">
     <div class="container">
-      <div class="row">
-        <div class="col-md-6">
-          <h5>Travel Planner</h5>
-          <p>Plan your perfect trip with our easy-to-use travel planning tools.</p>
-        </div>
-        <div class="col-md-6 text-md-end">
-          <p>© 2025 Travel Planner. All rights reserved.</p>
-        </div>
-      </div>
+      <p class="mb-0">© 2025 One Click Planner. All rights reserved.</p>
     </div>
   </footer>
 
@@ -2775,6 +2767,21 @@ window.addEventListener('DOMContentLoaded', () => {
 <link rel="stylesheet" href="/css/import-export.css">
 <script src="/js/import-export.js"></script>
 <script src="/js/auth.js"></script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', function () {
+    function adjustWeatherSummary() {
+      const navbar = document.querySelector('.navbar');
+      const weatherSummary = document.getElementById('weather-summary');
+      if (navbar && weatherSummary) {
+        // Set the weather summary top offset to the navbar's height.
+        weatherSummary.style.top = navbar.offsetHeight + 'px';
+      }
+    }
+    adjustWeatherSummary();
+    window.addEventListener('resize', adjustWeatherSummary);
+  });
+</script>
 
 </body>
 </html>
