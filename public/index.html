@@ -549,6 +549,20 @@ footer {
   transition: all 0.3s ease;
 }
 
+.btn-outline-danger {
+  background: linear-gradient(135deg, #ff6f61, #ff427f);
+  color: white;
+  border: none;
+  font-weight: 600;
+  box-shadow: 0 6px 20px rgba(255, 111, 97, 0.5);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-outline-danger:hover {
+  transform: scale(1.06);
+  box-shadow: 0 8px 28px rgba(255, 111, 97, 0.7);
+}
+
 </style>
 
 </head>
@@ -675,8 +689,9 @@ footer {
                   <p id="date-warning" class="text-danger mt-2 d-none">Choose your dates before adding cities.</p>
                 </div>
 
-                <div class="text-center">
+                <div class="text-center d-flex justify-content-center align-items-center gap-3">
                   <button type="submit" class="btn btn-primary btn-lg px-4">Start Planning</button>
+                  <button type="button" id="clear-plan-btn" class="btn btn-outline-danger btn-lg px-4" style="display: none;">Clear Plan</button>
                 </div>
               </div>
 
@@ -692,7 +707,6 @@ footer {
             <hr>
             <div class="d-flex justify-content-between">
               <a href="/itinerary" class="btn btn-outline-success">View Itinerary</a>
-              <button id="clear-plan-btn" class="btn btn-outline-danger">Clear Plan</button>
             </div>
           </div>
         </div>
@@ -1253,6 +1267,102 @@ function validateCityDaysExactly() {
     return `${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}`;
   }
 
+  function setupClearPlanButton() {
+  const clearPlanBtn = document.getElementById('clear-plan-btn');
+  const currentPlanAlert = document.getElementById('current-plan-alert');
+  const cityDetailsWrapper = document.getElementById('city-details-wrapper');
+
+  // Function to show/hide clear plan button based on current plan
+  function toggleClearPlanButton() {
+    if (currentPlanAlert.style.display !== 'none') {
+      clearPlanBtn.style.display = 'block';
+    } else {
+      clearPlanBtn.style.display = 'none';
+    }
+  }
+
+  // Initial check
+  toggleClearPlanButton();
+
+  // Create a MutationObserver to watch for changes in current plan alert
+  const observer = new MutationObserver(toggleClearPlanButton);
+  observer.observe(currentPlanAlert, { 
+    attributes: true, 
+    attributeFilter: ['style'] 
+  });
+
+  // Modify clear plan button event listener
+  clearPlanBtn.addEventListener('click', function() {
+    // Use our custom confirm dialog
+    showCustomConfirmDialog('Are you sure you want to clear your current trip plan?', function(confirmed) {
+      if (confirmed) {
+        // Call the DELETE endpoint
+        fetch('/api/plan', {
+          method: 'DELETE',
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              // Show success message
+              showCustomMessage('Plan Cleared', 'Your trip plan has been successfully cleared.');
+              
+              // Reset form and UI
+              const planForm = document.getElementById('plan-form');
+              planForm.reset();
+              
+              const endDateInput = document.getElementById('end-date');
+              endDateInput.setAttribute('disabled', true);
+              
+              currentPlanAlert.style.display = 'none';
+              
+              // Reset any city entries in multi-city mode
+              const citiesContainer = document.getElementById('cities-container');
+              if (citiesContainer) {
+                citiesContainer.innerHTML = '';
+              }
+              
+              // Hide city details wrapper
+              if (cityDetailsWrapper) {
+                cityDetailsWrapper.classList.add('d-none');
+              }
+              
+              // Show date required warning
+              const dateRequiredWarning = document.getElementById('date-required-warning');
+              if (dateRequiredWarning) {
+                dateRequiredWarning.classList.remove('d-none');
+              }
+              
+              // Reset city toggle
+              const cityToggle = document.getElementById('city-selection-toggle');
+              if (cityToggle) {
+                cityToggle.checked = false;
+                
+                // Reset single/multi city visibility
+                const singleCityWrapper = document.getElementById('single-city-wrapper');
+                const multiCityWrapper = document.getElementById('multi-city-wrapper');
+                if (singleCityWrapper && multiCityWrapper) {
+                  singleCityWrapper.classList.remove('d-none');
+                  multiCityWrapper.classList.add('d-none');
+                }
+              }
+              
+              // Hide clear plan button
+              clearPlanBtn.style.display = 'none';
+            } else {
+              console.error('Failed to clear plan:', data);
+              alert('Failed to clear your plan. Please try again.');
+            }
+          })
+          .catch(error => {
+            console.error('Error clearing plan:', error);
+            alert('Error clearing your plan. Please try again.');
+          });
+      }
+    });
+  });
+}
+
+
   function showWeatherForDateRange(forecast, startDate, endDate) {
   const weatherSection = document.createElement('section');
   weatherSection.className = 'container mb-5';
@@ -1582,69 +1692,6 @@ function showCustomMessage(title, message) {
   document.addEventListener('keydown', keyHandler);
 }
 
-// Handle clear plan button
-clearPlanBtn.addEventListener('click', function() {
-  // Use our custom confirm dialog instead of the browser's default
-  showCustomConfirmDialog('Are you sure you want to clear your current trip plan?', function(confirmed) {
-    if (confirmed) {
-      // Call the DELETE endpoint
-      fetch('/api/plan', {
-        method: 'DELETE',
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            console.log('Plan cleared successfully');
-            
-            // Reset form and UI
-            planForm.reset();
-            endDateInput.setAttribute('disabled', true);
-            currentPlanAlert.style.display = 'none';
-            
-            // Reset any city entries in multi-city mode
-            if (document.getElementById('cities-container')) {
-              document.getElementById('cities-container').innerHTML = '';
-            }
-            
-            // Make sure the city details wrapper is hidden
-            if (document.getElementById('city-details-wrapper')) {
-              document.getElementById('city-details-wrapper').classList.add('d-none');
-            }
-            
-            // Show the date required warning
-            if (document.getElementById('date-required-warning')) {
-              document.getElementById('date-required-warning').classList.remove('d-none');
-            }
-            
-            // Reset city toggle if it exists
-            const cityToggle = document.getElementById('city-selection-toggle');
-            if (cityToggle) {
-              cityToggle.checked = false;
-              
-              // Reset single/multi city visibility
-              const singleCityWrapper = document.getElementById('single-city-wrapper');
-              const multiCityWrapper = document.getElementById('multi-city-wrapper');
-              if (singleCityWrapper && multiCityWrapper) {
-                singleCityWrapper.classList.remove('d-none');
-                multiCityWrapper.classList.add('d-none');
-              }
-            }
-            
-            // Optional: reload the page to ensure everything is reset
-            window.location.reload();
-          } else {
-            console.error('Failed to clear plan:', data);
-            alert('Failed to clear your plan. Please try again.');
-          }
-        })
-        .catch(error => {
-          console.error('Error clearing plan:', error);
-          alert('Error clearing your plan. Please try again.');
-        });
-    }
-  });
-});
-
 attachCityDaysListeners();
 
 // Function to set up change detection on all form inputs
@@ -1784,6 +1831,9 @@ addCityEntry = function() {
   }
 };
 
+  // Add this at the very end of the function
+  setupClearPlanButton();
+  
 });
 
 
