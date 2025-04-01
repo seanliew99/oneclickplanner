@@ -7,473 +7,405 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
   <style>
-    :root {
-      --primary-color: #ff6b6b;
-      --secondary-color: #4ecdc4;
-      --dark-color: #292f36;
-      --light-color: #f7fff7;
-      --shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-    
-    body {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      background-color: #f8f9fa;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(to bottom right, #0a0f1f, #1a2b55); /* dark navy to rich blue */
+}
+
     
     .main-content {
       flex: 1;
     }
     
-    /* Navigation */
     .navbar {
-      background-color: #0d6efd; /* Match the primary blue from Bootstrap */
-      padding: 15px 0;
-    }
+  background-color: rgba(15, 15, 20, 0.6) !important;
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  transition: background-color 0.4s ease;
+}
 
-    .navbar-brand {
-      font-size: 1.5rem;
-      font-weight: bold;
-      color: white;
-    }
+.navbar-brand {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #4db8ff !important; /* nice glowing blue */
+  text-shadow: 0 0 10px #4db8ff88;
+}
 
-    .nav-link {
-      color: rgba(255, 255, 255, 0.85);
-      font-weight: 500;
-      transition: color 0.3s;
-    }
+.logo-img {
+  width: 80px;
+  height: auto;
+  border-radius: 12px;
+  object-fit: contain;
+  background-color: transparent;
+}
 
-    .nav-link:hover {
-      color: white;
-    }
+.nav-link {
+  color: white !important;
+}
 
-    .nav-link.active {
-      color: white;
-      font-weight: 600;
-    }
+.nav-link:hover {
+  color: #ff1f4b !important;
+  text-shadow: 0 0 10px #ff1f4b88;
+}
+
+.nav-tabs .nav-link {
+  background-color: transparent;
+  color: white;
+  border: none;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.nav-tabs .nav-link:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+  color: #ff1f4b;
+}
+
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-link:focus,
+.nav-tabs .nav-link.show {
+  background-color: #000 !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 0 8px #000;
+  font-weight: bold;
+}
+
     
-    /* Header */
     .page-header {
-      background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://source.unsplash.com/1600x900/?restaurant,food');
+      background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://source.unsplash.com/1600x900/?restaurant,food');
       background-size: cover;
       background-position: center;
       color: white;
-      padding: 80px 0;
-      margin-bottom: 40px;
-      position: relative;
-    }
-    
-    .header-content {
-      max-width: 800px;
-      margin: 0 auto;
-      text-align: center;
-      position: relative;
-      z-index: 10;
-    }
-    
-    .header-title {
-      font-size: 3.5rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-    }
-    
-    .header-subtitle {
-      font-size: 1.4rem;
-      opacity: 0.9;
-      margin-bottom: 1.5rem;
-      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
-    }
-    
-    /* Search section */
-    .search-section {
-      background-color: white;
-      border-radius: 10px;
-      box-shadow: var(--shadow);
-      padding: 25px;
-      margin-bottom: 40px;
-    }
-    
-    .search-title {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin-bottom: 20px;
-      color: var(--dark-color);
-    }
-    
-    .search-input {
-      border: 2px solid #e9ecef;
-      border-radius: 50px;
-      padding: 12px 20px;
-      font-size: 1.1rem;
-      transition: all 0.3s;
-    }
-    
-    .search-input:focus {
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.25);
-    }
-    
-    .search-btn {
-      background-color: var(--primary-color);
-      border: none;
-      border-radius: 50px;
-      color: white;
-      font-weight: 600;
-      padding: 12px 25px;
-      font-size: 1.1rem;
-      transition: all 0.3s;
-    }
-    
-    .search-btn:hover {
-      background-color: #ff5252;
-      transform: translateY(-2px);
-    }
-    
-    /* Filter chips */
-    .filter-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 20px 0;
-    }
-    
-    .filter-chip {
-      display: inline-block;
-      background-color: #f1f3f5;
-      color: #495057;
-      border: none;
-      border-radius: 50px;
-      padding: 8px 16px;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    
-    .filter-chip:hover {
-      background-color: #e9ecef;
-    }
-    
-    .filter-chip.active {
-      background-color: var(--primary-color);
-      color: white;
-    }
-    
-    .filter-chip i {
-      margin-right: 5px;
-    }
-    
-    /* Map */
-    .map-container {
-      position: relative;
-      height: 500px;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: var(--shadow);
+      padding: 60px 0;
       margin-bottom: 30px;
     }
     
+    .search-container {
+  background-color: rgba(255, 255, 255, 0.05); /* translucent dark */
+  color: white;
+  backdrop-filter: blur(12px);
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  padding: 20px;
+}
+
+.search-container input,
+.search-container .form-control {
+  background-color: rgba(0, 0, 0, 0.4);
+  color: white;
+  border: none;
+}
+
+.search-container input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+    
     #map {
-      height: 100%;
+      height: 400px;
       width: 100%;
-    }
-    
-    /* Restaurant cards */
-    .restaurants-section {
-      margin-bottom: 40px;
-    }
-    
-    .section-header {
-      margin-bottom: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    
-    .section-title {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: var(--dark-color);
-      margin: 0;
-    }
-    
-    .result-count {
-      font-size: 1rem;
-      color: #6c757d;
-      font-weight: 500;
-    }
-    
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
     
     .restaurant-card {
-      background-color: white;
-      border-radius: 10px;
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      transition: transform 0.3s, box-shadow 0.3s;
-      height: 100%;
       border: none;
-      cursor: pointer;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease;
+      margin-bottom: 20px;
+      overflow: hidden;
+      height: 100%;
     }
     
     .restaurant-card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
     }
     
     .restaurant-image {
       height: 180px;
+      background-color: #dee2e6;
       background-size: cover;
       background-position: center;
-      position: relative;
     }
     
-    .restaurant-price {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background-color: rgba(0, 0, 0, 0.7);
-      color: white;
-      padding: 5px 10px;
-      border-radius: 20px;
-      font-weight: 600;
-      font-size: 0.8rem;
-    }
-    
-    .restaurant-body {
-      padding: 20px;
-    }
-    
-    .restaurant-title {
-      font-size: 1.2rem;
-      font-weight: 600;
-      margin-bottom: 5px;
-      color: var(--dark-color);
-    }
-    
-    .restaurant-rating {
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-    }
-    
-    .stars {
+    .rating {
       color: #ffc107;
-      margin-right: 5px;
     }
     
-    .rating-text {
-      color: #6c757d;
-      font-size: 0.9rem;
+    .no-plan-alert {
+      margin-bottom: 30px;
     }
     
-    .restaurant-cuisine {
-      color: #6c757d;
-      font-size: 0.9rem;
-      margin-bottom: 10px;
+    .modal-body {
+      max-height: 70vh;
+      overflow-y: auto;
     }
     
-    .restaurant-address {
-      color: #6c757d;
-      font-size: 0.9rem;
+    .place-photo {
+      width: 100%;
+      border-radius: 5px;
       margin-bottom: 15px;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
     }
     
-    .restaurant-actions {
-      display: flex;
-      gap: 10px;
-    }
-    
-    .btn-details {
-      flex: 1;
-      background-color: var(--secondary-color);
+    footer {
+      background-color: #343a40;
       color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 8px 15px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      transition: all 0.3s;
+      padding: 20px 0;
+      margin-top: auto;
     }
     
-    .btn-details:hover {
-      background-color: #3dbbb1;
-    }
-    
-    .btn-save {
-      background-color: var(--primary-color);
-      color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 8px 15px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      transition: all 0.3s;
-    }
-    
-    .btn-save:hover {
-      background-color: #ff5252;
+    .result-count {
+      font-weight: 600;
+      color: #6c757d;
+      margin-bottom: 20px;
     }
     
     /* Loading spinner */
     .spinner-container {
       display: flex;
       justify-content: center;
-      align-items: center;
-      min-height: 200px;
+      margin: 50px 0;
     }
     
-    .spinner-border {
-      color: var(--primary-color);
-      width: 3rem;
-      height: 3rem;
+    .btn-save {
+      background-color: #28a745;
+      color: white;
     }
     
-    /* Modal */
-    .modal-content {
-      border-radius: 10px;
-      border: none;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    .btn-save:hover {
+      background-color: #218838;
+      color: white;
     }
     
-    .modal-header {
-      border-bottom: none;
-      padding: 20px 25px 10px;
+    /* Restaurant-specific styles */
+    .cuisine-filter {
+      margin-top: 15px;
     }
     
-    .modal-body {
-      padding: 20px 25px;
+    .price-filter {
+      margin-top: 15px;
     }
     
-    .modal-title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--dark-color);
+    .filter-badge {
+      cursor: pointer;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      transition: all 0.2s;
     }
     
-    .modal-footer {
-      border-top: none;
-      padding: 15px 25px 20px;
+    .filter-badge.active {
+      background-color: #0d6efd;
+      color: white;
     }
     
-    .place-photos {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 15px;
-      margin-bottom: 20px;
+    .meal-time-selector {
+      margin-top: 15px;
     }
-    
-    .place-photo {
-      border-radius: 10px;
-      aspect-ratio: 16/9;
-      object-fit: cover;
-    }
-    
-    .detail-section {
-      margin-bottom: 20px;
-    }
-    
-    .detail-title {
-      font-size: 1.2rem;
-      font-weight: 600;
-      margin-bottom: 10px;
-      color: var(--dark-color);
-    }
-    
-    .hours-list {
-      color: #495057;
-      padding-left: 0;
-      list-style-type: none;
-    }
-    
-    .hours-list li {
-      padding: 5px 0;
-      border-bottom: 1px solid #f1f3f5;
-    }
-    
-    .hours-list li:last-child {
-      border-bottom: none;
-    }
-    
-    .reviews-section .review {
-      padding: 15px;
-      background-color: #f8f9fa;
-      border-radius: 10px;
-      margin-bottom: 15px;
-    }
-    
-    .review-header {
-      display: flex;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    
-    .reviewer-name {
-      font-weight: 600;
-      margin: 0;
-    }
-    
-    .review-text {
-      font-size: 0.95rem;
-      color: #495057;
-      margin: 0;
-    }
-    
-    /* Footer */
-    footer {
-      background-color: var(--dark-color);
-      color: rgba(255, 255, 255, 0.8);
-      padding: 30px 0;
-      margin-top: auto;
-    }
-    
-    /* No plan alert */
-    .no-plan-alert {
-      margin-bottom: 30px;
-      background-color: #fff3cd;
-      border-color: #ffecb5;
-      color: #664d03;
-      border-radius: 10px;
-      padding: 20px;
-    }
-    
-    /* Empty state */
-    .empty-state {
-      text-align: center;
-      padding: 40px 20px;
-      background-color: white;
-      border-radius: 10px;
-      box-shadow: var(--shadow);
-    }
-    
-    .empty-icon {
-      font-size: 4rem;
-      color: #dee2e6;
-      margin-bottom: 20px;
-    }
-    
-    .empty-text {
-      font-size: 1.2rem;
-      color: #6c757d;
-      margin-bottom: 20px;
-    }
+
+    body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .nav-link, .lead, .text-muted {
+  color: white !important;
+}
+
+#itinerary-section {
+  background: rgba(255, 255, 255, 0.05); /* glassy dark background */
+  backdrop-filter: blur(12px);
+  padding: 20px 30px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  color: white;
+}
+#itinerary-section h4,
+#itinerary-section h5,
+#itinerary-section p {
+  color: white !important;
+  text-shadow: 0 0 6px rgba(0,0,0,0.6);
+}
+
+.result-header {
+  background-color: rgba(10, 15, 31, 0.85); /* dark navy blueish background */
+  color: white;
+  padding: 16px 24px;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.4);
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.restaurant-card {
+  background: rgba(255, 255, 255, 0.05); /* dark glassy look */
+  backdrop-filter: blur(10px);
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  color: white;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 100%;
+}
+
+
+.restaurant-card .card-title,
+.restaurant-card .card-text,
+.restaurant-card p {
+  color: white !important;
+}
+
+.restaurant-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 0 16px rgba(255, 31, 75, 0.4), 0 0 40px rgba(255, 31, 75, 0.3);
+  border: 1px solid #ff1f4b88;
+}
+
+.result-count {
+  font-weight: 600;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.3); /* subtle dark background */
+  padding: 10px 16px;
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+  display: inline-block;
+}
+
+
+
+.tab-pane .card {
+  background: rgba(50, 54, 238, 0.05); /* translucent dark glass */
+  backdrop-filter: blur(10px);
+  border: none;
+  color: white;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+}
+
+.recommended-container {
+  background: rgba(255, 255, 255, 0.05); /* dark translucent background */
+  backdrop-filter: blur(10px);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.04);
+}
+
+.list-group-item {
+  background-color: rgba(12, 10, 10, 0.4); /* dark transparent background */
+  color: white;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+.list-group-item:hover {
+  background-color: rgba(119, 29, 47, 0.692); /* subtle red glow on hover */
+}
+
+    #typewriter-restaurants::after {
+  content: '|';
+  animation: blink 0.8s infinite;
+  margin-left: 2px;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
+
+
+.modal-content {
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 0 20px rgba(255, 31, 75, 0.2);
+}
+
+.modal-header,
+.modal-body,
+.modal-footer {
+  border: none;
+  color: white;
+}
+
+.modal-title {
+  color: #ff1f4b;
+  text-shadow: 0 0 8px #ff1f4b88;
+}
+
+.modal-body .form-control {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: white;
+  border: 1px solid #ff1f4b44;
+}
+
+.modal-body .form-control::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.modal-body a {
+  color: #ff4b6e;
+  text-decoration: underline;
+}
+
+.modal-body a:hover {
+  color: #ff1f4b;
+}
+
+.modal-body ul {
+  padding-left: 1rem;
+}
+
+.modal-body li {
+  color: white;
+  margin-bottom: 4px;
+}
+
+.review-item {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: white;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.review-item strong {
+  color: #ffd966; /* subtle highlight for reviewer name */
+}
+
+.review-item .rating {
+  color: #ffc107;
+}
+
+.review-item p {
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.review-item .text-muted {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.review-item p,
+.review-item .text-muted,
+.review-item small {
+  color: white !important;
+}
+
+
   </style>
 </head>
 <body>
   <!-- Navigation -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container">
-      <a class="navbar-brand" href="/">Travel Planner</a>
+      <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+        <img src="/assets/logo.png" alt="Logo" class="logo-img" />
+        One Click Planner
+      </a>
+      
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -494,7 +426,7 @@
           <li class="nav-item">
             <a class="nav-link" href="/hotels">Hotels</a>
           </li>
-          <!-- Auth buttons - these will be replaced by user info when logged in -->
+          <!-- Auth buttons -->
           <li class="nav-item ms-3">
             <a class="btn btn-outline-light" href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/login?client_id=3anj5rhtknc7i97jq3jgknai71&response_type=code&scope=email+openid+phone&redirect_uri=http%3A%2F%2Flocalhost%3A3000">Login</a>
           </li>
@@ -505,138 +437,80 @@
       </div>
     </div>
   </nav>
-
+  
 
   <!-- Main Content -->
   <div class="main-content">
     <!-- Page Header -->
-    <header class="page-header">
-      <div class="header-content">
-        <h1 class="header-title">Explore Local Cuisine</h1>
-        <p class="header-subtitle">Discover amazing restaurants at your destination</p>
+    <header class="page-header text-center">
+      <div class="container">
+        <h1 class="display-4"><span id="typewriter-restaurants"></span></h1>
+        <p class="lead">Find the best dining experiences at your destination</p>
       </div>
     </header>
 
     <div class="container">
-      <!-- No Plan Alert (Hidden by default) -->
-      <div id="no-plan-alert" class="no-plan-alert" role="alert" style="display: none;">
-        <div class="d-flex">
-          <div class="me-3">
-            <i class="bi bi-exclamation-triangle-fill fs-3"></i>
-          </div>
-          <div>
-            <h4 class="alert-heading">No destination selected!</h4>
-            <p>You haven't set a destination for your trip yet. Where would you like to explore?</p>
-            <a href="/" class="btn btn-warning">Create Trip Plan</a>
-          </div>
-        </div>
+      <!-- No Plan Alert -->
+      <div id="no-plan-alert" class="alert alert-warning no-plan-alert" role="alert" style="display: none;">
+        <h4 class="alert-heading">No destination selected!</h4>
+        <p>It looks like you haven't set a destination for your trip yet.</p>
+        <hr>
+        <p class="mb-0">
+          <a href="/" class="btn btn-warning">Create a Trip Plan</a>
+        </p>
       </div>
 
       <!-- Current Plan Info -->
       <div id="current-plan-info" class="mb-4" style="display: none;">
-        <h2>Exploring restaurants in <span id="destination-display" class="text-primary"></span></h2>
+        <h2>Finding Restaurants in <span id="destination-display"></span></h2>
         <p id="date-display" class="text-muted"></p>
       </div>
+      <!-- Dynamic Day Tabs Section -->
+      <section class="mt-4" id="itinerary-section" style="display: none;">
+        <h4 class="mb-3">Recommended Restaurants For Each Day</h4>
+        <ul class="nav nav-tabs" id="dayTabs" role="tablist"></ul>
+        <div class="tab-content pt-3" id="dayTabsContent"></div>
+      </section>
 
-      <!-- Search Section -->
-      <div class="search-section">
-        <h3 class="search-title">Find Perfect Dining Spots</h3>
-        <form id="search-form">
-          <div class="row g-3">
-            <div class="col-md-9">
-              <input type="text" id="keyword" class="form-control search-input" placeholder="Search by cuisine, restaurant name, or food type..." aria-label="Search restaurants">
-            </div>
-            <div class="col-md-3">
-              <button type="submit" class="btn search-btn w-100">
-                <i class="bi bi-search me-2"></i>Search
-              </button>
-            </div>
+      <!-- Search Container -->
+      <div class="search-container mb-4">
+        <form id="search-form" class="row g-3 align-items-end">
+          <div class="col-md-8">
+            <label for="keyword" class="form-label">Search Restaurants</label>
+            <input type="text" class="form-control form-control-lg" id="keyword" placeholder="Restaurant name, cuisine type, etc.">
+          </div>
+          <div class="col-md-4">
+            <button type="submit" class="btn btn-primary btn-lg w-100">Search</button>
           </div>
         </form>
-        
-        <!-- Cuisine filters -->
-        <div class="filter-container">
-          <button class="filter-chip active" data-cuisine="">
-            <i class="bi bi-grid"></i>All Cuisines
-          </button>
-          <button class="filter-chip" data-cuisine="italian">
-            <i class="bi bi-cup-hot"></i>Italian
-          </button>
-          <button class="filter-chip" data-cuisine="japanese">
-            <i class="bi bi-cup-hot"></i>Japanese
-          </button>
-          <button class="filter-chip" data-cuisine="chinese">
-            <i class="bi bi-cup-hot"></i>Chinese
-          </button>
-          <button class="filter-chip" data-cuisine="indian">
-            <i class="bi bi-cup-hot"></i>Indian
-          </button>
-          <button class="filter-chip" data-cuisine="mexican">
-            <i class="bi bi-cup-hot"></i>Mexican
-          </button>
-          <button class="filter-chip" data-cuisine="vegetarian">
-            <i class="bi bi-cup-hot"></i>Vegetarian
-          </button>
-          <button class="filter-chip" data-cuisine="seafood">
-            <i class="bi bi-cup-hot"></i>Seafood
-          </button>
-        </div>
-        
-        <!-- Price filters -->
-        <div class="filter-container">
-          <button class="filter-chip" data-price="1">
-            <i class="bi bi-currency-dollar"></i>$
-          </button>
-          <button class="filter-chip" data-price="2">
-            <i class="bi bi-currency-dollar"></i>$$
-          </button>
-          <button class="filter-chip" data-price="3">
-            <i class="bi bi-currency-dollar"></i>$$$
-          </button>
-          <button class="filter-chip" data-price="4">
-            <i class="bi bi-currency-dollar"></i>$$$$
-          </button>
-        </div>
       </div>
-      
-      <!-- Map Container -->
-      <div class="map-container mb-5">
-        <div id="map"></div>
-      </div>
-      
-      <!-- Restaurants Section -->
-      <div class="restaurants-section">
-        <div class="section-header">
-          <h2 class="section-title">Restaurants</h2>
-          <div id="result-count" class="result-count">Showing 0 restaurants</div>
-        </div>
-        
-        <!-- Loading Spinner (Hidden by default) -->
-        <div id="spinner" class="spinner-container" style="display: none;">
-          <div class="spinner-border" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
-        </div>
-        
-        <!-- Empty State (Hidden by default) -->
-        <div id="empty-state" class="empty-state" style="display: none;">
-          <div class="empty-icon">
-            <i class="bi bi-search"></i>
-          </div>
-          <h3>No restaurants found</h3>
-          <p class="empty-text">Try changing your search terms or filters</p>
-        </div>
-        
-        <!-- Results Grid -->
-        <div id="results-container" class="card-grid">
-          <!-- Restaurant cards will be dynamically inserted here -->
-        </div>
-      </div>
+
+      <!-- Map and Results Container -->
+   <!-- Centered Map -->
+<div class="text-center mb-4">
+  <div id="map" style="max-width: 800px; margin: 0 auto;"></div>
+</div>
+
+<!-- Result Count -->
+<div class="text-center">
+  <div id="result-count" class="result-count"></div>
+</div>
+
+<!-- Spinner -->
+<div id="spinner" class="spinner-container" style="display: none;">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+</div>
+
+<!-- Restaurant Results -->
+<div id="results-container" class="row g-4 justify-content-center"></div>
+
     </div>
   </div>
 
   <!-- Restaurant Details Modal -->
-  <div class="modal fade" id="restaurantModal" tabindex="-1" aria-labelledby="restaurantModalLabel" aria-hidden="true">
+  <div class="modal fade" id="restaurantModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
@@ -647,30 +521,66 @@
           <!-- Content will be dynamically inserted here -->
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-save" id="save-restaurant-btn">
-            <i class="bi bi-bookmark-plus me-1"></i>Add to Itinerary
-          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-save" id="save-restaurant-btn">Add to Itinerary</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Day Selection Modal -->
+  <div class="modal fade" id="daySelectionModal" tabindex="-1" aria-labelledby="daySelectionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="daySelectionModalLabel">Choose Day to Add Restaurant</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Select which day you'd like to add <strong id="place-name-display"></strong> to:</p>
+          <div id="day-selection-buttons" class="d-grid gap-2">
+            <!-- Day buttons will be dynamically added here -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login Required Modal -->
+  <div class="modal fade" id="loginRequiredModal" tabindex="-1" aria-labelledby="loginRequiredModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-warning text-dark">
+          <h5 class="modal-title" id="loginRequiredModalLabel">
+            <i class="bi bi-shield-lock me-2"></i>Login Required
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="lead">You need to be logged in to add places to your itinerary.</p>
+          <p>Would you like to log in now?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <a href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/login?client_id=3anj5rhtknc7i97jq3jgknai71&response_type=code&scope=email+openid+phone&redirect_uri=http%3A%2F%2Flocalhost%3A3000" class="btn btn-warning">
+            <i class="bi bi-box-arrow-in-right me-1"></i>Login
+          </a>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Footer -->
-  <footer>
+  <footer class="text-center py-4">
     <div class="container">
-      <div class="row">
-        <div class="col-md-6">
-          <h5>TravelPlan</h5>
-          <p>Plan your perfect trip with our easy-to-use travel planning tools.</p>
-        </div>
-        <div class="col-md-6 text-md-end">
-          <p>© 2025 TravelPlan. All rights reserved.</p>
-        </div>
-      </div>
+      <p class="mb-0">© 2025 Travel Planner. All rights reserved.</p>
     </div>
   </footer>
 
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     let map;
@@ -679,299 +589,189 @@
     let selectedPlace = null;
     let currentCuisine = '';
     let currentPrice = '';
+    let currentMeal = '';
+    let selectedPlaceForDaySelection = null;
+    let isMapDragging = false;
+    let debounceTimer = null;
+    let currentMapBounds = null;
     
+    // Global object to hold pre-fetched recommendations per day
+    const itineraryRecommendations = {}; 
+    const removedRestaurants = new Set();
+
     const restaurantModal = new bootstrap.Modal(document.getElementById('restaurantModal'));
-    
-    // Format dates for display
+
+    // ----- Helper Functions for Clustering -----
+    function haversineDistance(a, b) {
+      const latA = typeof a.lat === 'function' ? a.lat() : a.lat;
+      const lngA = typeof a.lng === 'function' ? a.lng() : a.lng;
+      const latB = typeof b.lat === 'function' ? b.lat() : b.lat;
+      const lngB = typeof b.lng === 'function' ? b.lng() : b.lng;
+      const R = 6371;
+      const dLat = (latB - latA) * Math.PI / 180;
+      const dLng = (lngB - lngA) * Math.PI / 180;
+      const aCalc = Math.sin(dLat/2) ** 2 +
+                    Math.cos(latA * Math.PI/180) * Math.cos(latB * Math.PI/180) *
+                    Math.sin(dLng/2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(aCalc), Math.sqrt(1 - aCalc));
+    }
+
+    // Returns at most maxCount restaurants that are close to each other (within threshold km)
+    function filterRecommendations(recs, maxCount = 5, threshold = 5) {
+      if (recs.length <= maxCount) return recs;
+      let bestCluster = [];
+      for (let i = 0; i < recs.length; i++) {
+        if (!recs[i].geometry || !recs[i].geometry.location) continue;
+        let cluster = [recs[i]];
+        for (let j = 0; j < recs.length; j++) {
+          if (i === j) continue;
+          if (!recs[j].geometry || !recs[j].geometry.location) continue;
+          const dist = haversineDistance(recs[i].geometry.location, recs[j].geometry.location);
+          if (dist < threshold) {
+            cluster.push(recs[j]);
+          }
+        }
+        if (cluster.length > bestCluster.length) {
+          bestCluster = cluster;
+        }
+      }
+      if (bestCluster.length === 0) return recs.slice(0, maxCount);
+      const seed = bestCluster[0];
+      bestCluster.sort((a, b) => haversineDistance(seed.geometry.location, a.geometry.location) - haversineDistance(seed.geometry.location, b.geometry.location));
+      return bestCluster.slice(0, maxCount);
+    }
+    // ----- End Helper Functions -----
+
     function formatDateRange(startDate, endDate) {
       if (!startDate && !endDate) return 'Dates not specified';
       if (!startDate) return `Until ${new Date(endDate).toLocaleDateString()}`;
       if (!endDate) return `From ${new Date(startDate).toLocaleDateString()}`;
-      
       return `${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}`;
     }
 
-    // Auth functions for Add to Itenerary
-    // This checks if user is logged in before allowing add to itinerary
-    function checkAuthBeforeAddToItinerary(placeData) {
-      // Check if the user is authenticated
-      const authUser = localStorage.getItem('authUser');
-      
-      if (!authUser) {
-        // User is not authenticated, show login prompt
-        showLoginRequiredModal();
-        return false;
-      }
-      
-      // User is authenticated, proceed with adding to itinerary
-      return true;
-    }
-
-    // Function to show login required modal
-    function showLoginRequiredModal() {
-      // Show a notification at the top of the page
-      const notificationHtml = `
-        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-          <i class="bi bi-exclamation-triangle-fill me-2"></i>
-          <strong>Authentication Required!</strong> You need to log in to add items to your itinerary.
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-      `;
-      
-      const notificationContainer = document.createElement('div');
-      notificationContainer.className = 'position-fixed top-0 start-0 end-0 p-3 text-center';
-      notificationContainer.style.zIndex = '5000';
-      notificationContainer.innerHTML = notificationHtml;
-      document.body.appendChild(notificationContainer);
-      
-      // Auto remove after showing the modal
-      setTimeout(() => {
-        if (notificationContainer.parentNode) {
-          notificationContainer.querySelector('.alert').classList.remove('show');
-          setTimeout(() => notificationContainer.remove(), 300);
-        }
-      }, 5000);
-      
-      // Create modal HTML
-      const modalHtml = `
-        <div class="modal fade" id="loginRequiredModal" tabindex="-1" aria-labelledby="loginRequiredModalLabel" aria-hidden="true">
-          <div class="modal-dialog">
-            <div class="modal-content">
-              <div class="modal-header bg-warning text-dark">
-                <h5 class="modal-title" id="loginRequiredModalLabel">
-                  <i class="bi bi-shield-lock me-2"></i>Login Required
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body">
-                <p class="lead">You need to be logged in to add places to your itinerary.</p>
-                <p>Would you like to log in now?</p>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <a href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/login?client_id=3anj5rhtknc7i97jq3jgknai71&response_type=code&scope=email+openid+phone&redirect_uri=http%3A%2F%2Flocalhost%3A3000" class="btn btn-warning">
-                  <i class="bi bi-box-arrow-in-right me-1"></i>Login
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-      
-      // Append modal to body if it doesn't exist
-      if (!document.getElementById('loginRequiredModal')) {
-        const modalContainer = document.createElement('div');
-        modalContainer.innerHTML = modalHtml;
-        document.body.appendChild(modalContainer.firstChild);
-      }
-      
-      // Show the modal with a slight delay to ensure notification is seen first
-      setTimeout(() => {
-        const loginModal = new bootstrap.Modal(document.getElementById('loginRequiredModal'));
-        loginModal.show();
-      }, 500);
-    }
-    
-    // Generate star rating HTML
-    function generateStarRating(rating) {
-      if (!rating) return '';
-      
-      const fullStars = Math.floor(rating);
-      const halfStar = rating % 1 >= 0.5;
-      const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
-      
-      let starsHtml = '';
-      
-      // Full stars
-      for (let i = 0; i < fullStars; i++) {
-        starsHtml += '<i class="bi bi-star-fill"></i>';
-      }
-      
-      // Half star
-      if (halfStar) {
-        starsHtml += '<i class="bi bi-star-half"></i>';
-      }
-      
-      // Empty stars
-      for (let i = 0; i < emptyStars; i++) {
-        starsHtml += '<i class="bi bi-star"></i>';
-      }
-      
-      return starsHtml;
-    }
-    
-   // Initialize the map
     function initMap() {
-      // Initialize with a neutral view that will be updated once we load the plan
       const defaultLocation = { lat: 0, lng: 0 };
-      
       map = new google.maps.Map(document.getElementById("map"), {
         center: defaultLocation,
         zoom: 2,
         mapTypeControl: false,
         fullscreenControl: true,
-        streetViewControl: false
+        streetViewControl: false,
       });
       
-      // Load current plan and perform initial search
+      map.addListener('dragstart', function() {
+        isMapDragging = true;
+      });
+      
+      map.addListener('dragend', function() {
+        isMapDragging = false;
+        debouncedSearchByMapBounds();
+      });
+      
+      map.addListener('zoom_changed', function() {
+        debouncedSearchByMapBounds();
+      });
+      
       loadCurrentPlan();
-      // Set up filter event listeners
-      setupFilters();
     }
 
-    
-    // Load current plan
-    function loadCurrentPlan() {
-      fetch('/api/plan')
-        .then(response => response.json())
-        .then(data => {
-          if (data.plan && data.plan.destination) {
-            currentPlan = data.plan;
-            
-            // Update UI
-            document.getElementById('destination-display').textContent = currentPlan.destination;
-            document.getElementById('date-display').textContent = formatDateRange(currentPlan.startDate, currentPlan.endDate);
-            document.getElementById('current-plan-info').style.display = 'block';
-            document.getElementById('no-plan-alert').style.display = 'none';
-            
-            // Use the Geocoding service to get coordinates for the destination
-            const geocoder = new google.maps.Geocoder();
-            geocoder.geocode({ 'address': currentPlan.destination }, function(results, status) {
-              if (status === 'OK') {
-                // Center map on the destination
-                map.setCenter(results[0].geometry.location);
-                map.setZoom(7); // Good zoom level for a country/region
-                
-                // Perform initial search
-                searchRestaurants('');
-              } else {
-                console.error('Geocode was not successful for the following reason: ' + status);
-                // Fallback - still do the search even if geocoding fails
-                searchRestaurants('');
-              }
-            });
-          } else {
-            // No plan exists
-            document.getElementById('no-plan-alert').style.display = 'block';
-            document.getElementById('current-plan-info').style.display = 'none';
+    function debouncedSearchByMapBounds() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(searchRestaurantsByMapBounds, 500);
+    }
+
+    function searchRestaurantsByMapBounds() {
+      const bounds = map.getBounds();
+      if (!bounds) return;
+      currentMapBounds = bounds;
+      const center = map.getCenter();
+      const lat = center.lat();
+      const lng = center.lng();
+      document.getElementById('spinner').style.display = 'flex';
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ location: { lat, lng } }, function(results, status) {
+        if (status === 'OK' && results[0]) {
+          let locationName = '';
+          for (let component of results[0].address_components) {
+            if (component.types.includes('locality')) {
+              locationName = component.long_name;
+              break;
+            } else if (component.types.includes('administrative_area_level_1') && !locationName) {
+              locationName = component.long_name;
+            }
           }
-        })
-        .catch(error => {
-          console.error('Error loading plan:', error);
-          document.getElementById('no-plan-alert').style.display = 'block';
-        });
-    }
-    
-    // Set up filter event listeners
-    function setupFilters() {
-      // Cuisine filters
-      document.querySelectorAll('.filter-chip[data-cuisine]').forEach(button => {
-        button.addEventListener('click', function() {
-          // Remove active class from all cuisine filters
-          document.querySelectorAll('.filter-chip[data-cuisine]').forEach(btn => {
-            btn.classList.remove('active');
-          });
-          
-          // Add active class to clicked button
-          this.classList.add('active');
-          
-          // Update current cuisine
-          currentCuisine = this.getAttribute('data-cuisine');
-          
-          // Trigger search
-          const keyword = document.getElementById('keyword').value;
-          searchRestaurants(keyword);
-        });
-      });
-      
-      // Price filters
-      document.querySelectorAll('.filter-chip[data-price]').forEach(button => {
-        button.addEventListener('click', function() {
-          // Toggle active class
-          this.classList.toggle('active');
-          
-          // Get all active price filters
-          const activePriceFilters = Array.from(document.querySelectorAll('.filter-chip[data-price].active'))
-            .map(btn => btn.getAttribute('data-price'));
-          
-          // Update current price filter
-          currentPrice = activePriceFilters.join(',');
-          
-          // Trigger search
-          const keyword = document.getElementById('keyword').value;
-          searchRestaurants(keyword);
-        });
+          if (locationName) {
+            let mapAreaHeading = document.getElementById('map-area-heading');
+            if (!mapAreaHeading) {
+              const headingDiv = document.createElement('div');
+              headingDiv.id = 'map-area-heading';
+              headingDiv.className = 'alert alert-info mb-3';
+              headingDiv.innerHTML = `<i class="bi bi-geo-alt"></i> Showing restaurants in <strong>${locationName}</strong>`;
+              const searchContainer = document.querySelector('.search-container');
+              searchContainer.parentNode.insertBefore(headingDiv, searchContainer.nextSibling);
+            } else {
+              mapAreaHeading.innerHTML = `<i class="bi bi-geo-alt"></i> Showing restaurants in <strong>${locationName}</strong>`;
+            }
+            searchRestaurantsByLocation(locationName);
+          }
+        } else {
+          console.log('Geocoder failed due to: ' + status);
+          searchRestaurants('');
+        }
       });
     }
-    
-    // Search for restaurants
-    function searchRestaurants(keyword) {
-      if (!currentPlan || !currentPlan.destination) {
-        return;
-      }
-      
-      // Show loading spinner
+
+    function searchRestaurantsByLocation(location) {
+      clearMarkers();
       document.getElementById('spinner').style.display = 'flex';
       document.getElementById('results-container').innerHTML = '';
-      document.getElementById('result-count').textContent = 'Searching...';
-      document.getElementById('empty-state').style.display = 'none';
+      document.getElementById('result-count').textContent = '';
       
-      // Clear existing markers
-      clearMarkers();
+      // Build the search query incorporating filters
+      let apiUrl = `/api/places?location=${encodeURIComponent(location)}&type=restaurant`;
       
-      // Build search query
-      let searchKeyword = keyword || '';
-      
-      if (currentCuisine) {
-        searchKeyword = searchKeyword ? `${searchKeyword} ${currentCuisine}` : currentCuisine;
+      // Add keyword search
+      const keyword = document.getElementById('keyword').value || '';
+      if (keyword) {
+        apiUrl += `&keyword=${encodeURIComponent(keyword)}`;
       }
-      console.error('currentPlan.destination:', currentPlan.destination);
-      // Call the API
-      let apiUrl = `/api/places?location=${encodeURIComponent(currentPlan.destination)}&type=restaurant&keyword=${encodeURIComponent(searchKeyword)}`;
+      
+      // Add cuisine type filter
+      if (currentCuisine) {
+        apiUrl += `&cuisine=${encodeURIComponent(currentCuisine)}`;
+      }
+      
+      // Add meal type filter
+      if (currentMeal) {
+        apiUrl += `&meal=${encodeURIComponent(currentMeal)}`;
+      }
+      
+      // Add price range filter
+      if (currentPrice) {
+        apiUrl += `&minprice=${currentPrice}&maxprice=${currentPrice}`;
+      }
+      
+      console.log('Searching location with URL:', apiUrl);
       
       fetch(apiUrl)
         .then(response => response.json())
         .then(data => {
-          // Hide spinner
           document.getElementById('spinner').style.display = 'none';
-          
           if (data.status === 'OK' && data.results && data.results.length > 0) {
-            // Filter by price if needed
-            let filteredResults = data.results;
-            
-            if (currentPrice) {
-              const priceFilters = currentPrice.split(',').map(p => parseInt(p));
-              filteredResults = data.results.filter(place => 
-                !place.price_level || priceFilters.includes(place.price_level)
-              );
-            }
-            
-            if (filteredResults.length > 0) {
-              // Update result count
-              document.getElementById('result-count').textContent = `Showing ${filteredResults.length} restaurants`;
-              
-              // Display results
-              displayResults(filteredResults);
-              
-              // Fit map to show all markers
-              const bounds = new google.maps.LatLngBounds();
-              markers.forEach(marker => bounds.extend(marker.getPosition()));
-              map.fitBounds(bounds);
-            } else {
-              // No results after filtering
-              document.getElementById('result-count').textContent = 'No matching restaurants';
-              document.getElementById('empty-state').style.display = 'block';
-            }
+            document.getElementById('result-count').textContent = `Found ${data.results.length} restaurants`;
+            displayResults(data.results);
           } else {
-            // No results from API
             document.getElementById('result-count').textContent = 'No restaurants found';
-            document.getElementById('empty-state').style.display = 'block';
+            document.getElementById('results-container').innerHTML = `
+              <div class="alert alert-info">
+                No restaurants found in ${location} with the selected filters. Try different search criteria.
+              </div>
+            `;
           }
         })
         .catch(error => {
           console.error('Error searching restaurants:', error);
           document.getElementById('spinner').style.display = 'none';
-          document.getElementById('result-count').textContent = 'Error searching';
           document.getElementById('results-container').innerHTML = `
             <div class="alert alert-danger">
               Error searching for restaurants. Please try again later.
@@ -979,242 +779,788 @@
           `;
         });
     }
-    
-    // Display search results
-    function displayResults(places) {
-      const resultsContainer = document.getElementById('results-container');
-      resultsContainer.innerHTML = '';
+
+    function searchRestaurants(keyword, locationOverride) {
+      if (!currentPlan || !currentPlan.destination) return;
+      document.getElementById('spinner').style.display = 'flex';
+      document.getElementById('results-container').innerHTML = '';
+      document.getElementById('result-count').textContent = '';
+      clearMarkers();
+      const location = locationOverride || currentPlan.destination;
       
-      // Create results list
-      places.forEach((place, index) => {
-        // Create marker
-        const marker = new google.maps.Marker({
-          position: place.geometry.location,
-          map: map,
-          title: place.name,
-          animation: google.maps.Animation.DROP
+      let searchKeyword = keyword || document.getElementById('keyword').value || '';
+      
+      // Build the search query incorporating filters
+      let apiUrl = `/api/places?location=${encodeURIComponent(location)}&type=restaurant`;
+      
+      // Add keyword search
+      if (searchKeyword) {
+        apiUrl += `&keyword=${encodeURIComponent(searchKeyword)}`;
+      }
+      
+      // Add cuisine type filter
+      if (currentCuisine) {
+        apiUrl += `&cuisine=${encodeURIComponent(currentCuisine)}`;
+      }
+      
+      // Add meal type filter
+      if (currentMeal) {
+        apiUrl += `&meal=${encodeURIComponent(currentMeal)}`;
+      }
+      
+      // Add price range filter
+      if (currentPrice) {
+        apiUrl += `&minprice=${currentPrice}&maxprice=${currentPrice}`;
+      }
+      
+      console.log('Searching with URL:', apiUrl);
+      
+      fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('spinner').style.display = 'none';
+          if (data.status === 'OK' && data.results && data.results.length > 0) {
+            document.getElementById('result-count').textContent = `Found ${data.results.length} restaurants`;
+            displayResults(data.results);
+            const bounds = new google.maps.LatLngBounds();
+            markers.forEach(marker => bounds.extend(marker.getPosition()));
+            map.fitBounds(bounds);
+          } else {
+            document.getElementById('result-count').textContent = `No restaurants found`;
+            document.getElementById('results-container').innerHTML = `
+              <div class="alert alert-info">
+                No restaurants found with the selected filters. Try a different search term or filters.
+              </div>
+            `;
+          }
+        })
+        .catch(error => {
+          console.error('Error searching restaurants:', error);
+          document.getElementById('spinner').style.display = 'none';
+          document.getElementById('results-container').innerHTML = `
+            <div class="alert alert-danger">
+              Error searching for restaurants. Please try again later.
+            </div>
+          `;
         });
-        
-        // Add to markers array
-        markers.push(marker);
-        
-        // Add click listener
-marker.addListener('click', () => showPlaceDetails(place));
-
-// Create restaurant card
-const card = document.createElement('div');
-card.className = 'restaurant-card';
-card.innerHTML = `
-  <div class="restaurant-image" style="background-image: url('https://source.unsplash.com/300x200/?${encodeURIComponent(place.name + ' restaurant')}')">
-    ${place.price_level ? `<div class="restaurant-price">${'$'.repeat(place.price_level)}</div>` : ''}
-  </div>
-  <div class="restaurant-body">
-    <h5 class="restaurant-title">${place.name}</h5>
-    <div class="restaurant-rating">
-      <div class="stars">${generateStarRating(place.rating)}</div>
-      <div class="rating-text">${place.rating ? place.rating.toFixed(1) : 'No rating'}</div>
-    </div>
-    <p class="restaurant-cuisine">${getCuisineType(place)}</p>
-    <p class="restaurant-address">${place.formatted_address || 'Address not available'}</p>
-    <div class="restaurant-actions">
-      <button class="btn-details" onclick="showPlaceDetails(${JSON.stringify(place).replace(/"/g, '&quot;')})">
-        <i class="bi bi-info-circle me-1"></i>Details
-      </button>
-    </div>
-  </div>
-`;
-
-resultsContainer.appendChild(card);
-});
-}
-
-// Helper function to extract cuisine type from place data
-function getCuisineType(place) {
-  // Try to determine cuisine type from types array
-  if (place.types && place.types.length > 0) {
-    // Look for specific cuisine types
-    const cuisineTypes = place.types.filter(type => 
-      type.includes('restaurant') || 
-      type.includes('food') || 
-      type.includes('cafe')
-    );
-    
-    if (cuisineTypes.length > 0) {
-      // Format the cuisine type for display
-      return cuisineTypes[0]
-        .replace(/_/g, ' ')
-        .replace(/\b\w/g, letter => letter.toUpperCase());
     }
-  }
-  
-  return 'Restaurant';
-}
 
-// Show place details in modal
-function showPlaceDetails(place) {
-  selectedPlace = place;
-  
-  // Update modal title
-  document.getElementById('modal-title').textContent = place.name;
-  
-  // Show loading in modal
-  document.getElementById('modal-body').innerHTML = `
-    <div class="text-center my-4">
-      <div class="spinner-border" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
-      <p class="mt-2">Loading details...</p>
-    </div>
-  `;
-  
-  // Show modal
-  restaurantModal.show();
-  
-  // Fetch place details
-  fetch(`/api/places/${place.place_id}`)
-    .then(response => response.json())
-    .then(data => {
-      if (data.status === 'OK' && data.result) {
-        const details = data.result;
+    function addResetMapButton() {
+      const mapElement = document.getElementById('map');
+      const resetButton = document.createElement('button');
+      resetButton.id = 'reset-map-button';
+      resetButton.className = 'btn btn-sm btn-light position-absolute m-2';
+      resetButton.style.zIndex = '1';
+      resetButton.style.top = '10px';
+      resetButton.style.right = '10px';
+      resetButton.innerHTML = '<i class="bi bi-arrow-counterclockwise"></i> Reset Map';
+      
+      resetButton.addEventListener('click', function() {
+        currentMapBounds = null;
+        const mapAreaHeading = document.getElementById('map-area-heading');
+        if (mapAreaHeading) {
+          mapAreaHeading.remove();
+        }
+        searchRestaurants('');
+      });
+      
+      const mapContainer = mapElement.parentNode;
+      mapContainer.style.position = 'relative';
+      mapContainer.appendChild(resetButton);
+    }
+
+    // Generate itinerary tabs using pre-fetched recommendations.
+    // Before generating, for days with the same city, remove duplicates already used in an earlier day.
+    function generateItineraryTabs() {
+      document.getElementById('itinerary-section').style.display = 'block';
+      const dayTabs = document.getElementById('dayTabs');
+      const dayTabsContent = document.getElementById('dayTabsContent');
+      dayTabs.innerHTML = '';
+      dayTabsContent.innerHTML = '';
+      
+      // Remove duplicate recommendations across days that have the same city.
+      const cityUsed = {}; // city => set of place_ids used in earlier days
+      for (let i = 0; i < currentPlan.perDayCityMap.length; i++) {
+        const city = currentPlan.perDayCityMap[i];
+        if (!cityUsed[city]) {
+          cityUsed[city] = new Set();
+        }
+        // Remove restaurants already used in this city on previous days.
+        itineraryRecommendations[i] = (itineraryRecommendations[i] || []).filter(place => {
+          return !cityUsed[city].has(place.place_id);
+        });
+        // Apply clustering to limit to max 5.
+        itineraryRecommendations[i] = filterRecommendations(itineraryRecommendations[i], 5, 5);
+        itineraryRecommendations[i].forEach(place => cityUsed[city].add(place.place_id));
+      }
+      
+      const startDate = new Date(currentPlan.startDate);
+      const totalDays = currentPlan.perDayCityMap.length;
+      
+      for (let i = 0; i < totalDays; i++) {
+        const currentDay = new Date(startDate);
+        currentDay.setDate(startDate.getDate() + i);
+        const dateLabel = currentDay.toLocaleDateString();
+        const dayCity = currentPlan.perDayCityMap[i];
+        const tabId = `day${i + 1}`;
+        const isActive = i === 0 ? 'active' : '';
+        const isShow = i === 0 ? 'show active' : '';
         
-        // Update modal content
-        document.getElementById('modal-body').innerHTML = `
-          <div class="place-photos">
-            <img src="https://source.unsplash.com/600x400/?${encodeURIComponent(place.name + ' food')}" class="place-photo" alt="${place.name} - food">
-            <img src="https://source.unsplash.com/600x400/?${encodeURIComponent(place.name + ' restaurant')}" class="place-photo" alt="${place.name} - interior">
+        const tab = document.createElement('li');
+        tab.className = 'nav-item';
+        tab.innerHTML = `
+          <button class="nav-link ${isActive}" id="${tabId}-tab" data-bs-toggle="tab" data-bs-target="#${tabId}" type="button" role="tab">
+            Day ${i + 1} (${dateLabel}) - ${dayCity}
+          </button>
+        `;
+        dayTabs.appendChild(tab);
+        
+        const recs = itineraryRecommendations[i] || [];
+        const listItems = recs.map(place => `
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            ${place.name}
+            <button class="btn btn-sm btn-outline-success recommended-add-btn"
+              data-place-id="${place.place_id}" 
+              data-day-index="${i}">
+              Add to Itinerary
+            </button>
+          </li>
+        `).join('');
+        
+        const pane = document.createElement('div');
+        pane.className = `tab-pane fade ${isShow}`;
+        pane.id = tabId;
+        pane.role = 'tabpanel';
+        pane.innerHTML = `
+       <div class="card p-3 recommended-container">
+            <h5>Recommended Restaurants in ${dayCity}</h5>
+            <ul class="list-group">${listItems || '<li class="list-group-item text-muted">No recommendations yet.</li>'}</ul>
           </div>
-          
-          <div class="detail-section">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h4 class="mb-0">${details.name}</h4>
-              ${details.price_level ? `<span class="badge bg-dark">${'$'.repeat(details.price_level)}</span>` : ''}
-            </div>
-            <div class="restaurant-rating mb-2">
-              <div class="stars">${generateStarRating(details.rating)}</div>
-              <span class="ms-2">${details.rating ? details.rating.toFixed(1) : 'No rating'}</span>
-            </div>
-            <p>${details.formatted_address || ''}</p>
-            ${details.formatted_phone_number ? `<p><i class="bi bi-telephone me-2"></i>${details.formatted_phone_number}</p>` : ''}
-            ${details.website ? `<p><i class="bi bi-globe me-2"></i><a href="${details.website}" target="_blank">${details.website}</a></p>` : ''}
-          </div>
-          
-          ${details.description ? `
-            <div class="detail-section">
-              <h5 class="detail-title">About</h5>
-              <p>${details.description}</p>
-            </div>
-          ` : ''}
-          
-          ${details.opening_hours && details.opening_hours.weekday_text ? `
-            <div class="detail-section">
-              <h5 class="detail-title">Opening Hours</h5>
-              <ul class="hours-list">
-                ${details.opening_hours.weekday_text.map(day => `<li>${day}</li>`).join('')}
-              </ul>
-            </div>
-          ` : ''}
-          
-          ${details.reviews && details.reviews.length > 0 ? `
-            <div class="detail-section reviews-section">
-              <h5 class="detail-title">Reviews</h5>
-              ${details.reviews.slice(0, 3).map(review => `
-                <div class="review">
-                  <div class="review-header">
-                    <h6 class="reviewer-name">${review.author_name || 'Anonymous'}</h6>
-                    <div class="stars ms-2">${generateStarRating(review.rating)}</div>
-                  </div>
-                  <p class="review-text">${review.text || 'No comment'}</p>
-                </div>
-              `).join('')}
-            </div>
-          ` : ''}
-          
-          <div class="detail-section">
-            <h5 class="detail-title">Add Notes</h5>
-            <textarea id="place-notes" class="form-control" rows="3" placeholder="Add any notes about this restaurant..."></textarea>
+        `;
+        dayTabsContent.appendChild(pane);
+      }
+      
+      // Add "Add All Recommendations" button to section title
+      const sectionTitle = document.querySelector('#itinerary-section h4');
+      if (sectionTitle) {
+        sectionTitle.innerHTML = `
+          <div class="d-flex justify-content-between align-items-center w-100">
+            <span>Recommended Restaurants For Each Day</span>
+            <button id="add-all-recommendations" class="btn btn-success btn-sm">
+              <i class="bi bi-plus-circle me-1"></i>Add All to Itinerary
+            </button>
           </div>
         `;
       } else {
-        document.getElementById('modal-body').innerHTML = `
-          <div class="alert alert-warning">
-            Could not load detailed information for this restaurant.
-          </div>
-          <div class="place-photo" style="background-image: url('https://source.unsplash.com/600x400/?${encodeURIComponent(place.name + ' restaurant')}'); height: 200px; background-size: cover; background-position: center;"></div>
-          <div class="mb-3">
-            <h4>${place.name}</h4>
-            <p>${place.formatted_address || ''}</p>
-          </div>
-          <div class="mb-3">
-            <h5 class="detail-title">Add Notes</h5>
-            <textarea id="place-notes" class="form-control" rows="3" placeholder="Add any notes about this restaurant..."></textarea>
+        const header = document.createElement('h4');
+        header.className = 'mb-3';
+        header.innerHTML = `
+          <div class="d-flex justify-content-between align-items-center w-100">
+            <span>Recommended Restaurants For Each Day</span>
+            <button id="add-all-recommendations" class="btn btn-success btn-sm">
+              <i class="bi bi-plus-circle me-1"></i>Add All to Itinerary
+            </button>
           </div>
         `;
+        itinerarySection.prepend(header);
       }
-    })
-    .catch(error => {
-      console.error('Error fetching place details:', error);
-      document.getElementById('modal-body').innerHTML = `
-        <div class="alert alert-danger">
-          Error loading restaurant details. Please try again later.
+      setupRecommendedButtons();
+      setupAddAllButton();
+    }
+
+    function computePerDayCityMap(plan) {
+      const perDayCityMap = [];
+      if (plan.cities && plan.cities.length > 0) {
+        plan.cities.forEach(city => {
+          // Extract just the city name if it contains parentheses (like "Tokyo (2d)")
+          const cityName = typeof city.name === 'string' && city.name.includes('(') 
+            ? city.name.split('(')[0].trim() 
+            : city.name;
+            
+          for (let i = 0; i < city.days; i++) {
+            perDayCityMap.push(cityName);
+          }
+        });
+      } else {
+        // For plans without explicit cities array, create entries based on date range
+        const start = new Date(plan.startDate);
+        const end = new Date(plan.endDate);
+        const totalDays = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+        
+        // Extract just the destination name if it contains parentheses or commas
+        let destinationName = plan.destination;
+        if (typeof destinationName === 'string') {
+          // Handle comma-separated list like "Tokyo (2d), Osaka (2d)"
+          if (destinationName.includes(',')) {
+            const destinations = destinationName.split(',');
+            for (let i = 0; i < totalDays; i++) {
+              // Distribute days evenly among destinations (simplified approach)
+              const destIndex = Math.min(Math.floor(i / Math.ceil(totalDays / destinations.length)), destinations.length - 1);
+              let dest = destinations[destIndex].trim();
+              // Remove any day notation like "(2d)"
+              if (dest.includes('(')) {
+                dest = dest.split('(')[0].trim();
+              }
+              perDayCityMap.push(dest);
+            }
+            return perDayCityMap;
+          }
+          // Handle single destination with days notation like "Tokyo (2d)"
+          else if (destinationName.includes('(')) {
+            destinationName = destinationName.split('(')[0].trim();
+          }
+        }
+        
+        // Use the clean destination name for all days
+        for (let i = 0; i < totalDays; i++) {
+          perDayCityMap.push(destinationName);
+        }
+      }
+      return perDayCityMap;
+    }
+
+    function setupRecommendedButtons() {
+      const buttons = document.querySelectorAll('.recommended-add-btn');
+      buttons.forEach(button => {
+        button.addEventListener('click', function() {
+          const placeId = this.dataset.placeId;
+          const place = findPlaceInRecommendations(placeId);
+          if (!place) {
+            console.error('Place not found in recommendations');
+            return;
+          }
+          if (!checkAuthBeforeAddToItinerary(place)) return;
+          selectedPlaceForDaySelection = {
+            placeId: place.place_id,
+            name: place.name,
+            address: place.formatted_address || '',
+            notes: '',
+            priceLevel: place.price_level || 1
+          };
+          fetch('/api/plan')
+            .then(response => response.json())
+            .then(data => {
+              if (data.plan && data.plan.startDate && data.plan.endDate) {
+                const startDate = new Date(data.plan.startDate);
+                const endDate = new Date(data.plan.endDate);
+                const dayCount = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+                document.getElementById('place-name-display').textContent = selectedPlaceForDaySelection.name;
+                const buttonsContainer = document.getElementById('day-selection-buttons');
+                buttonsContainer.innerHTML = '';
+                for (let i = 0; i < dayCount; i++) {
+                  const currentDay = new Date(startDate);
+                  currentDay.setDate(startDate.getDate() + i);
+                  const button = document.createElement('button');
+                  button.type = 'button';
+                  button.className = 'btn btn-outline-primary';
+                  button.innerHTML = `Day ${i + 1} <small>(${currentDay.toLocaleDateString()})</small>`;
+                  button.dataset.dayIndex = i;
+                  button.addEventListener('click', function() {
+                    addToItineraryForDay(selectedPlaceForDaySelection, i);
+                    const daySelectionModal = bootstrap.Modal.getInstance(document.getElementById('daySelectionModal'));
+                    daySelectionModal.hide();
+                  });
+                  buttonsContainer.appendChild(button);
+                }
+                const daySelectionModal = new bootstrap.Modal(document.getElementById('daySelectionModal'));
+                daySelectionModal.show();
+              } else {
+                addToItineraryWithoutDay(selectedPlaceForDaySelection);
+              }
+            })
+            .catch(error => {
+              console.error('Error loading plan for day selection:', error);
+              addToItineraryWithoutDay(selectedPlaceForDaySelection);
+            });
+        });
+      });
+    }
+
+    function setupAddAllButton() {
+      const addAllBtn = document.getElementById('add-all-recommendations');
+      if (!addAllBtn) return;
+      addAllBtn.addEventListener('click', function() {
+        const authUser = localStorage.getItem('authUser');
+        if (!authUser) {
+          showLoginRequiredModal();
+          return;
+        }
+        checkItineraryStatus()
+          .then(status => {
+            if (status.hasItems) {
+              showOverwriteConfirmationModal();
+            } else {
+              addAllRecommendationsToItinerary();
+            }
+          })
+          .catch(error => {
+            console.error('Error checking itinerary status:', error);
+            showNotification('error', 'Failed to check current itinerary. Please try again.');
+          });
+      });
+    }
+
+    function addAllRecommendationsToItinerary() {
+      const loadingNotification = createNotification('info', 'Adding recommendations to your itinerary...');
+      const progressBar = document.createElement('div');
+      progressBar.className = 'progress mt-2';
+      progressBar.innerHTML = `
+        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+            role="progressbar" 
+            style="width: 0%" 
+            aria-valuenow="0" 
+            aria-valuemin="0" 
+            aria-valuemax="100">0%</div>
+      `;
+      loadingNotification.querySelector('.alert').appendChild(progressBar);
+      
+      // Collect all recommendations
+      let allRecommendations = [];
+      let totalCount = 0;
+      
+      for (let dayIndex in itineraryRecommendations) {
+        itineraryRecommendations[dayIndex].forEach(place => {
+          allRecommendations.push({
+            place: place,
+            dayIndex: parseInt(dayIndex)
+          });
+          totalCount++;
+        });
+      }
+      
+      if (totalCount === 0) {
+        updateNotificationWithResult(loadingNotification, 'warning', 'No recommendations found to add.');
+        setTimeout(() => {
+          if (loadingNotification.parentNode) {
+            loadingNotification.remove();
+          }
+        }, 3000);
+        return;
+      }
+      
+      let successCount = 0;
+      let currentIndex = 0;
+      
+      function addNextRecommendation() {
+        if (currentIndex >= allRecommendations.length) {
+          updateNotificationWithResult(loadingNotification, 'success', `Successfully added ${successCount} restaurants to your itinerary!`);
+          setTimeout(() => {
+            if (loadingNotification.parentNode) {
+              loadingNotification.remove();
+            }
+          }, 3000);
+          return;
+        }
+        
+        const recommendation = allRecommendations[currentIndex];
+        const place = recommendation.place;
+        const dayIndex = recommendation.dayIndex;
+        
+        updateProgress(progressBar, currentIndex, totalCount);
+        
+        // Add to itinerary
+        fetch('/api/plan/places', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            placeId: place.place_id,
+            name: place.name,
+            address: place.formatted_address || place.vicinity || '',
+            category: 'restaurant',
+            notes: '',
+            priceLevel: place.price_level || 1,
+            dayIndex: dayIndex
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (!data.error) {
+            successCount++;
+          }
+          currentIndex++;
+          setTimeout(addNextRecommendation, 100);
+        })
+        .catch(error => {
+          console.error('Error adding restaurant:', error);
+          currentIndex++;
+          setTimeout(addNextRecommendation, 100);
+        });
+      }
+      
+      addNextRecommendation();
+    }
+
+    function checkItineraryStatus() {
+      return fetch('/api/plan')
+        .then(response => response.json())
+        .then(data => {
+          const hasRestaurants = data.plan && data.plan.restaurants && data.plan.restaurants.length > 0;
+          return { hasItems: hasRestaurants, plan: data.plan };
+        });
+    }
+
+    function showOverwriteConfirmationModal() {
+      if (!document.getElementById('overwriteConfirmationModal')) {
+        const modalHTML = `
+          <div class="modal fade" id="overwriteConfirmationModal" tabindex="-1" aria-labelledby="overwriteConfirmationModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header bg-warning">
+                  <h5 class="modal-title" id="overwriteConfirmationModalLabel">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Warning: Existing Restaurants
+                  </h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <p>Your itinerary already contains restaurants. What would you like to do?</p>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                  <button type="button" class="btn btn-danger" id="overwrite-btn">
+                    <i class="bi bi-trash me-1"></i>Clear & Replace All
+                  </button>
+                  <button type="button" class="btn btn-primary" id="add-to-existing-btn">
+                    <i class="bi bi-plus-circle me-1"></i>Add To Existing
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        const modalContainer = document.createElement('div');
+        modalContainer.innerHTML = modalHTML;
+        document.body.appendChild(modalContainer);
+        document.getElementById('overwrite-btn').addEventListener('click', function() {
+          clearItineraryAndAddAll();
+          bootstrap.Modal.getInstance(document.getElementById('overwriteConfirmationModal')).hide();
+        });
+        document.getElementById('add-to-existing-btn').addEventListener('click', function() {
+          addAllRecommendationsToItinerary();
+          bootstrap.Modal.getInstance(document.getElementById('overwriteConfirmationModal')).hide();
+        });
+      }
+      const overwriteModal = new bootstrap.Modal(document.getElementById('overwriteConfirmationModal'));
+      overwriteModal.show();
+    }
+
+    function clearItineraryAndAddAll() {
+      const loadingNotification = createNotification('info', 'Preparing to update your itinerary...');
+      const progressBar = document.createElement('div');
+      progressBar.className = 'progress mt-2';
+      progressBar.innerHTML = `
+        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+            role="progressbar" 
+            style="width: 0%" 
+            aria-valuenow="0" 
+            aria-valuemin="0" 
+            aria-valuemax="100">0%</div>
+      `;
+      loadingNotification.querySelector('.alert').appendChild(progressBar);
+      fetch('/api/plan')
+        .then(response => response.json())
+        .then(data => {
+          if (!data.plan) {
+            throw new Error('No active plan found');
+          }
+          const plan = data.plan;
+          updateNotificationMessage(loadingNotification, 'info', 'Clearing existing restaurants...');
+          if (!plan.restaurants || plan.restaurants.length === 0) {
+            updateNotificationMessage(loadingNotification, 'info', 'No existing restaurants to clear. Adding recommendations...');
+            addAllRecommendationsToItinerary();
+            loadingNotification.remove();
+            return;
+          }
+          updateProgress(progressBar, 0, plan.restaurants.length);
+          const fastDeletePromise = fetch(`/api/plan/restaurants/${plan.itineraryId}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Delete operation timeout')), 1000);
+          });
+          Promise.race([fastDeletePromise, timeoutPromise])
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Failed to delete restaurant items');
+              }
+              return response.json();
+            })
+            .then(() => {
+              updateNotificationMessage(loadingNotification, 'success', 'Successfully cleared all restaurants! Adding recommendations...');
+              const newItineraryData = {
+                destination: plan.destination,
+                startDate: plan.startDate,
+                endDate: plan.endDate
+              };
+              return fetch('/api/plan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newItineraryData)
+              });
+            })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Failed to create new itinerary');
+              }
+              return response.json();
+            })
+            .then(() => {
+              addAllRecommendationsToItinerary();
+              loadingNotification.remove();
+            })
+            .catch(error => {
+              console.log('Fast delete approach failed, falling back to sequential deletion:', error);
+              updateNotificationMessage(loadingNotification, 'info', 'Clearing existing restaurants...');
+              deleteRestaurantsSequentially(plan.restaurants, 0, plan.restaurants.length, progressBar, loadingNotification);
+            });
+        })
+        .catch(error => {
+          console.error('Error fetching plan:', error);
+          updateNotificationWithResult(loadingNotification, 'error', 'Failed to fetch current itinerary. Please try again.');
+          setTimeout(() => {
+            if (loadingNotification.parentNode) {
+              loadingNotification.remove();
+            }
+          }, 3000);
+        });
+    }
+
+    function deleteRestaurantsSequentially(restaurants, index, total, progressBar, notification) {
+      if (!restaurants || index >= restaurants.length) {
+        console.log('Finished deleting all restaurants sequentially');
+        updateNotificationMessage(notification, 'success', 'Successfully cleared all restaurants! Adding recommendations...');
+        addAllRecommendationsToItinerary();
+        return;
+      }
+      updateProgress(progressBar, index, total);
+      const restaurant = restaurants[index];
+      fetch(`/api/plan/places/${restaurant.id}?category=restaurant`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .then(response => {
+        if (!response.ok) {
+          console.warn(`Warning: Failed to delete restaurant ${restaurant.id}, continuing anyway`);
+        }
+        return response.json().catch(() => ({}));
+      })
+      .then(() => {
+        console.log(`Deleted restaurant ${index + 1}/${total}`);
+        setTimeout(() => {
+          deleteRestaurantsSequentially(restaurants, index + 1, total, progressBar, notification);
+        }, 50);
+      })
+      .catch(error => {
+        console.error(`Error deleting restaurant ${restaurant.id}:`, error);
+        setTimeout(() => {
+          deleteRestaurantsSequentially(restaurants, index + 1, total, progressBar, notification);
+        }, 50);
+      });
+    }
+
+    function updateProgress(progressBar, current, total) {
+      const percentage = Math.round((current / total) * 100);
+      const progressElement = progressBar.querySelector('.progress-bar');
+      progressElement.style.width = `${percentage}%`;
+      progressElement.setAttribute('aria-valuenow', percentage);
+      progressElement.textContent = `${percentage}%`;
+    }
+
+    function createNotification(type, message) {
+      const alertClass = {
+        'success': 'alert-success',
+        'error': 'alert-danger',
+        'warning': 'alert-warning',
+        'info': 'alert-info'
+      }[type] || 'alert-info';
+      
+      const iconClass = {
+        'success': 'bi-check-circle-fill',
+        'error': 'bi-exclamation-triangle-fill',
+        'warning': 'bi-exclamation-circle-fill',
+        'info': 'bi-info-circle-fill'
+      }[type] || 'bi-info-circle-fill';
+      
+      const alertContainer = document.createElement('div');
+      alertContainer.className = 'position-fixed top-0 start-0 end-0 p-3 text-center';
+      alertContainer.style.zIndex = '5000';
+      alertContainer.innerHTML = `
+        <div class="alert ${alertClass} fade show" role="alert">
+          <i class="bi ${iconClass} me-2"></i>${message}
         </div>
       `;
-    });
-}
-
-// Clear all markers from the map
-function clearMarkers() {
-  markers.forEach(marker => marker.setMap(null));
-  markers = [];
-}
-
-// Event listeners
-document.addEventListener('DOMContentLoaded', function() {
-  // Form submission
-  document.getElementById('search-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const keyword = document.getElementById('keyword').value;
-    searchRestaurants(keyword);
-  });
-  
-  // Save restaurant button
-  document.getElementById('save-restaurant-btn').addEventListener('click', function() {
-    if (!selectedPlace) return;
-
-    // Check if user is authenticated
-    if (!checkAuthBeforeAddToItinerary(selectedPlace)) {
-      return; // Stop if user is not authenticated
+      document.body.appendChild(alertContainer);
+      return alertContainer;
     }
-    
-    const notes = document.getElementById('place-notes').value;
-    
-    fetch('/api/plan/places', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        placeId: selectedPlace.place_id,
-        name: selectedPlace.name,
-        address: selectedPlace.formatted_address,
+
+    function updateNotificationMessage(notificationElement, type, message) {
+      const alertClass = {
+        'success': 'alert-success',
+        'error': 'alert-danger',
+        'warning': 'alert-warning',
+        'info': 'alert-info'
+      }[type] || 'alert-info';
+      
+      const iconClass = {
+        'success': 'bi-check-circle-fill',
+        'error': 'bi-exclamation-triangle-fill',
+        'warning': 'bi-exclamation-circle-fill',
+        'info': 'bi-info-circle-fill'
+      }[type] || 'bi-info-circle-fill';
+      
+      const alertElement = notificationElement.querySelector('.alert');
+      if (!alertElement) return;
+      alertElement.className = `alert ${alertClass} fade show`;
+      const progressBar = alertElement.querySelector('.progress');
+      alertElement.innerHTML = `<i class="bi ${iconClass} me-2"></i>${message}`;
+      if (progressBar) {
+        alertElement.appendChild(progressBar);
+      }
+    }
+
+    function updateNotificationWithResult(notificationElement, type, message) {
+      const alertClass = {
+        'success': 'alert-success',
+        'error': 'alert-danger',
+        'warning': 'alert-warning',
+        'info': 'alert-info'
+      }[type] || 'alert-info';
+      
+      const iconClass = {
+        'success': 'bi-check-circle-fill',
+        'error': 'bi-exclamation-triangle-fill',
+        'warning': 'bi-exclamation-circle-fill',
+        'info': 'bi-info-circle-fill'
+      }[type] || 'bi-info-circle-fill';
+      
+      const alertElement = notificationElement.querySelector('.alert');
+      if (!alertElement) return;
+      const progressBar = alertElement.querySelector('.progress');
+      if (progressBar) {
+        progressBar.remove();
+      }
+      alertElement.className = `alert ${alertClass} fade show`;
+      alertElement.innerHTML = `<i class="bi ${iconClass} me-2"></i>${message}`;
+      if (type === 'success') {
+        setTimeout(() => {
+          alertElement.classList.remove('show');
+          setTimeout(() => {
+            if (notificationElement.parentNode) {
+              notificationElement.remove();
+            }
+          }, 50);
+        }, 3000);
+      }
+    }
+
+    function showNotification(type, message) {
+      const alertClass = {
+        'success': 'alert-success',
+        'error': 'alert-danger',
+        'warning': 'alert-warning',
+        'info': 'alert-info'
+      }[type] || 'alert-info';
+      
+      const iconClass = {
+        'success': 'bi-check-circle-fill',
+        'error': 'bi-exclamation-triangle-fill',
+        'warning': 'bi-exclamation-circle-fill',
+        'info': 'bi-info-circle-fill'
+      }[type] || 'bi-info-circle-fill';
+      
+      const alertHtml = `
+        <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+          <i class="bi ${iconClass} me-2"></i>${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      `;
+      
+      const alertContainer = document.createElement('div');
+      alertContainer.className = 'position-fixed top-0 start-0 end-0 p-3 text-center';
+      alertContainer.style.zIndex = '5000';
+      alertContainer.innerHTML = alertHtml;
+      document.body.appendChild(alertContainer);
+      
+      const timeout = (type === 'success' || type === 'info') ? 3000 : 5000;
+      
+      setTimeout(() => {
+        if (alertContainer.parentNode) {
+          alertContainer.querySelector('.alert').classList.remove('show');
+          setTimeout(() => alertContainer.remove(), 50);
+        }
+      }, timeout);
+    }
+
+    function findPlaceInRecommendations(placeId) {
+      for (const dayIndex in itineraryRecommendations) {
+        for (const place of itineraryRecommendations[dayIndex]) {
+          if (place.place_id === placeId) {
+            return place;
+          }
+        }
+      }
+      return null;
+    }
+
+    function addToItineraryForDay(place, dayIndex) {
+      const payload = {
+        placeId: place.placeId,
+        name: place.name,
+        address: place.address,
         category: 'restaurant',
-        notes: notes
-      }),
-    })
-    .then(response => response.json())
-    .then(data => {
-      // Close modal
-      restaurantModal.hide();
+        notes: place.notes,
+        priceLevel: place.priceLevel,
+        dayIndex: dayIndex
+      };
       
+      fetch('/api/plan/places', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(response => response.json())
+      .then(data => {
+        showResultNotification(data, place.name, dayIndex);
+      })
+      .catch(error => {
+        console.error('Error adding to itinerary:', error);
+        alert('Error adding to itinerary. Please try again later.');
+      });
+    }
+
+    function addToItineraryWithoutDay(place) {
+      fetch('/api/plan/places', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          placeId: place.placeId,
+          name: place.name,
+          address: place.address,
+          category: 'restaurant',
+          notes: place.notes,
+          priceLevel: place.priceLevel
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        showResultNotification(data, place.name);
+      })
+      .catch(error => {
+        console.error('Error adding to itinerary:', error);
+        alert('Error adding to itinerary. Please try again later.');
+      });
+    }
+
+    function showResultNotification(data, placeName, dayIndex) {
       let alertClass = 'alert-success';
-      let alertMessage = '<strong>Success!</strong> Restaurant added to your itinerary!';
+      let dayMessage = dayIndex !== undefined ? ` for Day ${dayIndex + 1}` : '';
+      let alertMessage = `<strong>Success!</strong> "${placeName}" added to your itinerary${dayMessage}.`;
       
-      // Check if it was a duplicate
       if (data.duplicate) {
         alertClass = 'alert-warning';
-        alertMessage = '<strong>Note:</strong> ' + data.message;
+        alertMessage = `<strong>Note:</strong> ${data.message}`;
       }
       
-      // Show message with a Bootstrap alert
       const alertHtml = `
         <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
           ${alertMessage}
@@ -1228,48 +1574,499 @@ document.addEventListener('DOMContentLoaded', function() {
       alertContainer.innerHTML = alertHtml;
       document.body.appendChild(alertContainer);
       
-      // Remove after 3 seconds
       setTimeout(() => {
         if (alertContainer.parentNode) {
           alertContainer.querySelector('.alert').classList.remove('show');
           setTimeout(() => alertContainer.remove(), 300);
         }
       }, 3000);
-    })
-    .catch(error => {
-      console.error('Error saving restaurant:', error);
-      alert('Error saving to itinerary. Please try again.'); 
+    }
+
+    function loadCurrentPlan() {
+      fetch('/api/plan')
+        .then(response => response.json())
+        .then(data => {
+          if (data.plan && data.plan.destination) {
+            currentPlan = data.plan;
+            if (!currentPlan.perDayCityMap) {
+              currentPlan.perDayCityMap = computePerDayCityMap(currentPlan);
+              console.log('Computed perDayCityMap:', currentPlan.perDayCityMap);
+            }
+            document.getElementById('destination-display').textContent = currentPlan.destination;
+            document.getElementById('date-display').textContent = formatDateRange(currentPlan.startDate, currentPlan.endDate);
+            document.getElementById('current-plan-info').style.display = 'block';
+            document.getElementById('no-plan-alert').style.display = 'none';
+            
+            // Pre-generate tabs (they may be empty until recommendations load)
+            generateItineraryTabs();
+            
+            const dayCount = currentPlan.perDayCityMap.length;
+            const fetchPromises = [];
+            
+            for (let i = 0; i < dayCount; i++) {
+              const city = currentPlan.perDayCityMap[i];
+              const promise = fetch(`/api/places?location=${encodeURIComponent(city)}&type=restaurant`)
+                .then(res => res.json())
+                .then(result => {
+                  itineraryRecommendations[i] = result.results || [];
+                });
+              fetchPromises.push(promise);
+            }
+            
+            Promise.all(fetchPromises).then(() => {
+              // Remove duplicate recommended restaurants for the same city across days
+              const cityUsed = {};
+              for (let i = 0; i < currentPlan.perDayCityMap.length; i++) {
+                const city = currentPlan.perDayCityMap[i];
+                if (!cityUsed[city]) {
+                  cityUsed[city] = new Set();
+                }
+                itineraryRecommendations[i] = (itineraryRecommendations[i] || []).filter(place => {
+                  return !cityUsed[city].has(place.place_id);
+                });
+                itineraryRecommendations[i] = filterRecommendations(itineraryRecommendations[i], 5, 5);
+                itineraryRecommendations[i].forEach(place => {
+                  cityUsed[city].add(place.place_id);
+                });
+              }
+              generateItineraryTabs();
+              
+              if (currentPlan.perDayCityMap.length > 0) {
+                const firstCity = currentPlan.perDayCityMap[0];
+                const geocoder = new google.maps.Geocoder();
+                geocoder.geocode({ address: firstCity }, (results, status) => {
+                  if (status === 'OK' && results[0]) {
+                    map.setCenter(results[0].geometry.location);
+                    map.setZoom(12);
+                  }
+                });
+                searchRestaurants('', firstCity);
+              }
+            });
+          } else {
+            document.getElementById('no-plan-alert').style.display = 'block';
+            document.getElementById('current-plan-info').style.display = 'none';
+          }
+        })
+        .catch(error => {
+          console.error('Error loading plan:', error);
+          document.getElementById('no-plan-alert').style.display = 'block';
+        });
+    }
+
+    function checkAuthBeforeAddToItinerary(placeData) {
+      const authUser = localStorage.getItem('authUser');
+      if (!authUser) {
+        showLoginRequiredModal();
+        return false;
+      }
+      return true;
+    }
+
+    function showLoginRequiredModal() {
+      const notificationHtml = `
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <strong>Authentication Required!</strong> You need to log in to add items to your itinerary.
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      `;
+      const notificationContainer = document.createElement('div');
+      notificationContainer.className = 'position-fixed top-0 start-0 end-0 p-3 text-center';
+      notificationContainer.style.zIndex = '5000';
+      notificationContainer.innerHTML = notificationHtml;
+      document.body.appendChild(notificationContainer);
+      setTimeout(() => {
+        if (notificationContainer.parentNode) {
+          notificationContainer.querySelector('.alert').classList.remove('show');
+          setTimeout(() => notificationContainer.remove(), 300);
+        }
+      }, 5000);
+      
+      const loginModal = new bootstrap.Modal(document.getElementById('loginRequiredModal'));
+      loginModal.show();
+    }
+
+    function displayResults(places) {
+      const resultsContainer = document.getElementById('results-container');
+      resultsContainer.innerHTML = '';
+      places.forEach((place, index) => {
+        const marker = new google.maps.Marker({
+          position: place.geometry.location,
+          map: map,
+          title: place.name,
+          animation: google.maps.Animation.DROP
+        });
+        markers.push(marker);
+        marker.addListener('click', () => showPlaceDetails(place));
+        
+        // Create price indicator
+        const priceLevel = place.price_level || 1;
+        const priceDisplay = '$'.repeat(priceLevel);
+        
+        const col = document.createElement('div');
+        col.className = 'col-md-6 col-lg-6';
+        const card = document.createElement('div');
+        card.className = 'card restaurant-card h-100';
+        card.innerHTML = `
+          <div class="restaurant-image" style="background-image: url('https://source.unsplash.com/300x200/?${encodeURIComponent(place.name)},restaurant')"></div>
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+              <h5 class="card-title">${place.name}</h5>
+              <span class="badge bg-light text-dark">${priceDisplay}</span>
+            </div>
+            <p class="card-text">
+              ${place.rating ? `<span class="rating">★ ${place.rating.toFixed(1)}</span> (${place.user_ratings_total || 0} reviews)` : 'No ratings yet'}
+            </p>
+            <p class="card-text text-truncate">${place.vicinity || place.formatted_address || ''}</p>
+            <div class="mt-auto d-flex justify-content-between">
+              <button class="btn btn-sm btn-outline-primary view-details-btn">View Details</button>
+              <button class="btn btn-sm btn-success add-to-itinerary-btn">Add to Itinerary</button>
+            </div>
+          </div>
+        `;
+        col.appendChild(card);
+        
+        card.querySelector('.view-details-btn').addEventListener('click', () => {
+          showPlaceDetails(place);
+        });
+        
+        card.querySelector('.add-to-itinerary-btn').addEventListener('click', () => {
+          if (!checkAuthBeforeAddToItinerary(place)) return;
+          
+          selectedPlaceForDaySelection = {
+            placeId: place.place_id,
+            name: place.name,
+            address: place.vicinity || place.formatted_address || '',
+            notes: '',
+            priceLevel: place.price_level || 1
+          };
+          
+          fetch('/api/plan')
+            .then(response => response.json())
+            .then(data => {
+              if (data.plan && data.plan.startDate && data.plan.endDate) {
+                const startDate = new Date(data.plan.startDate);
+                const endDate = new Date(data.plan.endDate);
+                const dayCount = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+                document.getElementById('place-name-display').textContent = selectedPlaceForDaySelection.name;
+                const buttonsContainer = document.getElementById('day-selection-buttons');
+                buttonsContainer.innerHTML = '';
+                for (let i = 0; i < dayCount; i++) {
+                  const currentDay = new Date(startDate);
+                  currentDay.setDate(startDate.getDate() + i);
+                  const button = document.createElement('button');
+                  button.type = 'button';
+                  button.className = 'btn btn-outline-primary';
+                  button.innerHTML = `Day ${i + 1} <small>(${currentDay.toLocaleDateString()})</small>`;
+                  button.dataset.dayIndex = i;
+                  button.addEventListener('click', function() {
+                    addToItineraryForDay(selectedPlaceForDaySelection, i);
+                    const daySelectionModal = bootstrap.Modal.getInstance(document.getElementById('daySelectionModal'));
+                    daySelectionModal.hide();
+                  });
+                  buttonsContainer.appendChild(button);
+                }
+                const daySelectionModal = new bootstrap.Modal(document.getElementById('daySelectionModal'));
+                daySelectionModal.show();
+              } else {
+                addToItineraryWithoutDay(selectedPlaceForDaySelection);
+              }
+            })
+            .catch(error => {
+              console.error('Error loading plan for day selection:', error);
+              addToItineraryWithoutDay(selectedPlaceForDaySelection);
+            });
+        });
+        
+        resultsContainer.appendChild(col);
+      });
+    }
+
+    function showPlaceDetails(place) {
+      selectedPlace = place;
+      document.getElementById('modal-title').textContent = place.name;
+      document.getElementById('modal-body').innerHTML = `
+        <div class="text-center my-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-2">Loading details...</p>
+        </div>
+      `;
+      restaurantModal.show();
+      fetch(`/api/places/${place.place_id}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'OK' && data.result) {
+            const details = data.result;
+            // Format the price level
+            const priceLevel = details.price_level || 1;
+            const priceDisplay = '$'.repeat(priceLevel);
+            
+            // Format cuisine types from types array
+            let cuisineTypes = [];
+            if (details.types && details.types.length > 0) {
+              const relevantTypes = details.types.filter(type => 
+                !['establishment', 'point_of_interest', 'food'].includes(type)
+              );
+              cuisineTypes = relevantTypes.map(type => 
+                type.replace(/_/g, ' ').split(' ').map(word => 
+                  word.charAt(0).toUpperCase() + word.slice(1)
+                ).join(' ')
+              );
+            }
+            
+            const cuisineDisplay = cuisineTypes.length > 0 ? 
+              `<div class="mb-3">
+                <h5>Cuisine</h5>
+                <div>${cuisineTypes.map(type => 
+                  `<span class="badge bg-light text-dark me-1">${type}</span>`
+                ).join('')}</div>
+              </div>` : '';
+            
+            document.getElementById('modal-body').innerHTML = `
+              <div class="place-photo" style="background-image: url('https://source.unsplash.com/600x400/?${encodeURIComponent(place.name)},restaurant'); height: 200px; background-size: cover; background-position: center;"></div>
+              <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h4>${details.name}</h4>
+                  <span class="badge bg-light text-dark">${priceDisplay}</span>
+                </div>
+                <p>
+                  ${details.rating ? `<span class="rating">★ ${details.rating}</span> (${details.user_ratings_total || 0} reviews)` : 'No ratings yet'}
+                </p>
+                <p>${details.formatted_address || details.vicinity || ''}</p>
+                ${details.formatted_phone_number ? `<p><strong>Phone:</strong> ${details.formatted_phone_number}</p>` : ''}
+                ${details.website ? `<p><strong>Website:</strong> <a href="${details.website}" target="_blank">${details.website}</a></p>` : ''}
+              </div>
+              
+              ${cuisineDisplay}
+              
+              ${details.opening_hours && details.opening_hours.weekday_text ? `
+                <div class="mb-4">
+                  <h5>Opening Hours</h5>
+                  <ul class="list-unstyled">
+                    ${details.opening_hours.weekday_text.map(day => `<li>${day}</li>`).join('')}
+                  </ul>
+                </div>
+              ` : ''}
+              
+              ${details.reviews ? `
+                <div class="mb-4">
+                  <h5>Reviews</h5>
+                  <div class="reviews-container">
+                    ${details.reviews.slice(0, 3).map(review => `
+                      <div class="review-item mb-3 p-3 bg-light rounded">
+                        <div class="d-flex justify-content-between">
+                          <strong>${review.author_name || 'Anonymous'}</strong>
+                          <span class="rating">★ ${review.rating || 5}</span>
+                        </div>
+                        <p class="small text-muted">${review.time ? new Date(review.time * 1000).toLocaleDateString() : 'No date available'}</p>
+                        <p>${review.text || 'No review text available'}</p>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+              
+              <div class="mb-3">
+                <h5>Add Notes</h5>
+                <textarea id="place-notes" class="form-control" rows="3" placeholder="Add any notes about this restaurant (dietary restrictions, reservations needed, etc.)..."></textarea>
+              </div>
+            `;
+          } else {
+            document.getElementById('modal-body').innerHTML = `
+              <div class="alert alert-warning">
+                Could not load detailed information for this restaurant.
+              </div>
+              <div class="place-photo" style="background-image: url('https://source.unsplash.com/600x400/?${encodeURIComponent(place.name)},restaurant'); height: 200px; background-size: cover; background-position: center;"></div>
+              <div class="mb-3">
+                <h4>${place.name}</h4>
+                <p>${place.formatted_address || place.vicinity || ''}</p>
+                ${place.rating ? `<p><span class="rating">★ ${place.rating}</span> (${place.user_ratings_total || 0} reviews)</p>` : ''}
+              </div>
+              <div class="mb-3">
+                <h5>Add Notes</h5>
+                <textarea id="place-notes" class="form-control" rows="3" placeholder="Add any notes about this restaurant..."></textarea>
+              </div>
+            `;
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching place details:', error);
+          document.getElementById('modal-body').innerHTML = `
+            <div class="alert alert-danger">
+              Error loading restaurant details. Please try again later.
+            </div>
+          `;
+        });
+    }
+
+    function clearMarkers() {
+      markers.forEach(marker => marker.setMap(null));
+      markers = [];
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Setup search form
+      document.getElementById('search-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        searchRestaurants();
+      });
+      
+      // Setup save button in modal
+      document.getElementById('save-restaurant-btn').addEventListener('click', function() {
+        if (!selectedPlace) return;
+        if (!checkAuthBeforeAddToItinerary(selectedPlace)) return;
+        selectedPlaceForDaySelection = {
+          placeId: selectedPlace.place_id,
+          name: selectedPlace.name,
+          address: selectedPlace.formatted_address || selectedPlace.vicinity || '',
+          notes: document.getElementById('place-notes').value,
+          priceLevel: selectedPlace.price_level || 1
+        };
+        restaurantModal.hide();
+        
+        fetch('/api/plan')
+          .then(response => response.json())
+          .then(data => {
+            if (data.plan && data.plan.startDate && data.plan.endDate) {
+              const startDate = new Date(data.plan.startDate);
+              const endDate = new Date(data.plan.endDate);
+              const dayCount = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+              document.getElementById('place-name-display').textContent = selectedPlaceForDaySelection.name;
+              const buttonsContainer = document.getElementById('day-selection-buttons');
+              buttonsContainer.innerHTML = '';
+              for (let i = 0; i < dayCount; i++) {
+                const currentDay = new Date(startDate);
+                currentDay.setDate(startDate.getDate() + i);
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'btn btn-outline-primary';
+                button.innerHTML = `Day ${i + 1} <small>(${currentDay.toLocaleDateString()})</small>`;
+                button.dataset.dayIndex = i;
+                button.addEventListener('click', function() {
+                  addToItineraryForDay(selectedPlaceForDaySelection, i);
+                  const daySelectionModal = bootstrap.Modal.getInstance(document.getElementById('daySelectionModal'));
+                  daySelectionModal.hide();
+                });
+                buttonsContainer.appendChild(button);
+              }
+              const daySelectionModal = new bootstrap.Modal(document.getElementById('daySelectionModal'));
+              daySelectionModal.show();
+            } else {
+              addToItineraryWithoutDay(selectedPlaceForDaySelection);
+            }
+          })
+          .catch(error => {
+            console.error('Error loading plan for day selection:', error);
+            addToItineraryWithoutDay(selectedPlaceForDaySelection);
+          });
+      });
+      
+      // Setup cuisine filters
+      const cuisineBadges = document.querySelectorAll('.cuisine-badge');
+      cuisineBadges.forEach(badge => {
+        badge.addEventListener('click', function() {
+          cuisineBadges.forEach(b => {
+            b.classList.remove('active');
+            b.classList.remove('bg-primary');
+            b.classList.remove('text-white');
+            b.classList.add('bg-light');
+            b.classList.add('text-dark');
+          });
+          this.classList.add('active');
+          this.classList.add('bg-primary');
+          this.classList.add('text-white');
+          this.classList.remove('bg-light');
+          this.classList.remove('text-dark');
+          currentCuisine = this.dataset.cuisine;
+          console.log('Selected cuisine:', currentCuisine);
+          searchRestaurants();
+        });
+      });
+      
+      // Setup price filters
+      const priceBadges = document.querySelectorAll('.price-badge');
+      priceBadges.forEach(badge => {
+        badge.addEventListener('click', function() {
+          priceBadges.forEach(b => {
+            b.classList.remove('active');
+            b.classList.remove('bg-primary');
+            b.classList.remove('text-white');
+            b.classList.add('bg-light');
+            b.classList.add('text-dark');
+          });
+          this.classList.add('active');
+          this.classList.add('bg-primary');
+          this.classList.add('text-white');
+          this.classList.remove('bg-light');
+          this.classList.remove('text-dark');
+          currentPrice = this.dataset.price;
+          console.log('Selected price level:', currentPrice);
+          searchRestaurants();
+        });
+      });
+      
+      // Setup meal type filters
+      const mealBadges = document.querySelectorAll('.meal-badge');
+      mealBadges.forEach(badge => {
+        badge.addEventListener('click', function() {
+          mealBadges.forEach(b => {
+            b.classList.remove('active');
+            b.classList.remove('bg-primary');
+            b.classList.remove('text-white');
+            b.classList.add('bg-light');
+            b.classList.add('text-dark');
+          });
+          this.classList.add('active');
+          this.classList.add('bg-primary');
+          this.classList.add('text-white');
+          this.classList.remove('bg-light');
+          this.classList.remove('text-dark');
+          currentMeal = this.dataset.meal;
+          console.log('Selected meal type:', currentMeal);
+          searchRestaurants();
+        });
+      });
+      
+      // Add reset map button
+      addResetMapButton();
     });
-  });
-});
   </script>
   
-  <!-- Load Google Maps API -->
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA50XLfiUNfyrpqF_iRrCT1mcNzRJyePFg&callback=initMap" async defer></script>
-
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    fetch('/api/plan')
+      .then(res => res.json())
+      .then(data => {
+        if (data.plan && data.plan.destination) {
+          const { destination, startDate, endDate } = data.plan;
+          fetch(`/api/weather?city=${encodeURIComponent(destination)}`)
+            .then(res => res.json())
+            .then(weatherData => {
+              // We could add a weather indicator for outdoor dining options here
+              console.log('Weather data loaded:', weatherData);
+            });
+        }
+      })
+      .catch(err => console.error('Weather load error:', err));
+  </script>
 
-
-
-    <!-- Weather Stuff-->
-  <script src="/js/weather.js"></script>
 <script>
-  // Fetch current plan
-  fetch('/api/plan')
-    .then(res => res.json())
-    .then(data => {
-      if (data.plan && data.plan.destination) {
-        const { destination, startDate, endDate } = data.plan;
-        fetch(`/api/weather?city=${encodeURIComponent(destination)}`)
-          .then(res => res.json())
-          .then(weatherData => {
-            showWeatherForDateRange(weatherData.forecast, startDate, endDate, '.main-content');
-          });
-      }
-    })
-    .catch(err => console.error('Weather load error:', err));
+  const typewriterText = "Discover Restaurants";
+  let i = 0;
+  function typeWriterEffect() {
+    if (i < typewriterText.length) {
+      document.getElementById("typewriter-restaurants").innerHTML += typewriterText.charAt(i);
+      i++;
+      setTimeout(typeWriterEffect, 100);
+    }
+  }
+  window.addEventListener("DOMContentLoaded", typeWriterEffect);
 </script>
 
-<script src="/js/auth.js"></script>
+  <script src="/js/auth.js"></script>
 </body>
 </html>

@@ -21,6 +21,7 @@ const ItineraryModel = {
         destination: itineraryData.destination,
         startDate: itineraryData.startDate,
         endDate: itineraryData.endDate,
+        country: itineraryData.country || '',
         attractions: itineraryData.attractions || [],
         restaurants: itineraryData.restaurants || [],
         updatedAt: new Date().toISOString(),
@@ -71,23 +72,49 @@ const ItineraryModel = {
         throw new Error('Itinerary not found');
       }
       
+      // Include dayIndex and indoor properties if they exist
       const placeToAdd = {
         id: place.id,
         name: place.name,
         address: place.address,
         notes: place.notes || '',
+        indoor: place.indoor || false,
+        dayIndex: place.dayIndex !== undefined ? place.dayIndex : null,
         addedAt: new Date().toISOString()
       };
       
-      // Update the field based on category
+      // Get the current itinerary data
+      const itineraryData = docSnap.data();
+      
+      // Check if we need to update the attractions or restaurants array
       if (category === 'attraction') {
-        await updateDoc(docRef, {
-          attractions: arrayUnion(placeToAdd),
+        // Initialize attractions array if it doesn't exist
+        if (!itineraryData.attractions) {
+          itineraryData.attractions = [];
+        }
+        
+        // Add the new place
+        itineraryData.attractions.push(placeToAdd);
+        
+        // Update the document
+        await setDoc(docRef, {
+          ...itineraryData,
+          attractions: itineraryData.attractions,
           updatedAt: new Date().toISOString()
         });
       } else if (category === 'restaurant') {
-        await updateDoc(docRef, {
-          restaurants: arrayUnion(placeToAdd),
+        // Initialize restaurants array if it doesn't exist
+        if (!itineraryData.restaurants) {
+          itineraryData.restaurants = [];
+        }
+        
+        // Add the new place
+        itineraryData.restaurants.push(placeToAdd);
+        
+        // Update the document
+        await setDoc(docRef, {
+          ...itineraryData,
+          restaurants: itineraryData.restaurants,
           updatedAt: new Date().toISOString()
         });
       }

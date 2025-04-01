@@ -20,39 +20,60 @@
     }
     
     body {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      background-color: var(--light-color);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(to bottom right, #0a0f1f, #1a2b55); /* dark navy to rich blue */
+}
+
     
     .main-content {
       flex: 1;
     }
     
-    /* Navigation */
     .navbar {
-      background-color: var(--primary-color);
-      padding: 15px 0;
-    }
-    
-    .navbar-brand {
-      font-size: 1.6rem;
-      font-weight: bold;
-      color: white;
-    }
-    
-    .nav-link {
-      color: rgba(255, 255, 255, 0.85);
-      font-weight: 500;
-      transition: color 0.3s;
-    }
-    
-    .nav-link:hover {
-      color: white;
-    }
-    
+  background-color: rgba(15, 15, 20, 0.6) !important;
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  transition: background-color 0.4s ease;
+}
+
+.navbar-brand {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #4db8ff !important; /* glowing blue */
+  text-shadow: 0 0 10px #4db8ff88;
+}
+
+.logo-img {
+  width: 80px;
+  height: auto;
+  border-radius: 12px;
+  object-fit: contain;
+  background-color: transparent;
+  
+}
+
+.nav-link {
+  color: white !important;
+  font-weight: 500;
+  position: relative;
+  padding: 0.5rem 1rem;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #ff1f4b !important;
+  text-shadow: 0 0 10px #ff1f4b88;
+}
+
+.btn-outline-light:hover {
+  background-color: #ff1f4b !important;
+  color: white !important;
+  border-color: #ff1f4b !important;
+  box-shadow: 0 0 12px #ff1f4b, 0 0 24px #ff1f4baa;
+}
     .nav-link.active {
       color: white;
       font-weight: 600;
@@ -99,7 +120,9 @@
     
     /* Trip Info Card */
     .trip-info-card {
-      background-color: white;
+      background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  color: white;
       border-radius: 10px;
       box-shadow: var(--shadow);
       padding: 25px;
@@ -125,7 +148,8 @@
     }
     
     .stat-item {
-      background-color: #f8f9fa;
+      background: rgba(0, 0, 0, 0.3);
+      color: white;
       padding: 15px;
       border-radius: 8px;
       flex: 1;
@@ -158,6 +182,18 @@
       background-color: var(--primary-color);
       color: white;
     }
+
+    .btn-outline-danger {
+      border-color: #ff6f61;
+      color: #ff6f61;
+      transition: all 0.3s ease;
+    }
+
+    .btn-outline-danger:hover {
+      background-color: #ff6f61 !important;
+      color: black !important;
+      box-shadow: 0 0 12px #ff6f61, 0 0 24px #ff6f61aa;
+    }
     
     /* Section Styling */
     .section-header {
@@ -169,8 +205,8 @@
     
     .section-title {
       font-size: 1.4rem;
-      font-weight: 700;
-      color: var(--dark-color);
+  font-weight: 700;
+  color: white !important;
       margin: 0;
       display: flex;
       align-items: center;
@@ -183,7 +219,9 @@
     }
     
     .section-card {
-      background-color: white;
+      background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  color: white;
       border-radius: 10px;
       box-shadow: var(--shadow);
       margin-bottom: 40px;
@@ -203,7 +241,9 @@
     
     .item-card {
       display: flex;
-      background-color: #f8f9fa;
+      background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(6px);
+  color: white;
       border-radius: 8px;
       overflow: hidden;
       transition: transform 0.3s, box-shadow 0.3s;
@@ -249,10 +289,9 @@
     }
     
     .item-date {
-      font-size: 0.8rem;
-      color: #6c757d;
-    }
-    
+  color: white !important;
+}
+
     .item-delete {
       position: absolute;
       top: 15px;
@@ -288,7 +327,9 @@
     
     /* Export Card */
     .export-card {
-      background-color: white;
+      background: rgba(253, 253, 253, 0.05);
+  backdrop-filter: blur(10px);
+  color: white;
       border-radius: 10px;
       box-shadow: var(--shadow);
       padding: 25px;
@@ -332,6 +373,416 @@
       font-weight: 600;
       color: var(--dark-color);
     }
+
+    .modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.custom-modal {
+  background: rgba(30, 39, 64, 0.95);
+  border: 1px solid rgba(77, 184, 255, 0.3);
+  border-radius: 16px;
+  padding: 25px 30px;
+  width: 90%;
+  max-width: 450px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(77, 184, 255, 0.2);
+  text-align: center;
+  transform: translateY(0);
+  animation: modal-in 0.3s ease-out;
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-icon {
+  font-size: 3rem;
+  color: #ff6f61;
+  margin-bottom: 15px;
+}
+
+.modal-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 15px;
+}
+
+.modal-message {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 25px;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.modal-btn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-cancel {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #ff6f61, #ff427f);
+  color: white;
+  box-shadow: 0 4px 15px rgba(255, 111, 97, 0.4);
+}
+
+.btn-danger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 111, 97, 0.6);
+}
+
+/* Styles for the Import and Export buttons */
+
+.import-export-btn {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.import-export-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px rgba(67, 97, 238, 0.5);
+}
+
+/* Ripple effect for buttons */
+.import-export-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%, -50%);
+  transform-origin: 50% 50%;
+}
+
+.import-export-btn:focus:not(:active)::after {
+  animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0);
+    opacity: 0.5;
+  }
+  20% {
+    transform: scale(25, 25);
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(40, 40);
+  }
+}
+
+/* File upload styling */
+.custom-file-upload {
+  display: inline-block;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* Import modal styling */
+.import-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.import-modal.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.import-modal-content {
+  background: rgba(30, 39, 64, 0.95);
+  border: 1px solid rgba(77, 184, 255, 0.3);
+  border-radius: 16px;
+  padding: 30px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(77, 184, 255, 0.2);
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+}
+
+.import-modal.show .import-modal-content {
+  transform: translateY(0);
+}
+
+.import-modal-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.import-modal-icon {
+  font-size: 3rem;
+  color: #4db8ff;
+  margin-bottom: 15px;
+}
+
+.import-modal-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 5px;
+}
+
+.import-modal-subtitle {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1rem;
+}
+
+.import-modal-body {
+  margin-bottom: 25px;
+}
+
+.import-confirm-modal {
+  transform: translateY(20px);
+  opacity: 0;
+  transition: all 0.3s ease;
+  max-width: 500px;
+}
+
+.import-confirm-modal .modal-icon.warning {
+  color: #ff9800;
+  animation: pulse-warning 1.5s infinite alternate;
+}
+
+.import-confirm-modal .text-warning {
+  color: #ff9800 !important;
+  font-size: 0.95rem;
+  background: rgba(255, 152, 0, 0.1);
+  padding: 10px 15px;
+  border-radius: 8px;
+  margin-top: 15px;
+}
+
+.import-confirm-modal .modal-buttons {
+  margin-top: 25px;
+}
+
+.import-confirm-modal strong {
+  color: #4db8ff;
+  text-shadow: 0 0 5px rgba(77, 184, 255, 0.3);
+}
+
+.import-confirm-modal #confirmOk {
+  background: linear-gradient(135deg, #ff6b6b, #ff427f);
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+}
+
+.import-confirm-modal #confirmOk:hover {
+  background: linear-gradient(135deg, #ff5252, #ff2e6e);
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+}
+
+@keyframes pulse-warning {
+  0% { text-shadow: 0 0 10px rgba(255, 152, 0, 0.5); transform: scale(1); }
+  100% { text-shadow: 0 0 20px rgba(255, 152, 0, 0.8); transform: scale(1.05); }
+}
+
+.file-drop-area {
+  border: 2px dashed rgba(77, 184, 255, 0.4);
+  border-radius: 10px;
+  padding: 30px 20px;
+  text-align: center;
+  background: rgba(77, 184, 255, 0.05);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.file-drop-area:hover {
+  background: rgba(77, 184, 255, 0.1);
+  border-color: rgba(77, 184, 255, 0.6);
+}
+
+.file-icon {
+  font-size: 2.5rem;
+  color: rgba(77, 184, 255, 0.8);
+  margin-bottom: 10px;
+}
+
+.file-message {
+  color: white;
+  font-size: 1.1rem;
+  margin-bottom: 5px;
+}
+
+.file-info {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+}
+
+.selected-file {
+  margin-top: 15px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  display: none;
+}
+
+.selected-file.show {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.file-name {
+  color: white;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 10px;
+}
+
+.file-size {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.file-clear {
+  color: #ff6f61;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0;
+  margin-left: 10px;
+}
+
+.import-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+}
+
+.modal-btn {
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-cancel {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.btn-import {
+  background: linear-gradient(135deg, #4361ee, #4db8ff);
+  color: white;
+  box-shadow: 0 4px 15px rgba(67, 97, 238, 0.4);
+}
+
+.btn-import:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(67, 97, 238, 0.6);
+}
+
+.btn-import:disabled {
+  background: linear-gradient(135deg, #6c757d, #adb5bd);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Success toast */
+.toast-container {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 10000;
+}
+
+.toast {
+  background: rgba(76, 175, 80, 0.9);
+  color: white;
+  border-radius: 8px;
+  padding: 15px 20px;
+  margin-bottom: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  transform: translateX(100%);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.toast-icon {
+  font-size: 1.5rem;
+  margin-right: 10px;
+}
+
+.toast-message {
+  font-weight: 500;
+}
+
+/* Export success animation */
+@keyframes success-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+  70% { box-shadow: 0 0 0 15px rgba(76, 175, 80, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+}
     
     /* Footer */
     footer {
@@ -414,6 +865,174 @@
   }
 }
 
+/* Active tab: dark background, clean white text */
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-link:focus,
+.nav-tabs .nav-link.show {
+  background-color: rgba(0, 0, 0, 0.6) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+  font-weight: bold;
+}
+
+.nav-tabs .nav-link small {
+  color: white !important;
+}
+
+
+/* Inactive tab: white text on transparent background */
+.nav-tabs .nav-link {
+  background-color: transparent;
+  color: white;
+  border: none;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+/* Inactive tab on hover: subtle blur/gray effect */
+.nav-tabs .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.08); /* soft light hover */
+  color: white;
+}
+
+#toggle-smart-planner {
+  color: white !important;
+}
+
+#weather-summary {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(8px);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.accordion-button {
+  background-color: rgba(0, 0, 0, 0.4) !important;
+  color: white;
+}
+
+.accordion-button:not(.collapsed) {
+  background-color: rgba(0, 0, 0, 0.6) !important;
+  color: white;
+}
+
+.accordion-body {
+  background-color: rgba(255, 255, 255, 0.03);
+  color: white;
+}
+
+.list-group-item {
+  background-color: rgba(0, 0, 0, 0.4) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.1); /* optional: subtle border */
+}
+.list-group-item:hover {
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+  transition: all 0.2s ease;
+}
+
+.list-group-item {
+  background-color: rgba(0, 0, 0, 0.4) !important;
+  color: white;
+}
+
+.list-group-item strong {
+  color: #ffffff;
+}
+
+.list-group-item small,
+.list-group-item .text-muted {
+  color: #cccccc !important;
+}
+
+
+#attractions-container,
+#attractions-container .item-card,
+#attractions-container .item-title,
+#attractions-container .item-address,
+#attractions-container .item-notes,
+#attractions-container .item-date {
+  color: white !important;
+}
+
+
+
+#attractions-container .item-card {
+  background: rgba(255, 255, 255, 0.05); /* translucent dark */
+  backdrop-filter: blur(10px);
+  border: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+.export-option {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+}
+
+.export-option:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.export-label {
+  color: white !important;
+}
+
+#typewriter-itinerary::after {
+  content: '|';
+  animation: blink 0.8s infinite;
+  margin-left: 2px;
+  font-weight: 400;
+}
+
+#import-no-plan-btn {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #4361ee;
+  border-color: #4361ee;
+}
+
+#import-no-plan-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px rgba(67, 97, 238, 0.3);
+  background-color: rgba(67, 97, 238, 0.1);
+}
+
+/* Ripple effect for the button */
+#import-no-plan-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%, -50%);
+  transform-origin: 50% 50%;
+}
+
+#import-no-plan-btn:focus:not(:active)::after {
+  animation: ripple 1s ease-out;
+}
+
+/* Make the no-plan-alert more visually consistent with the site's dark theme */
+.no-plan-alert {
+  background: rgba(255, 243, 205, 0.9);
+  backdrop-filter: blur(10px);
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
 
   </style>
 </head>
@@ -421,7 +1040,11 @@
   <!-- Navigation -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container">
-      <a class="navbar-brand" href="/">Travel Planner</a>
+      <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+        <img src="/assets/logo.png" alt="Logo" class="logo-img" />
+        One Click Planner
+      </a>
+      
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -461,7 +1084,8 @@
     <!-- Page Header -->
     <header class="page-header">
       <div class="header-content">
-        <h1 class="page-title">My Travel Itinerary</h1>
+        <h1 class="page-title"><span id="typewriter-itinerary"></span></h1>
+
         <p class="page-subtitle">Plan, organize, and review your travel plans in one place</p>
       </div>
     </header>
@@ -470,15 +1094,20 @@
       
     <div class="container">
       <!-- No Plan Alert (Hidden by default) -->
-      <div id="no-plan-alert" class="no-plan-alert" role="alert" style="display: none;">
+      <div id="no-plan-alert" class="no-plan-alert" role="alert">
         <div class="d-flex">
           <div class="me-3">
             <i class="bi bi-exclamation-triangle-fill fs-3"></i>
           </div>
           <div>
             <h4 class="alert-heading">No trip plan found!</h4>
-            <p>You haven't created a trip plan yet. Start by setting your destination and travel dates.</p>
-            <a href="/" class="btn btn-warning">Create Trip Plan</a>
+            <p>You haven't created a trip plan yet. Start by setting your destination and travel dates or import an existing itinerary.</p>
+            <div class="d-flex gap-2">
+              <a href="/" class="btn btn-warning">Create Trip Plan</a>
+              <button id="import-no-plan-btn" class="btn btn-outline-primary import-export-btn">
+                <i class="bi bi-upload me-1"></i>Import Itinerary
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -506,13 +1135,26 @@
             </div>
           </div>
           
-          <div class="action-buttons">
-            <a href="/" class="btn btn-outline-primary">
-              <i class="bi bi-pencil-square me-1"></i>Edit Trip
-            </a>
-            <button id="print-btn" class="btn btn-outline-primary">
-              <i class="bi bi-printer me-1"></i>Print Itinerary
-            </button>
+          <div class="action-buttons d-flex justify-content-between w-100">
+            <div>
+              <a href="/" class="btn btn-outline-primary me-2">
+                <i class="bi bi-pencil-square me-1"></i>Edit Trip
+              </a>
+              <button id="print-btn" class="btn btn-outline-primary me-2">
+                <i class="bi bi-printer me-1"></i>Print Itinerary
+              </button>
+              <button id="export-itinerary-btn" class="btn btn-outline-primary me-2 import-export-btn">
+                <i class="bi bi-download me-1"></i>Export Itinerary
+              </button>
+              <button id="import-itinerary-btn" class="btn btn-outline-primary me-2 import-export-btn">
+                <i class="bi bi-upload me-1"></i>Import Itinerary
+              </button>
+            </div>
+            <div>
+              <button id="clear-plan-btn" class="btn btn-outline-danger">
+                <i class="bi bi-trash me-1"></i>Clear Plan
+              </button>
+            </div>
           </div>
         </div>
         
@@ -593,12 +1235,7 @@
               </div>
               <div class="export-label">PDF</div>
             </div>
-            <div class="export-option" id="export-calendar">
-              <div class="export-icon">
-                <i class="bi bi-calendar-event"></i>
-              </div>
-              <div class="export-label">Calendar</div>
-            </div>
+           
             <div class="export-option" id="export-email">
               <div class="export-icon">
                 <i class="bi bi-envelope"></i>
@@ -635,8 +1272,53 @@
       // Set up event listeners
       document.getElementById('print-btn').addEventListener('click', printItinerary);
       document.getElementById('export-pdf').addEventListener('click', exportPDF);
-      document.getElementById('export-calendar').addEventListener('click', exportCalendar);
       document.getElementById('export-email').addEventListener('click', exportEmail);
+      document.getElementById('clear-plan-btn').addEventListener('click', clearPlan);
+
+      if (!document.getElementById('import-export-styles')) {
+        const styleTag = document.createElement('style');
+        styleTag.id = 'import-export-styles';
+        styleTag.textContent = `
+          .highlight { 
+            background: rgba(77, 184, 255, 0.15) !important;
+            border-color: rgba(77, 184, 255, 0.8) !important;
+          }
+          
+          #export-itinerary-btn, #import-itinerary-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+          }
+          
+          #export-itinerary-btn:hover, #import-itinerary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+          }
+        `;
+        document.head.appendChild(styleTag);
+      }
+
+      // Enhance the existing buttons with the new classes and functionality
+      const exportBtn = document.getElementById('export-itinerary-btn');
+      const importBtn = document.getElementById('import-itinerary-btn');
+      
+      if (exportBtn && importBtn) {
+        // Add enhanced classes
+        exportBtn.classList.add('import-export-btn');
+        importBtn.classList.add('import-export-btn');
+        
+        // Remove old event listeners (if any) and add new ones
+        exportBtn.replaceWith(exportBtn.cloneNode(true));
+        importBtn.replaceWith(importBtn.cloneNode(true));
+        
+        // Get new references after cloning
+        const newExportBtn = document.getElementById('export-itinerary-btn');
+        const newImportBtn = document.getElementById('import-itinerary-btn');
+        
+        // Add event listeners to new buttons
+        newExportBtn.addEventListener('click', exportItinerary);
+        newImportBtn.addEventListener('click', importItinerary);
+      }
     });
     
     // Format dates for display
@@ -660,7 +1342,236 @@
       return diffDays + 1; // Including both start and end days
     }
     
-    // Load current plan
+    function organizeItineraryByDay() {
+      // Get the attractions and restaurants sections
+      const attractionsContainer = document.getElementById('attractions-container');
+      const restaurantsContainer = document.getElementById('restaurants-container');
+      
+      // First ensure we have the plan data
+      fetch('/api/plan')
+        .then(response => response.json())
+        .then(data => {
+          if (!data.plan || !data.plan.destination) {
+            return;
+          }
+          
+          const plan = data.plan;
+          const startDate = new Date(plan.startDate);
+          const endDate = new Date(plan.endDate);
+          const attractions = plan.attractions || [];
+          const restaurants = plan.restaurants || [];
+          
+          // If no attractions or restaurants, show empty state
+          if (attractions.length === 0 && restaurants.length === 0) {
+            showEmptyState(attractionsContainer, restaurantsContainer);
+            return;
+          }
+          
+          // Generate day tabs based on the trip duration
+          const days = generateDayArray(startDate, endDate);
+          
+          // Create the day-based UI structure for attractions
+          createDayBasedUI(attractionsContainer, attractions, days, 'attraction');
+          
+          // Create the day-based UI structure for restaurants
+          createDayBasedUI(restaurantsContainer, restaurants, days, 'restaurant');
+        })
+        .catch(error => {
+          console.error('Error loading plan for day organization:', error);
+          showErrorState(attractionsContainer, restaurantsContainer);
+        });
+    }
+
+    // Generate an array of dates between start and end
+    function generateDayArray(startDate, endDate) {
+      const days = [];
+      const currentDate = new Date(startDate);
+      
+      while (currentDate <= endDate) {
+        days.push({
+          date: new Date(currentDate),
+          formatted: currentDate.toISOString().split('T')[0],
+          display: currentDate.toLocaleDateString(undefined, {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+          })
+        });
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      
+      return days;
+    }
+
+    // Create the day-based UI structure
+    function createDayBasedUI(container, items, days, category) {
+      if (items.length === 0) {
+        // Show a message that there are no items yet
+        container.innerHTML = `
+          <div class="empty-section">
+            <div class="empty-icon">
+              <i class="bi bi-${category === 'attraction' ? 'geo-alt' : 'cup-hot'}"></i>
+            </div>
+            <h4>No ${category}s added yet</h4>
+            <p class="empty-text">Start adding ${category}s to your itinerary</p>
+            <a href="/${category}s" class="btn btn-primary">Find ${category.charAt(0).toUpperCase() + category.slice(1)}s</a>
+          </div>
+        `;
+        return;
+      }
+      
+      // Create tabs for days
+      const tabsId = `${category}-tabs`;
+      const tabContentId = `${category}-tabContent`;
+      
+      container.innerHTML = `
+        <ul class="nav nav-tabs" id="${tabsId}" role="tablist">
+          ${days.map((day, i) => `
+            <li class="nav-item" role="presentation">
+              <button class="nav-link ${i === 0 ? 'active' : ''}" 
+                      id="${category}-day${i+1}-tab" 
+                      data-bs-toggle="tab" 
+                      data-bs-target="#${category}-day${i+1}" 
+                      type="button" 
+                      role="tab" 
+                      aria-controls="${category}-day${i+1}" 
+                      aria-selected="${i === 0 ? 'true' : 'false'}">
+                Day ${i+1} <small class="text-muted">(${day.date.toLocaleDateString()})</small>
+              </button>
+            </li>
+          `).join('')}
+        </ul>
+        <div class="tab-content pt-3" id="${tabContentId}">
+          ${days.map((day, i) => `
+            <div class="tab-pane fade ${i === 0 ? 'show active' : ''}" 
+                id="${category}-day${i+1}" 
+                role="tabpanel" 
+                aria-labelledby="${category}-day${i+1}-tab">
+              <div id="${category}-day${i+1}-content" class="item-list">
+                <!-- Items will be loaded here -->
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      
+      // Distribute items to days (for now, let's just distribute evenly)
+      // Later we could use a more sophisticated approach like your smart planner
+      distributeItemsToDays(items, days, category, container);
+    }
+
+    // Distribute items to days based on dayIndex property
+    function distributeItemsToDays(items, days, category, container) {
+      // First, organize items by day
+      const itemsByDay = {};
+      
+      // Initialize empty arrays for each day
+      days.forEach((day, dayIndex) => {
+        itemsByDay[dayIndex] = [];
+      });
+      
+      // Sort items into day buckets based on dayIndex
+      items.forEach(item => {
+        // If item has a dayIndex property and it's within range, use it
+        if (item.dayIndex !== undefined && item.dayIndex !== null && itemsByDay[item.dayIndex] !== undefined) {
+          itemsByDay[item.dayIndex].push(item);
+        } else {
+          // Otherwise, put it in a "not assigned" category (using -1 as indicator)
+          if (!itemsByDay[-1]) {
+            itemsByDay[-1] = [];
+          }
+          itemsByDay[-1].push(item);
+        }
+      });
+      
+      // Distribute any unassigned items evenly
+      if (itemsByDay[-1] && itemsByDay[-1].length > 0) {
+        const unassignedItems = itemsByDay[-1];
+        const daysCount = days.length;
+        const itemsPerDay = Math.ceil(unassignedItems.length / daysCount);
+        
+        // Distribute evenly
+        unassignedItems.forEach((item, index) => {
+          const dayIndex = Math.min(Math.floor(index / itemsPerDay), daysCount - 1);
+          itemsByDay[dayIndex].push(item);
+        });
+        
+        // Remove the temporary -1 category
+        delete itemsByDay[-1];
+      }
+      
+      // Now render each day's items
+      days.forEach((day, dayIndex) => {
+        const dayContentContainer = container.querySelector(`#${category}-day${dayIndex+1}-content`);
+        const dayItems = itemsByDay[dayIndex] || [];
+        
+        if (dayItems.length === 0) {
+          dayContentContainer.innerHTML = `<p class="text-muted text-center">No ${category}s scheduled for this day.</p>`;
+          return;
+        }
+        
+        dayContentContainer.innerHTML = dayItems.map(item => `
+          <div class="item-card mb-3" data-id="${item.id}">
+            <div class="item-image" style="background-image: url('https://source.unsplash.com/300x200/?${encodeURIComponent(item.name + ' ' + category)}')"></div>
+            <div class="item-content">
+              <h4 class="item-title">${item.name}</h4>
+              <p class="item-address">${item.address || 'Address not available'}</p>
+              ${item.notes ? `<p class="item-notes">"${item.notes}"</p>` : ''}
+              <p class="item-date">Added on ${new Date(item.addedAt).toLocaleDateString()}</p>
+              <button class="item-delete" onclick="deletePlace('${item.id}', '${category}')">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+          </div>
+        `).join('');
+      });
+    }
+
+    // Show empty state
+    function showEmptyState(attractionsContainer, restaurantsContainer) {
+      attractionsContainer.innerHTML = `
+        <div class="empty-section">
+          <div class="empty-icon">
+            <i class="bi bi-geo-alt"></i>
+          </div>
+          <h4>No attractions added yet</h4>
+          <p class="empty-text">Start adding attractions to your itinerary</p>
+          <a href="/attractions" class="btn btn-primary">Find Attractions</a>
+        </div>
+      `;
+      
+      restaurantsContainer.innerHTML = `
+        <div class="empty-section">
+          <div class="empty-icon">
+            <i class="bi bi-cup-hot"></i>
+          </div>
+          <h4>No restaurants added yet</h4>
+          <p class="empty-text">Start adding restaurants to your itinerary</p>
+          <a href="/restaurants" class="btn btn-primary">Find Restaurants</a>
+        </div>
+      `;
+    }
+
+    // Show error state
+    function showErrorState(attractionsContainer, restaurantsContainer) {
+      const errorMessage = `
+        <div class="alert alert-danger">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          Error loading your itinerary. Please try refreshing the page.
+        </div>
+      `;
+      
+      attractionsContainer.innerHTML = errorMessage;
+      restaurantsContainer.innerHTML = errorMessage;
+    }
+
+    const importNoPlanBtn = document.getElementById('import-no-plan-btn');
+    if (importNoPlanBtn) {
+      importNoPlanBtn.addEventListener('click', importItinerary);
+    }
+
+    // Initialize current plan
     function loadCurrentPlan() {
       fetch('/api/plan')
         .then(response => response.json())
@@ -683,13 +1594,18 @@
             document.getElementById('restaurants-count').textContent = restaurantsCount;
             document.getElementById('days-count').textContent = daysCount;
             
-            // Load attractions and restaurants
-            loadAttractions(data.plan.attractions || []);
-            loadRestaurants(data.plan.restaurants || []);
+            // Use our day-based organization function
+            organizeItineraryByDay();
           } else {
             // No plan found
             document.getElementById('no-plan-alert').style.display = 'block';
             document.getElementById('trip-info').style.display = 'none';
+            
+            // Set up the import button when no plan exists
+            const importNoPlanBtn = document.getElementById('import-no-plan-btn');
+            if (importNoPlanBtn) {
+              importNoPlanBtn.addEventListener('click', importItinerary);
+            }
           }
         })
         .catch(error => {
@@ -697,84 +1613,6 @@
           document.getElementById('no-plan-alert').style.display = 'block';
           document.getElementById('trip-info').style.display = 'none';
         });
-    }
-    
-    // Load attractions
-    function loadAttractions(attractions) {
-      const container = document.getElementById('attractions-container');
-      
-      if (attractions.length === 0) {
-        container.innerHTML = `
-          <div class="empty-section">
-            <div class="empty-icon">
-              <i class="bi bi-geo-alt"></i>
-            </div>
-            <h4>No attractions added yet</h4>
-            <p class="empty-text">Start adding attractions to your itinerary</p>
-            <a href="/attractions" class="btn btn-primary">Find Attractions</a>
-          </div>
-        `;
-        return;
-      }
-      
-      // We have attractions to display
-      container.innerHTML = `
-        <div class="item-list">
-          ${attractions.map(attraction => `
-            <div class="item-card" data-id="${attraction.id}">
-              <div class="item-image" style="background-image: url('https://source.unsplash.com/300x200/?${encodeURIComponent(attraction.name + ' attraction')}')"></div>
-              <div class="item-content">
-                <h4 class="item-title">${attraction.name}</h4>
-                <p class="item-address">${attraction.address || 'Address not available'}</p>
-                ${attraction.notes ? `<p class="item-notes">"${attraction.notes}"</p>` : ''}
-                <p class="item-date">Added on ${new Date(attraction.addedAt).toLocaleDateString()}</p>
-                <button class="item-delete" onclick="deletePlace('${attraction.id}', 'attraction')">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      `;
-    }
-    
-    // Load restaurants
-    function loadRestaurants(restaurants) {
-      const container = document.getElementById('restaurants-container');
-      
-      if (restaurants.length === 0) {
-        container.innerHTML = `
-          <div class="empty-section">
-            <div class="empty-icon">
-              <i class="bi bi-cup-hot"></i>
-            </div>
-            <h4>No restaurants added yet</h4>
-            <p class="empty-text">Start adding restaurants to your itinerary</p>
-            <a href="/restaurants" class="btn btn-primary">Find Restaurants</a>
-          </div>
-        `;
-        return;
-      }
-      
-      // We have restaurants to display
-      container.innerHTML = `
-        <div class="item-list">
-          ${restaurants.map(restaurant => `
-            <div class="item-card" data-id="${restaurant.id}">
-              <div class="item-image" style="background-image: url('https://source.unsplash.com/300x200/?${encodeURIComponent(restaurant.name + ' food')}')"></div>
-              <div class="item-content">
-                <h4 class="item-title">${restaurant.name}</h4>
-                <p class="item-address">${restaurant.address || 'Address not available'}</p>
-                ${restaurant.notes ? `<p class="item-notes">"${restaurant.notes}"</p>` : ''}
-                <p class="item-date">Added on ${new Date(restaurant.addedAt).toLocaleDateString()}</p>
-                <button class="item-delete" onclick="deletePlace('${restaurant.id}', 'restaurant')">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      `;
     }
     
     // Delete a place from the itinerary
@@ -870,32 +1708,688 @@
   a.download = 'itinerary.ics';
   a.click();
 }
+
 function formatICSDate(date) {
   return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 }
 
     
     // Export via Email
-    function exportEmail() {
-  const subject = 'My Travel Itinerary';
-  const body = encodeURIComponent(generatePlainTextItinerary(currentPlan.smartPlan || {}));
-  window.location.href = `mailto:?subject=${subject}&body=${body}`;
-}
+  function exportEmail() {
+    const subject = 'My Travel Itinerary';
+    const body = encodeURIComponent(generatePlainTextItinerary(currentPlan));
+
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  }
+
+  function clearPlan() {
+    // Use our custom confirm dialog instead of the browser's default
+    showCustomConfirmDialog('Are you sure you want to clear your current trip plan?', function(confirmed) {
+      if (confirmed) {
+        // Use a much simpler request format - exactly matching the index.html implementation
+        fetch('/api/plan', {
+          method: 'DELETE',
+        })
+        .then(response => {
+          if (response.ok) {
+            // Successfully cleared - redirect to home
+            window.location.href = '/';
+          } else {
+            // If DELETE failed, try the POST approach as fallback
+            return fetch('/api/plan', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                destination: '',
+                startDate: '',
+                endDate: '',
+              }),
+            });
+          }
+        })
+        .then(response => {
+          if (response && response.ok) {
+            // Successfully cleared with POST approach - redirect to home
+            window.location.href = '/';
+          } else if (response) {
+            throw new Error('Failed to clear plan with both methods');
+          }
+        })
+        .catch(error => {
+          console.error('Error clearing plan:', error);
+          alert('Could not clear the plan. Please try again or return to the home page.');
+        });
+      }
+    });
+  }
+
+  function showCustomConfirmDialog(message, callback) {
+    // Create modal backdrop
+    const modalBackdrop = document.createElement('div');
+    modalBackdrop.className = 'modal-backdrop';
+    
+    // Create modal content
+    const modalContent = document.createElement('div');
+    modalContent.className = 'custom-modal';
+    
+    // Add modal content
+    modalContent.innerHTML = `
+      <div class="modal-icon">
+        <i class="bi bi-exclamation-circle"></i>
+      </div>
+      <h3 class="modal-title">Confirm Action</h3>
+      <p class="modal-message">${message}</p>
+      <div class="modal-buttons">
+        <button class="modal-btn btn-cancel" id="confirmCancel">Cancel</button>
+        <button class="modal-btn btn-danger" id="confirmOk">Clear Plan</button>
+      </div>
+    `;
+    
+    // Add modal to DOM
+    modalBackdrop.appendChild(modalContent);
+    document.body.appendChild(modalBackdrop);
+    
+    // Add event listeners to buttons
+    document.getElementById('confirmCancel').addEventListener('click', function() {
+      document.body.removeChild(modalBackdrop);
+      if (callback) callback(false);
+    });
+    
+    document.getElementById('confirmOk').addEventListener('click', function() {
+      document.body.removeChild(modalBackdrop);
+      if (callback) callback(true);
+    });
+    
+    // Prevent clicks on the backdrop from closing the modal
+    modalBackdrop.addEventListener('click', function(e) {
+      if (e.target === modalBackdrop) {
+        document.getElementById('confirmCancel').click();
+      }
+    });
+    
+    // Add keyboard support (Esc to cancel, Enter to confirm)
+    const keyHandler = function(e) {
+      if (e.key === 'Escape') {
+        document.getElementById('confirmCancel').click();
+        document.removeEventListener('keydown', keyHandler);
+      } else if (e.key === 'Enter') {
+        document.getElementById('confirmOk').click();
+        document.removeEventListener('keydown', keyHandler);
+      }
+    };
+    document.addEventListener('keydown', keyHandler);
+  }
+
 
 function generatePlainTextItinerary(plan) {
   let text = 'Here’s my travel itinerary:\n\n';
-  for (const [date, blocks] of Object.entries(plan)) {
-    text += `📅 ${date}\n`;
+
+  // Smart Planner activities
+  for (const [date, blocks] of Object.entries(plan.smartPlan || {})) {
+    const readableDate = new Date(date).toLocaleDateString();
+    text += `📅 ${readableDate}\n`;
+
     for (const [block, place] of Object.entries(blocks)) {
       if (place) {
         text += `  - ${capitalize(block)}: ${place.name} (${place.address || 'No address'})\n`;
       }
     }
+
     text += '\n';
   }
+
+  // Attractions grouped by dayIndex
+  const attractions = plan.attractions || [];
+  const grouped = {};
+
+  attractions.forEach(place => {
+    if (place.dayIndex != null) {
+      if (!grouped[place.dayIndex]) grouped[place.dayIndex] = [];
+      grouped[place.dayIndex].push(place);
+    }
+  });
+
+  const startDate = new Date(plan.startDate);
+  Object.entries(grouped).forEach(([dayIndex, places]) => {
+    const date = new Date(startDate);
+    date.setDate(date.getDate() + parseInt(dayIndex));
+    const readableDate = date.toLocaleDateString();
+
+    text += `📍 Attractions on ${readableDate}:\n`;
+    places.forEach(p => {
+      text += `  - ${p.name} (${p.address || 'No address'})\n`;
+    });
+    text += '\n';
+  });
+
   return text;
 }
 
+// Export itinerary as JSON
+function exportItinerary() {
+  // Show loading state on button
+  const exportBtn = document.getElementById('export-itinerary-btn');
+  const originalText = exportBtn.innerHTML;
+  exportBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Preparing...';
+  exportBtn.disabled = true;
+  
+  // Fetch the current plan from the server
+  fetch('/api/plan')
+    .then(response => response.json())
+    .then(data => {
+      if (!data.plan || !data.plan.destination) {
+        showToast('error', 'No itinerary to export. Please create an itinerary first.');
+        exportBtn.innerHTML = originalText;
+        exportBtn.disabled = false;
+        return;
+      }
+      
+      // Create a download link for the JSON file
+      const exportData = JSON.stringify(data.plan, null, 2);
+      const blob = new Blob([exportData], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      
+      // Generate a filename based on the destination and date
+      const destination = data.plan.destination.replace(/\s+/g, '-').toLowerCase();
+      const date = new Date().toISOString().split('T')[0];
+      const filename = `${destination}-itinerary-${date}.json`;
+      
+      // Reset button with success state
+      exportBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i>Export';
+      exportBtn.disabled = false;
+      exportBtn.classList.add('btn-success');
+      
+      // Create and trigger download
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Show success message
+      showToast('success', 'Itinerary exported successfully!');
+      
+      // Clean up
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        exportBtn.innerHTML = originalText;
+        exportBtn.classList.remove('btn-success');
+      }, 2000);
+    })
+    .catch(error => {
+      console.error('Error exporting itinerary:', error);
+      showToast('error', 'Failed to export itinerary. Please try again.');
+      exportBtn.innerHTML = originalText;
+      exportBtn.disabled = false;
+    });
+}
+
+// Import itinerary from JSON file
+function importItinerary() {
+  // Create modal elements
+  createImportModal();
+  
+  // Show the modal
+  const modal = document.getElementById('import-modal');
+  modal.classList.add('show');
+  
+  // Handle file selection via the file input
+  const fileInput = document.getElementById('file-input');
+  fileInput.addEventListener('change', handleFileSelection);
+  
+  // Handle file selection via drag and drop
+  const dropArea = document.getElementById('file-drop-area');
+  
+  // Prevent default drag behaviors
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, preventDefaults, false);
+  });
+  
+  // Highlight drop area when file is dragged over it
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropArea.addEventListener(eventName, highlight, false);
+  });
+  
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, unhighlight, false);
+  });
+  
+  // Handle dropped files
+  dropArea.addEventListener('drop', handleDrop, false);
+  
+  // Click the drop area to trigger file input
+  dropArea.addEventListener('click', () => fileInput.click());
+  
+  // Close modal when clicking cancel or outside the modal
+  document.getElementById('btn-cancel').addEventListener('click', closeImportModal);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeImportModal();
+    }
+  });
+  
+  // Close with ESC key
+  document.addEventListener('keydown', handleEscKey);
+}
+
+// Create the modal structure
+function createImportModal() {
+  // Remove existing modal if any
+  const existingModal = document.getElementById('import-modal');
+  if (existingModal) {
+    document.body.removeChild(existingModal);
+  }
+  
+  // Create modal container
+  const modal = document.createElement('div');
+  modal.id = 'import-modal';
+  modal.className = 'import-modal';
+  
+  // Create modal content
+  modal.innerHTML = `
+    <div class="import-modal-content">
+      <div class="import-modal-header">
+        <div class="import-modal-icon">
+          <i class="bi bi-cloud-upload"></i>
+        </div>
+        <h3 class="import-modal-title">Import Itinerary</h3>
+        <p class="import-modal-subtitle">Select or drag & drop your itinerary file</p>
+      </div>
+      
+      <div class="import-modal-body">
+        <div id="file-drop-area" class="file-drop-area">
+          <div class="file-icon">
+            <i class="bi bi-file-earmark-arrow-up"></i>
+          </div>
+          <p class="file-message">Drop your itinerary file here or click to browse</p>
+          <p class="file-info">Supported format: .json</p>
+        </div>
+        
+        <input type="file" id="file-input" accept=".json" style="display: none;">
+        
+        <div id="selected-file" class="selected-file">
+          <div class="d-flex align-items-center flex-grow-1 overflow-hidden">
+            <i class="bi bi-file-earmark-text me-2 text-info"></i>
+            <div class="file-name">filename.json</div>
+            <div class="file-size">0 KB</div>
+          </div>
+          <button id="file-clear" class="file-clear">
+            <i class="bi bi-x-circle"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="import-modal-footer">
+        <button id="btn-cancel" class="modal-btn btn-cancel">Cancel</button>
+        <button id="btn-import" class="modal-btn btn-import" disabled>Import Itinerary</button>
+      </div>
+    </div>
+  `;
+  
+  // Add modal to DOM
+  document.body.appendChild(modal);
+}
+
+// Handle file selection through file input
+function handleFileSelection(event) {
+  const file = event.target.files[0];
+  if (file) {
+    displayFileInfo(file);
+    
+    // Store file reference for later use
+    document.getElementById('btn-import').addEventListener('click', () => {
+      processImport(file);
+    });
+  }
+}
+
+// Handle file drop
+function handleDrop(event) {
+  const dt = event.dataTransfer;
+  const file = dt.files[0];
+  
+  if (file && file.type === 'application/json') {
+    displayFileInfo(file);
+    
+    // Store file reference for later use
+    document.getElementById('btn-import').addEventListener('click', () => {
+      processImport(file);
+    });
+  } else {
+    showToast('error', 'Please select a valid JSON file.');
+  }
+}
+
+// Display selected file information
+function displayFileInfo(file) {
+  const selectedFile = document.getElementById('selected-file');
+  const fileName = selectedFile.querySelector('.file-name');
+  const fileSize = selectedFile.querySelector('.file-size');
+  const importBtn = document.getElementById('btn-import');
+  
+  fileName.textContent = file.name;
+  fileSize.textContent = formatFileSize(file.size);
+  selectedFile.classList.add('show');
+  importBtn.disabled = false;
+  
+  // Add event listener to clear button
+  document.getElementById('file-clear').addEventListener('click', clearFileSelection);
+}
+
+// Format file size
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 Bytes';
+  
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Clear file selection
+function clearFileSelection() {
+  const selectedFile = document.getElementById('selected-file');
+  const fileInput = document.getElementById('file-input');
+  const importBtn = document.getElementById('btn-import');
+  
+  selectedFile.classList.remove('show');
+  fileInput.value = '';
+  importBtn.disabled = true;
+  importBtn.file = null;
+}
+
+// Process the import operation with confirmation
+function processImport(file) {
+  const reader = new FileReader();
+  
+  reader.onload = (e) => {
+    try {
+      const importedPlan = JSON.parse(e.target.result);
+      
+      // Validate that the imported JSON has the required fields
+      if (!importedPlan.destination) {
+        throw new Error('Invalid itinerary file: missing destination');
+      }
+      
+      // Get current itinerary information to show in confirmation
+      fetch('/api/plan')
+        .then(response => response.json())
+        .then(data => {
+          const currentPlan = data.plan;
+          
+          if (currentPlan && currentPlan.destination) {
+            // Show a confirmation dialog as current plan will be replaced
+            showImportConfirmationDialog(
+              currentPlan.destination, 
+              importedPlan.destination,
+              () => completeImport(importedPlan)
+            );
+          } else {
+            // No current plan, proceed directly
+            completeImport(importedPlan);
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching current plan:', error);
+          // If we can't get current plan info, still ask for confirmation
+          showImportConfirmationDialog(
+            'your current itinerary', 
+            importedPlan.destination,
+            () => completeImport(importedPlan)
+          );
+        });
+    } catch (error) {
+      console.error('Error parsing imported file:', error);
+      showToast('error', 'Invalid itinerary file. Please select a valid JSON file exported from this application.');
+      resetImportButton();
+    }
+  };
+  
+  reader.readAsText(file);
+}
+
+// Show an import confirmation dialog
+function showImportConfirmationDialog(currentDestination, newDestination, onConfirm) {
+  // Create modal backdrop
+  const modalBackdrop = document.createElement('div');
+  modalBackdrop.className = 'modal-backdrop';
+  
+  // Create modal content
+  const modalContent = document.createElement('div');
+  modalContent.className = 'custom-modal import-confirm-modal';
+  
+  // Add modal content
+  modalContent.innerHTML = `
+    <div class="modal-icon warning">
+      <i class="bi bi-exclamation-triangle"></i>
+    </div>
+    <h3 class="modal-title">Replace Current Itinerary?</h3>
+    <p class="modal-message">
+      This will replace your current trip to <strong>${currentDestination}</strong> with 
+      a new itinerary to <strong>${newDestination}</strong>.
+    </p>
+    <p class="modal-message text-warning">
+      <i class="bi bi-info-circle me-1"></i> 
+      All your current attractions, restaurants, and notes will be replaced.
+    </p>
+    <div class="modal-buttons">
+      <button class="modal-btn btn-cancel" id="confirmCancel">Cancel</button>
+      <button class="modal-btn btn-import" id="confirmOk">Replace Itinerary</button>
+    </div>
+  `;
+  
+  // Add modal to DOM
+  modalBackdrop.appendChild(modalContent);
+  document.body.appendChild(modalBackdrop);
+  
+  // Animation to show modal
+  setTimeout(() => {
+    modalContent.style.transform = 'translateY(0)';
+    modalContent.style.opacity = '1';
+  }, 10);
+  
+  // Add event listeners to buttons
+  document.getElementById('confirmCancel').addEventListener('click', function() {
+    closeConfirmationDialog(modalBackdrop);
+    resetImportButton();
+  });
+  
+  document.getElementById('confirmOk').addEventListener('click', function() {
+    closeConfirmationDialog(modalBackdrop);
+    onConfirm();
+  });
+  
+  // Prevent clicks on the backdrop from closing the modal
+  modalBackdrop.addEventListener('click', function(e) {
+    if (e.target === modalBackdrop) {
+      closeConfirmationDialog(modalBackdrop);
+      resetImportButton();
+    }
+  });
+  
+  // Add keyboard support (Esc to cancel, Enter to confirm)
+  const keyHandler = function(e) {
+    if (e.key === 'Escape') {
+      document.getElementById('confirmCancel').click();
+      document.removeEventListener('keydown', keyHandler);
+    } else if (e.key === 'Enter') {
+      document.getElementById('confirmOk').click();
+      document.removeEventListener('keydown', keyHandler);
+    }
+  };
+  document.addEventListener('keydown', keyHandler);
+}
+
+// Close the confirmation dialog
+function closeConfirmationDialog(modalBackdrop) {
+  const modalContent = modalBackdrop.querySelector('.custom-modal');
+  
+  // Animate modal out
+  modalContent.style.transform = 'translateY(20px)';
+  modalContent.style.opacity = '0';
+  
+  // Remove after animation completes
+  setTimeout(() => {
+    if (modalBackdrop.parentNode) {
+      modalBackdrop.parentNode.removeChild(modalBackdrop);
+    }
+  }, 300);
+}
+
+// Reset the import button to its original state
+function resetImportButton() {
+  const importBtn = document.getElementById('btn-import');
+  if (importBtn) {
+    importBtn.innerHTML = 'Import Itinerary';
+    importBtn.disabled = false;
+  }
+}
+
+// Complete the import process
+function completeImport(importedPlan) {
+  // Show loading state
+  const importBtn = document.getElementById('btn-import');
+  if (importBtn) {
+    importBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Processing...';
+    importBtn.disabled = true;
+  }
+  
+  // Save the imported plan using the API
+  fetch('/api/plan', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(importedPlan)
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      // Close modal
+      closeImportModal();
+      
+      // Show success message
+      showToast('success', `Itinerary for "${importedPlan.destination}" imported successfully!`);
+      
+      // Reload the page after a short delay
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } else {
+      throw new Error('Failed to import itinerary');
+    }
+  })
+  .catch(error => {
+    console.error('Error importing itinerary:', error);
+    resetImportButton();
+    showToast('error', 'Failed to import itinerary. Please try again.');
+  });
+}
+
+// Close the import modal
+function closeImportModal() {
+  const modal = document.getElementById('import-modal');
+  if (modal) {
+    modal.classList.remove('show');
+    
+    // Remove event listeners
+    document.removeEventListener('keydown', handleEscKey);
+    
+    // Remove the modal after animation completes
+    setTimeout(() => {
+      if (modal.parentNode) {
+        modal.parentNode.removeChild(modal);
+      }
+    }, 300);
+  }
+}
+
+// Handle ESC key to close modal
+function handleEscKey(e) {
+  if (e.key === 'Escape') {
+    closeImportModal();
+  }
+}
+
+// Utility functions for drag and drop
+function preventDefaults(e) {
+  e.preventDefault();
+  e.stopPropagation();
+}
+
+function highlight() {
+  document.getElementById('file-drop-area').classList.add('highlight');
+}
+
+function unhighlight() {
+  document.getElementById('file-drop-area').classList.remove('highlight');
+}
+
+// Show toast notification
+function showToast(type, message) {
+  // Create toast container if it doesn't exist
+  let toastContainer = document.querySelector('.toast-container');
+  if (!toastContainer) {
+    toastContainer = document.createElement('div');
+    toastContainer.className = 'toast-container';
+    document.body.appendChild(toastContainer);
+  }
+  
+  // Create toast element
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  
+  // Set icon and background color based on type
+  let icon = '';
+  let bgColor = '';
+  
+  if (type === 'success') {
+    icon = '<i class="bi bi-check-circle toast-icon"></i>';
+    bgColor = 'rgba(76, 175, 80, 0.9)';
+  } else if (type === 'error') {
+    icon = '<i class="bi bi-exclamation-circle toast-icon"></i>';
+    bgColor = 'rgba(244, 67, 54, 0.9)';
+  } else if (type === 'info') {
+    icon = '<i class="bi bi-info-circle toast-icon"></i>';
+    bgColor = 'rgba(33, 150, 243, 0.9)';
+  }
+  
+  // Set toast content
+  toast.style.backgroundColor = bgColor;
+  toast.innerHTML = `
+    ${icon}
+    <div class="toast-message">${message}</div>
+  `;
+  
+  // Add to container
+  toastContainer.appendChild(toast);
+  
+  // Show the toast with animation
+  setTimeout(() => {
+    toast.classList.add('show');
+  }, 10);
+  
+  // Hide and remove the toast after 3 seconds
+  setTimeout(() => {
+    toast.classList.remove('show');
+    
+    // Remove from DOM after animation completes
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.parentNode.removeChild(toast);
+      }
+      
+      // Remove container if empty
+      if (toastContainer.children.length === 0 && toastContainer.parentNode) {
+        toastContainer.parentNode.removeChild(toastContainer);
+      }
+    }, 300);
+  }, 3000);
+}C
 
 
   </script>
@@ -1257,8 +2751,27 @@ window.addEventListener('DOMContentLoaded', () => {
     plannerIcon.style.transform = isShown ? 'rotate(-90deg)' : 'rotate(0deg)';
   });
 </script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const text = "My Travel Itinerary";
+    const element = document.getElementById("typewriter-itinerary");
+    let index = 0;
 
+    function type() {
+      if (index < text.length) {
+        element.textContent += text.charAt(index);
+        index++;
+        setTimeout(type, 100); // typing speed
+      }
+    }
 
+    type();
+  });
+</script>
+
+<link rel="stylesheet" href="/css/import-export.css">
+<script src="/js/import-export.js"></script>
 <script src="/js/auth.js"></script>
+
 </body>
 </html>
