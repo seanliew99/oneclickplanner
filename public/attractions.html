@@ -327,6 +327,15 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
 }
 
 
+
+img[src="/assets/logo.png"] {
+  background-color: black;
+  padding: 8px;
+  border-radius: 12px;
+  object-fit: contain;
+}
+
+
   </style>
 </head>
 
@@ -1847,7 +1856,8 @@ fetch('/api/config')
   const resultsContainer = document.getElementById('results-container');
   resultsContainer.innerHTML = '';
 
-  places.forEach((place, index) => {
+  places.forEach((place) => {
+    // Add map marker if not a recommended place
     if (!recommendedPlaceIds.has(place.place_id)) {
       const marker = new google.maps.Marker({
         position: place.geometry.location,
@@ -1859,7 +1869,7 @@ fetch('/api/config')
       marker.addListener('click', () => showPlaceDetails(place));
     }
 
-    // Use Google photo if available, else directly fallback to local logo
+    // Use Google photo if available, else fallback
     let photoUrl;
     if (place.photos && place.photos.length > 0) {
       const photoName = place.photos[0].name;
@@ -1893,25 +1903,32 @@ fetch('/api/config')
     image.className = 'card-img-top attraction-image';
     image.style.display = 'none';
 
+    // Insert image into card *before* it loads/fails
+    card.insertBefore(image, card.firstChild);
+    col.appendChild(card);
+    resultsContainer.appendChild(col);
+
+    // Image load success
     image.onload = () => {
       image.style.display = 'block';
-      card.insertBefore(image, card.firstChild);
-      col.appendChild(card);
-      resultsContainer.appendChild(col);
       setTimeout(() => col.style.opacity = 1, 10);
     };
 
-    image.onerror = () => {
-      image.src = '/assets/logo.png'; // fallback to your local image
+    // Image failed to load
+    image.onerror = (e) => {
+      console.warn(`⚠️ Failed to load image for "${place.name}" (Place ID: ${place.place_id})`);
+      console.warn('Error event:', e);
+      console.warn('Attempted image URL:', image.src);
+
+      // Fallback to default image
+      image.src = '/assets/logo.png';
       image.onload = () => {
         image.style.display = 'block';
-        card.insertBefore(image, card.firstChild);
-        col.appendChild(card);
-        resultsContainer.appendChild(col);
         setTimeout(() => col.style.opacity = 1, 10);
       };
     };
 
+    // Button click
     card.querySelector('.view-details-btn').addEventListener('click', () => {
       showPlaceDetails(place);
     });

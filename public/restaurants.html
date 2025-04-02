@@ -402,6 +402,20 @@ body {
   color: white !important;
 }
 
+.restaurant-image[style*="/assets/logo.png"] {
+  background-color: black !important;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+img[src="/assets/logo.png"] {
+  background-color: black;
+  padding: 8px;
+  border-radius: 12px;
+  object-fit: contain;
+}
+
 
   </style>
 </head>
@@ -1784,12 +1798,14 @@ fetch('/api/config')
     imageDiv.className = 'restaurant-image';
     imageDiv.style.display = 'none';
 
-    let photoUrl = '/assets/logo.png'; // Default fallback
+    // Use Google photo if available, else fallback
+    let photoUrl;
     if (place.photos && place.photos.length > 0) {
       const photoName = place.photos[0].name;
       photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${apiKey}&maxWidthPx=600`;
+    } else {
+      photoUrl = '/assets/logo.png';
     }
-
     const testImage = new Image();
     testImage.src = photoUrl;
 
