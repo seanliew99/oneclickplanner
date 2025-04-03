@@ -360,140 +360,154 @@ img[src="/assets/logo.png"] {
 </script>
 
 <body>
-  <!-- Navigation -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container">
-      <a class="navbar-brand d-flex align-items-center gap-2" href="/">
-        <img src="/assets/logo.png" alt="Logo" class="logo-img" />
-        One Click Planner
-      </a>
-      
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="/">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" href="/attractions">Attractions</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/restaurants">Restaurants</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/flights">Flights</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/hotels">Hotels</a>
-          </li>
-          <!-- Auth buttons -->
-          <li class="nav-item ms-3">
-            <a class="btn btn-outline-light" href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/login?client_id=3anj5rhtknc7i97jq3jgknai71&response_type=code&scope=email+openid+phone&redirect_uri=http%3A%2F%2Flocalhost%3A3000">Login</a>
-          </li>
-          <li class="nav-item ms-2">
-            <a class="btn btn-outline-light" href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/signup?client_id=3anj5rhtknc7i97jq3jgknai71&redirect_uri=http%3A%2F%2Flocalhost%3A3000&response_type=code&scope=email+openid+phone">Sign Up</a>
-          </li>
-        </ul>
-      </div>
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+      <img src="/assets/logo.png" alt="Logo" class="logo-img" />
+      One Click Planner
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="/">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="/attractions">Attractions</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/restaurants">Restaurants</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/flights">Flights</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/hotels">Hotels</a>
+        </li>
+        <!-- Auth buttons -->
+        <li class="nav-item ms-3">
+          <a class="btn btn-outline-light" href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/login?client_id=3anj5rhtknc7i97jq3jgknai71&response_type=code&scope=email+openid+phone&redirect_uri=http%3A%2F%2Flocalhost%3A3000">Login</a>
+        </li>
+        <li class="nav-item ms-2">
+          <a class="btn btn-outline-light" href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/signup?client_id=3anj5rhtknc7i97jq3jgknai71&redirect_uri=http%3A%2F%2Flocalhost%3A3000&response_type=code&scope=email+openid+phone">Sign Up</a>
+        </li>
+      </ul>
     </div>
-  </nav>
+  </div>
+</nav>
 
-  <!-- Main Content -->
-  <div class="main-content">
-    <!-- Page Header -->
-    <header class="page-header text-center">
-      <div class="container">
-        <h1 class="display-4"><span id="typewriter-attractions"></span></h1>
-
-        <p class="lead">Find the best places to visit at your destination</p>
-      </div>
-    </header>
-
+<!-- Main Content -->
+<div class="main-content">
+  <!-- Page Header -->
+  <header class="page-header text-center">
     <div class="container">
-      <!-- No Plan Alert -->
-      <div id="no-plan-alert" class="alert alert-warning no-plan-alert" role="alert" style="display: none;">
-        <h4 class="alert-heading">No destination selected!</h4>
-        <p>It looks like you haven't set a destination for your trip yet.</p>
-        <hr>
-        <p class="mb-0">
-          <a href="/" class="btn btn-warning">Create a Trip Plan</a>
-        </p>
-      </div>
+      <h1 class="display-4"><span id="typewriter-attractions"></span></h1>
+      <p class="lead">Find the best places to visit at your destination</p>
+    </div>
+  </header>
 
-      <!-- Current Plan Info -->
-      <div id="current-plan-info" class="mb-4" style="display: none;">
-        <h2>Finding Attractions in <span id="destination-display"></span></h2>
-        <p id="date-display" class="text-muted"></p>
-      </div>
-      <!-- Dynamic Day Tabs Section -->
-      <section class="mt-4" id="itinerary-section" style="display: none;">
-        <h4 class="mb-3">Recommended Attractions For Each Day</h4>
-        <ul class="nav nav-tabs" id="dayTabs" role="tablist"></ul>
-        <div class="tab-content pt-3" id="dayTabsContent"></div>
-      </section>
+  <div class="container-fluid">
+    <!-- No Plan Alert -->
+    <div id="no-plan-alert" class="alert alert-warning no-plan-alert" role="alert" style="display: none;">
+      <h4 class="alert-heading">No destination selected!</h4>
+      <p>It looks like you haven't set a destination for your trip yet.</p>
+      <hr />
+      <p class="mb-0">
+        <a href="/" class="btn btn-warning">Create a Trip Plan</a>
+      </p>
+    </div>
 
-      <!-- Search Container -->
-      <div class="search-container mb-4">
-        <form id="search-form" class="row g-3 align-items-end">
-          <div class="col-md-8">
-            <label for="keyword" class="form-label">Search Attractions</label>
-            <input type="text" class="form-control form-control-lg" id="keyword" placeholder="Museum, park, landmark, etc.">
-          </div>
-          <div class="col-md-4">
-            <button type="submit" class="btn btn-primary btn-lg w-100">Search</button>
-          </div>
-        </form>
-        <!-- Weather-based filter toggle -->
-        <div class="form-check mt-3">
-          <input class="form-check-input" type="checkbox" id="indoor-toggle">
-          <label class="form-check-label" for="indoor-toggle">
-            Show indoor attractions ☔
-          </label>
-        </div>
-      </div>
+    <!-- Current Plan Info -->
+    <div id="current-plan-info" class="mb-4" style="display: none;">
+      <h2>Finding Attractions in <span id="destination-display"></span></h2>
+      <p id="date-display" class="text-muted"></p>
+    </div>
 
-      <!-- Map and Results Container -->
-      <div class="row">
-        <!-- Map Column -->
-        <div class="text-center mb-4">
-          <div id="map" style="max-width: 800px; margin: 0 auto;"></div>
-        </div>
-        
+    <!-- Three-column row with equal space -->
+    <div class="row">
+      <!-- LEFT COLUMN: Found Attractions -->
+      <div class="col-md-4" style="max-height: 70vh; overflow-y: auto;">
         <div class="text-center">
           <div id="result-count" class="result-count"></div>
         </div>
-        
         <div id="spinner" class="spinner-container" style="display: none;">
           <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
           </div>
         </div>
-        
         <div id="results-container" class="row g-4 justify-content-center"></div>
-        
-    </div>
-  </div>
+      </div>
 
-  <!-- Attraction Details Modal -->
-  <div class="modal fade" id="attractionModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="modal-title">Attraction Details</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <!-- MIDDLE COLUMN: Search & Map -->
+      <div class="col-md-4">
+        <!-- Search Container -->
+        <div class="search-container mb-3">
+          <form id="search-form" class="row g-3 align-items-end">
+            <div class="col-md-8">
+              <label for="keyword" class="form-label">Search Attractions</label>
+              <input type="text" class="form-control form-control-lg" id="keyword" placeholder="Museum, park, landmark, etc." />
+            </div>
+            <div class="col-md-4">
+              <button type="submit" class="btn btn-primary btn-lg w-100">Search</button>
+            </div>
+          </form>
+          <!-- Weather-based filter toggle -->
+          <div class="form-check mt-3">
+            <input class="form-check-input" type="checkbox" id="indoor-toggle" />
+            <label class="form-check-label" for="indoor-toggle">Show indoor attractions ☔</label>
+          </div>
         </div>
-        <div class="modal-body" id="modal-body">
-          <!-- Content will be dynamically inserted here -->
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-save" id="save-attraction-btn">Add to Itinerary</button>
-        </div>
+        <!-- MAP (fills the column width) -->
+        <div id="map" style="border-radius: 12px; width: 100%; height: 400px;"></div>
+      </div>
+
+      <!-- RIGHT COLUMN: Recommended Itinerary -->
+      <div class="col-md-4" style="max-height: 80vh; overflow-y: auto;">
+        <section class="mt-4" id="itinerary-section" style="display: none;">
+          <h4 class="mb-3">
+            <div class="d-flex justify-content-between align-items-center w-100">
+              <span>Recommended Attractions For Each Day</span>
+              <button id="add-all-recommendations" class="btn btn-success btn-sm">
+                <i class="bi bi-plus-circle me-1"></i>Add All to Itinerary
+              </button>
+            </div>
+          </h4>
+          <!-- Day Tabs -->
+          <ul class="nav nav-tabs" id="dayTabs" role="tablist"></ul>
+          <!-- Tab Content -->
+          <div class="tab-content pt-3" id="dayTabsContent">
+            <!-- “Purple box” container if needed -->
+            <div id="recommended-places-container" style="width: 95%; margin: 0 auto;">
+              <!-- Recommended places go here or inside each .tab-pane -->
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   </div>
+</div>
+
+<!-- Attraction Details Modal -->
+<div class="modal fade" id="attractionModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modal-title">Attraction Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="modal-body">
+        <!-- Dynamically inserted content -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-save" id="save-attraction-btn">Add to Itinerary</button>
+      </div>
+    </div>
+  </div>
+</div>
 
   <!-- Footer -->
   <footer class="text-center py-4">
