@@ -230,7 +230,7 @@ footer {
 }
 
 /* Category buttons */
-.btn-attractions, .btn-restaurants, .btn-itinerary {
+.btn-attractions, .btn-restaurants, .btn-itinerary, .btn-flights, .btn-hotel{
   font-weight: 600;
   padding: 0.5rem 1.25rem;
   transition: all 0.3s ease;
@@ -257,6 +257,18 @@ footer {
   box-shadow: 0 0 6px #66ff9955;
 }
 
+.btn-flights {
+  border: 2px solid #0d58e2;
+  color: #0390ee;
+  box-shadow: 0 0 6px #0918e655;
+}
+
+.btn-hotel {
+  border: 2px solid #e600c7;
+  color: #eb01d7;
+  box-shadow: 0 0 6px #d3078f55;
+}
+
 /* Glow on hover */
 .btn-attractions:hover {
   background: #ff6f61;
@@ -275,6 +287,20 @@ footer {
   color: black;
   box-shadow: 0 0 12px #66ff99, 0 0 24px #66ff99aa;
 }
+
+.btn-flights:hover {
+  background:  #0d58e2;
+  color: black;
+  box-shadow: 0 0 12px  #0d58e2, 0 0 24px  #0d58e2;
+}
+
+
+.btn-hotel:hover {
+  background:#e600c7;
+  color: black;
+  box-shadow: 0 0 12px#e600c7, 0 0 24px #e600c7;
+}
+
 
 
 
@@ -766,6 +792,31 @@ footer {
             </div>
           </div>
         </div>
+
+        <!-- Card 4 - Flights -->
+        <div class="col-md-4 d-flex">
+          <div class="card feature-card text-center p-4 w-100 d-flex flex-column justify-content-between">
+            <div class="feature-icon mb-3">✈️</div>
+            <div class="card-body d-flex flex-column">
+              <h3 class="card-title">Book Flights</h3>
+              <p class="card-text flex-grow-1">Compare and book the best flights for your journey with ease.</p>
+              <a href="/flights" class="btn btn-flights mt-3">Find Flights</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 5 - Hotels -->
+        <div class="col-md-4 d-flex">
+          <div class="card feature-card text-center p-4 w-100 d-flex flex-column justify-content-between">
+            <div class="feature-icon mb-3">🏨</div>
+            <div class="card-body d-flex flex-column">
+              <h3 class="card-title">Find Hotels</h3>
+              <p class="card-text flex-grow-1">Browse accommodations tailored to your trip and budget.</p>
+              <a href="/hotels" class="btn btn-hotel mt-3">Find Hotels</a>
+            </div>
+          </div>
+        </div>
+
 
       </div>
     </section>

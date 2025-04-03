@@ -686,7 +686,7 @@ app.get('/api/places', async (req, res) => {
           lng: place.location?.longitude
         }
       },
-      types: place.types || []
+      photos: place.photos || [] // ✅ ADD THIS
     })) : [];
 
     // Filter results by checking if they contain the location name in the address
