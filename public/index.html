@@ -672,6 +672,9 @@ footer {
                 <!-- Multi-City Input Group -->
                 <div class="mb-3 d-none" id="multi-city-wrapper">
                   <label class="form-label">Cities and Days</label>
+                  <div id="days-left-container" class="mb-2 text-center">
+                    <span id="days-left" class="badge bg-secondary"></span>
+                  </div>
                   <div id="cities-container">
                     <div class="row mb-2 city-entry">
                       <div class="col-md-6">
@@ -793,11 +796,20 @@ function toggleCityInputValidation() {
   const isMulti = document.getElementById('city-selection-toggle').checked;
   const singleCityWrapper = document.getElementById('single-city-wrapper');
   const multiCityWrapper = document.getElementById('multi-city-wrapper');
+  const daysLeftContainer = document.getElementById('days-left-container');
   
   // Update UI visibility
   singleCityWrapper.classList.toggle('d-none', isMulti);
   multiCityWrapper.classList.toggle('d-none', !isMulti);
   
+  // Always show days left container in multi-city mode
+  if (isMulti) {
+    daysLeftContainer.style.display = 'block';
+    // Update days left when switching to multi-city mode
+    updateDaysLeft();
+  } else {
+    daysLeftContainer.style.display = 'none';
+  }
   // Single city input
   const destinationInput = document.getElementById('destination');
   
@@ -924,6 +936,7 @@ if (isMulti) {
     if (plan.cities && plan.cities.length > 1) {
       // 1. Set the toggle to checked
       const cityToggle = document.getElementById('city-selection-toggle');
+      
       cityToggle.checked = true;
       
       // 2. Trigger the UI update for multi-city mode
@@ -982,14 +995,20 @@ if (isMulti) {
 
   function attachCityDaysListeners() {
   const dayInputs = document.querySelectorAll('.city-days');
+  console.log('Day inputs found:', dayInputs.length);
+  
   dayInputs.forEach(input => {
+    console.log('Attaching listeners to input:', input);
+    
     input.removeEventListener('input', updateAddCityBtnState);
     input.removeEventListener('input', validateCityDaysInput);
+    input.removeEventListener('input', updateDaysLeft);
 
     input.addEventListener('input', updateAddCityBtnState);
     input.addEventListener('input', validateCityDaysInput);
+    input.addEventListener('input', updateDaysLeft);
   });
-  }
+}
 
 
   function validateCityDaysInput(e) {
@@ -1063,7 +1082,31 @@ if (isMulti) {
   document.getElementById('start-date').addEventListener('change', updateTripDuration);
   document.getElementById('end-date').addEventListener('change', updateTripDuration);
 
+  document.getElementById('start-date').addEventListener('change', function() {
+  toggleCitySectionVisibility();
+  updateTripDuration();
+  updateDaysLeft();
+});
+
+document.getElementById('end-date').addEventListener('change', function() {
+  toggleCitySectionVisibility();
+  updateTripDuration();
+  updateDaysLeft();
+});
+
   document.addEventListener('DOMContentLoaded', function() {
+
+      // Initial setup for city toggle
+  const cityToggle = document.getElementById('city-selection-toggle');
+  const daysLeftContainer = document.getElementById('days-left-container');
+  
+  if (cityToggle.checked) {
+    daysLeftContainer.style.display = 'block';
+    updateDaysLeft();
+  } else {
+    daysLeftContainer.style.display = 'none';
+  }
+  
     // Initial call to set up the display
     updateTripDuration();
   });
@@ -1179,6 +1222,22 @@ function getUsedCityDays() {
   const e = new Date(end);
   const diff = Math.floor((e - s) / (1000 * 60 * 60 * 24)) + 1;
   return diff > 0 ? diff : 0;
+}
+
+function updateDaysLeft() {
+  const start = document.getElementById('start-date').value;
+  const end = document.getElementById('end-date').value;
+  const totalDays = calculateTripDays(start, end);
+  const usedDays = getUsedCityDays();
+  
+  const daysLeftElement = document.getElementById('days-left');
+  if (daysLeftElement) {
+    const daysLeft = totalDays - usedDays;
+    daysLeftElement.textContent = `Days Left: ${daysLeft}`;
+    daysLeftElement.style.color = daysLeft === 0 ? '#66ff99' : (daysLeft < 0 ? '#ff6f61' : 'inherit');
+  }
+  
+  return daysLeft;
 }
 
 function getUsedCityDays() {
@@ -1558,7 +1617,17 @@ planForm.addEventListener('submit', function (e) {
     return;
   }
 
+  // Check if the current button text indicates an update
+  const isUpdating = document.querySelector('#plan-form button[type="submit"]').textContent === 'Update Plan';
+
   if (cityToggle.checked && !validateCityDaysExactly()) {
+    // If it was in "Update Plan" mode, keep it in update mode
+    if (isUpdating) {
+      const submitButton = document.querySelector('#plan-form button[type="submit"]');
+      submitButton.textContent = 'Update Plan';
+      submitButton.classList.remove('btn-primary');
+      submitButton.classList.add('btn-success');
+    }
     return;
   }
 
@@ -1585,9 +1654,6 @@ planForm.addEventListener('submit', function (e) {
     const hiddenInputs = multiCityWrapper.querySelectorAll('input');
     hiddenInputs.forEach(input => input.disabled = true);
   }
-
-  // Check if this is an update (button says "Update Plan") or a new plan
-  const isUpdating = document.querySelector('#plan-form button[type="submit"]').textContent === 'Update Plan';
 
   // Send plan to server
   fetch('/api/plan', {
