@@ -535,6 +535,22 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+
+    let apiKey = '';
+
+    fetch('/api/config')
+      .then(res => res.json())
+      .then(config => {
+        apiKey = config.apiKey;
+        console.log("✅ API Key Loaded:", apiKey);
+        // Load the Google Maps script with the API key
+        loadGoogleMapsScript(apiKey);
+        // 🔥 Now kick off your app logic
+        loadCurrentPlan();  // or initMap(), or searchAttractions()
+      })
+      .catch(err => {
+        console.error("❌ Failed to load API key:", err);
+      });
     // Global variables
     let hotelResults = [];
     let selectedHotel = null;
@@ -719,6 +735,17 @@
         mapTypeControl: false,
         streetViewControl: false
       });
+    }
+
+    function loadGoogleMapsScript(apiKey) {
+      // Create the script element
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap`;
+      script.async = true;
+      script.defer = true;
+      
+      // Add the script to the document
+      document.body.appendChild(script);
     }
     
     // Load current plan
@@ -1955,8 +1982,7 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('loading-spinner').style.display = 'none';
     }
   </script>
-  
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA50XLfiUNfyrpqF_iRrCT1mcNzRJyePFg&libraries=places&callback=initMaps" async defer></script>
+
   <script src="/js/auth.js"></script>
 </body>
 </html>

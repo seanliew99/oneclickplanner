@@ -627,21 +627,21 @@ img[src="/assets/logo.png"] {
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script>
 
-       
-let apiKey = '';
+  let apiKey = '';
 
-fetch('/api/config')
-  .then(res => res.json())
-  .then(config => {
-    apiKey = config.apiKey;
-    console.log("✅ API Key Loaded:", apiKey);
-
-    // 🔥 Now kick off your app logic
-    loadCurrentPlan();  // or initMap(), or searchAttractions()
-  })
-  .catch(err => {
-    console.error("❌ Failed to load API key:", err);
-  });
+  fetch('/api/config')
+    .then(res => res.json())
+    .then(config => {
+      apiKey = config.apiKey;
+      console.log("✅ API Key Loaded:", apiKey);
+      // Load the Google Maps script with the API key
+      loadGoogleMapsScript(apiKey);
+      // 🔥 Now kick off your app logic
+      loadCurrentPlan();  // or initMap(), or searchAttractions()
+    })
+    .catch(err => {
+      console.error("❌ Failed to load API key:", err);
+    });
 
 
 
@@ -1644,6 +1644,17 @@ fetch('/api/config')
       }, 3000);
     }
 
+    function loadGoogleMapsScript(apiKey) {
+      // Create the script element
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap`;
+      script.async = true;
+      script.defer = true;
+      
+      // Add the script to the document
+      document.body.appendChild(script);
+    }
+
     function loadCurrentPlan() {
       fetch('/api/plan')
         .then(response => response.json())
@@ -1802,7 +1813,7 @@ fetch('/api/config')
     let photoUrl;
     if (place.photos && place.photos.length > 0) {
       const photoName = place.photos[0].name;
-      photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${apiKey}&maxWidthPx=600`;
+      photoUrl = `https://places.googleapis.com/${photoName}/media?key=${apiKey}&maxWidthPx=600`;
     } else {
       photoUrl = '/assets/logo.png';
     }
@@ -1939,7 +1950,7 @@ function showPlaceDetails(place) {
         let photoUrl = '/assets/logo.png';
         if (place.photos && place.photos.length > 0) {
           const photoName = place.photos[0].name;
-          photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${apiKey}&maxWidthPx=600`;
+          photoUrl = `https://places.googleapis.com/${photoName}/media?key=${apiKey}&maxWidthPx=600`;
         }
 
         const img = new Image();
@@ -2175,7 +2186,6 @@ function showPlaceDetails(place) {
     });
   </script>
   
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA50XLfiUNfyrpqF_iRrCT1mcNzRJyePFg&callback=initMap" async defer></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     fetch('/api/plan')
