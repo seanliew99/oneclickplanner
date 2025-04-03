@@ -1813,7 +1813,7 @@ img[src="/assets/logo.png"] {
     let photoUrl;
     if (place.photos && place.photos.length > 0) {
       const photoName = place.photos[0].name;
-      photoUrl = `https://places.googleapis.com/${photoName}/media?key=${apiKey}&maxWidthPx=600`;
+      photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${apiKey}&maxWidthPx=600`;
     } else {
       photoUrl = '/assets/logo.png';
     }
@@ -1950,7 +1950,7 @@ function showPlaceDetails(place) {
         let photoUrl = '/assets/logo.png';
         if (place.photos && place.photos.length > 0) {
           const photoName = place.photos[0].name;
-          photoUrl = `https://places.googleapis.com/${photoName}/media?key=${apiKey}&maxWidthPx=600`;
+          photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${apiKey}&maxWidthPx=600`;
         }
 
         const img = new Image();
