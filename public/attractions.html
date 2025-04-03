@@ -20,6 +20,9 @@ body {
     }
 
     .navbar {
+      position: sticky;
+  top: 0;
+  z-index: 1000;
   background-color: rgba(15, 15, 20, 0.6) !important;
   backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -31,6 +34,11 @@ body {
   color: white;
   border: 1px solid #ff1f4b44;
   transition: all 0.3s ease;
+}
+
+.nav-link.active {
+  color: #d858c7 !important;
+  text-shadow: 0 0 10px #d858c7;
 }
 
 .nav-tabs .nav-link {
@@ -319,8 +327,38 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
 }
 
 
+
+img[src="/assets/logo.png"] {
+  background-color: black;
+  padding: 8px;
+  border-radius: 12px;
+  object-fit: contain;
+}
+
+
   </style>
 </head>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const currentPath = window.location.pathname;
+
+    // Loop through each nav link
+    document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
+      const linkPath = new URL(link.href).pathname;
+
+      // Match path and apply 'active' class
+      if (linkPath === currentPath || (linkPath === "/" && currentPath === "/index.html")) {
+        link.classList.add('active');
+        link.style.color = "#ff1f4b"; // optional: override color
+        link.style.textShadow = "0 0 10px #ff1f4baa";
+      } else {
+        link.classList.remove('active');
+      }
+    });
+  });
+</script>
+
 <body>
   <!-- Navigation -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
@@ -467,6 +505,26 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+
+    
+let apiKey = '';
+
+fetch('/api/config')
+  .then(res => res.json())
+  .then(config => {
+    apiKey = config.apiKey;
+    console.log("✅ API Key Loaded:", apiKey);
+    // Load the Google Maps script with the API key
+    loadGoogleMapsScript(apiKey);
+    // 🔥 Now kick off your app logic
+    loadCurrentPlan();  // or initMap(), or searchAttractions()
+  })
+  .catch(err => {
+    console.error("❌ Failed to load API key:", err);
+  });
+
+
+
     let map;
     let searchMarkers = [];
     let recommendedMarkers = [];
@@ -482,7 +540,6 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
     // Global object to hold pre-fetched recommendations per day
     const itineraryRecommendations = {}; 
     const removedAttractions = new Set();
-
     const attractionModal = new bootstrap.Modal(document.getElementById('attractionModal'));
 
     // ----- Helper Functions for Clustering -----
@@ -1621,6 +1678,17 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
       });
     }
 
+    function loadGoogleMapsScript(apiKey) {
+      // Create the script element
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap`;
+      script.async = true;
+      script.defer = true;
+      
+      // Add the script to the document
+      document.body.appendChild(script);
+    }
+
     function loadCurrentPlan() {
       fetch('/api/plan')
         .then(response => response.json())
@@ -1796,118 +1864,173 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
     }
 
     function displayResults(places) {
-      const resultsContainer = document.getElementById('results-container');
-      resultsContainer.innerHTML = '';
-      places.forEach((place, index) => {
-        if (recommendedPlaceIds.has(place.place_id)) {
+  const resultsContainer = document.getElementById('results-container');
+  resultsContainer.innerHTML = '';
 
-        }
-        else{
-          const marker = new google.maps.Marker({
-            position: place.geometry.location,
-            map: map,
-            title: place.name,
-            animation: google.maps.Animation.DROP
-          });
-          searchMarkers.push(marker);
-          marker.addListener('click', () => showPlaceDetails(place));
-        }
-        const col = document.createElement('div');
-        col.className = 'col-md-6 col-lg-4';
-        const card = document.createElement('div');
-        card.className = 'card attraction-card h-100';
-        card.innerHTML = `
-          <div class="attraction-image" style="background-image: url('https://source.unsplash.com/300x200/?${encodeURIComponent(place.name)}')"></div>
-          <div class="card-body">
-            <h5 class="card-title">${place.name}</h5>
-            <p class="card-text">
-              ${place.rating ? `<span class="rating">★ ${place.rating}</span>` : ''}
-            </p>
-            <p class="card-text text-truncate">${place.formatted_address || ''}</p>
-            <button class="btn btn-sm btn-outline-primary view-details-btn">View Details</button>
+  places.forEach((place) => {
+    // Add map marker if not a recommended place
+    if (!recommendedPlaceIds.has(place.place_id)) {
+      const marker = new google.maps.Marker({
+        position: place.geometry.location,
+        map: map,
+        title: place.name,
+        animation: google.maps.Animation.DROP
+      });
+      searchMarkers.push(marker);
+      marker.addListener('click', () => showPlaceDetails(place));
+    }
+
+    // Use Google photo if available, else fallback
+    let photoUrl;
+    if (place.photos && place.photos.length > 0) {
+      const photoName = place.photos[0].name;
+      photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${apiKey}&maxWidthPx=600`;
+    } else {
+      photoUrl = '/assets/logo.png';
+    }
+
+    const col = document.createElement('div');
+    col.className = 'col-md-6 col-lg-4';
+    col.style.opacity = 0;
+    col.style.transition = 'opacity 0.3s ease-in-out';
+
+    const card = document.createElement('div');
+    card.className = 'card attraction-card h-100';
+
+    card.innerHTML = `
+      <div class="card-body">
+        <h5 class="card-title">${place.name}</h5>
+        <p class="card-text">
+          ${place.rating ? `<span class="rating">★ ${place.rating}</span>` : ''}
+        </p>
+        <p class="card-text text-truncate">${place.formatted_address || ''}</p>
+        <button class="btn btn-sm btn-outline-primary view-details-btn">View Details</button>
+      </div>
+    `;
+
+    const image = new Image();
+    image.src = photoUrl;
+    image.alt = place.name;
+    image.className = 'card-img-top attraction-image';
+    image.style.display = 'none';
+
+    // Insert image into card *before* it loads/fails
+    card.insertBefore(image, card.firstChild);
+    col.appendChild(card);
+    resultsContainer.appendChild(col);
+
+    // Image load success
+    image.onload = () => {
+      image.style.display = 'block';
+      setTimeout(() => col.style.opacity = 1, 10);
+    };
+
+    // Image failed to load
+    image.onerror = (e) => {
+      console.warn(`⚠️ Failed to load image for "${place.name}" (Place ID: ${place.place_id})`);
+      console.warn('Error event:', e);
+      console.warn('Attempted image URL:', image.src);
+
+      // Fallback to default image
+      image.src = '/assets/logo.png';
+      image.onload = () => {
+        image.style.display = 'block';
+        setTimeout(() => col.style.opacity = 1, 10);
+      };
+    };
+
+    // Button click
+    card.querySelector('.view-details-btn').addEventListener('click', () => {
+      showPlaceDetails(place);
+    });
+  });
+}
+
+
+
+function showPlaceDetails(place) {
+  selectedPlace = place;
+  document.getElementById('modal-title').textContent = place.name;
+  document.getElementById('modal-body').innerHTML = `
+    <div class="text-center my-4">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-2">Loading details...</p>
+    </div>
+  `;
+  attractionModal.show();
+
+  fetch(`/api/places/${place.place_id}`)
+    .then(response => response.json())
+    .then(data => {
+      let photoUrl;
+
+      if (place.photos && place.photos.length > 0) {
+        const photoName = place.photos[0].name;
+        photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${apiKey}&maxWidthPx=600`;
+      } else {
+        photoUrl = `https://source.unsplash.com/600x400/?${encodeURIComponent(place.name)}`;
+      }
+
+      if (data.status === 'OK' && data.result) {
+        const details = data.result;
+
+        document.getElementById('modal-body').innerHTML = `
+          <img src="${photoUrl}" alt="${place.name}" class="img-fluid rounded mb-3" style="max-height: 300px; object-fit: cover; width: 100%;">
+          <div class="mb-4">
+            <h4>${details.name}</h4>
+            <p>${details.rating ? `<span class="rating">★ ${details.rating}</span>` : ''}</p>
+            <p>${details.formatted_address || ''}</p>
+            ${details.formatted_phone_number ? `<p><strong>Phone:</strong> ${details.formatted_phone_number}</p>` : ''}
+            ${details.website ? `<p><strong>Website:</strong> <a href="${details.website}" target="_blank">${details.website}</a></p>` : ''}
+          </div>
+          ${details.description ? `
+            <div class="mb-4">
+              <h5>About</h5>
+              <p>${details.description}</p>
+            </div>
+          ` : ''}
+          ${details.opening_hours && details.opening_hours.weekday_text ? `
+            <div class="mb-4">
+              <h5>Opening Hours</h5>
+              <ul class="list-unstyled">
+                ${details.opening_hours.weekday_text.map(day => `<li>${day}</li>`).join('')}
+              </ul>
+            </div>
+          ` : ''}
+          <div class="mb-3">
+            <h5>Add Notes</h5>
+            <textarea id="place-notes" class="form-control" rows="3" placeholder="Add any notes about this place..."></textarea>
           </div>
         `;
-        col.appendChild(card);
-        card.querySelector('.view-details-btn').addEventListener('click', () => {
-          showPlaceDetails(place);
-        });
-        resultsContainer.appendChild(col);
-      });
-    }
-
-    function showPlaceDetails(place) {
-      selectedPlace = place;
-      document.getElementById('modal-title').textContent = place.name;
-      document.getElementById('modal-body').innerHTML = `
-        <div class="text-center my-4">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
+      } else {
+        document.getElementById('modal-body').innerHTML = `
+          <div class="alert alert-warning">
+            Could not load detailed information for this place.
           </div>
-          <p class="mt-2">Loading details...</p>
+          <img src="${photoUrl}" alt="${place.name}" class="img-fluid rounded mb-3" style="max-height: 300px; object-fit: cover; width: 100%;">
+          <div class="mb-3">
+            <h4>${place.name}</h4>
+            <p>${place.formatted_address || ''}</p>
+          </div>
+          <div class="mb-3">
+            <h5>Add Notes</h5>
+            <textarea id="place-notes" class="form-control" rows="3" placeholder="Add any notes about this place..."></textarea>
+          </div>
+        `;
+      }
+    })
+    .catch(error => {
+      console.error('Error fetching place details:', error);
+      document.getElementById('modal-body').innerHTML = `
+        <div class="alert alert-danger">
+          Error loading place details. Please try again later.
         </div>
       `;
-      attractionModal.show();
-      fetch(`/api/places/${place.place_id}`)
-        .then(response => response.json())
-        .then(data => {
-          if (data.status === 'OK' && data.result) {
-            const details = data.result;
-            document.getElementById('modal-body').innerHTML = `
-              <div class="place-photo" style="background-image: url('https://source.unsplash.com/600x400/?${encodeURIComponent(place.name)}'); height: 200px; background-size: cover; background-position: center;"></div>
-              <div class="mb-4">
-                <h4>${details.name}</h4>
-                <p>
-                  ${details.rating ? `<span class="rating">★ ${details.rating}</span>` : ''}
-                </p>
-                <p>${details.formatted_address || ''}</p>
-                ${details.formatted_phone_number ? `<p><strong>Phone:</strong> ${details.formatted_phone_number}</p>` : ''}
-                ${details.website ? `<p><strong>Website:</strong> <a href="${details.website}" target="_blank">${details.website}</a></p>` : ''}
-              </div>
-              ${details.description ? `
-                <div class="mb-4">
-                  <h5>About</h5>
-                  <p>${details.description}</p>
-                </div>
-              ` : ''}
-              ${details.opening_hours && details.opening_hours.weekday_text ? `
-                <div class="mb-4">
-                  <h5>Opening Hours</h5>
-                  <ul class="list-unstyled">
-                    ${details.opening_hours.weekday_text.map(day => `<li>${day}</li>`).join('')}
-                  </ul>
-                </div>
-              ` : ''}
-              <div class="mb-3">
-                <h5>Add Notes</h5>
-                <textarea id="place-notes" class="form-control" rows="3" placeholder="Add any notes about this place..."></textarea>
-              </div>
-            `;
-          } else {
-            document.getElementById('modal-body').innerHTML = `
-              <div class="alert alert-warning">
-                Could not load detailed information for this place.
-              </div>
-              <div class="place-photo" style="background-image: url('https://source.unsplash.com/600x400/?${encodeURIComponent(place.name)}'); height: 200px; background-size: cover; background-position: center;"></div>
-              <div class="mb-3">
-                <h4>${place.name}</h4>
-                <p>${place.formatted_address || ''}</p>
-              </div>
-              <div class="mb-3">
-                <h5>Add Notes</h5>
-                <textarea id="place-notes" class="form-control" rows="3" placeholder="Add any notes about this place..."></textarea>
-              </div>
-            `;
-          }
-        })
-        .catch(error => {
-          console.error('Error fetching place details:', error);
-          document.getElementById('modal-body').innerHTML = `
-            <div class="alert alert-danger">
-              Error loading place details. Please try again later.
-            </div>
-          `;
-        });
-    }
+    });
+}
+
 
     function clearSearchMarkers() {
       // Only clear the "found" markers, NOT the recommended ones
@@ -2004,8 +2127,7 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
       });
     });
   </script>
-  
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA50XLfiUNfyrpqF_iRrCT1mcNzRJyePFg&callback=initMap" async defer></script>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="/js/weather.js"></script>
   <script>

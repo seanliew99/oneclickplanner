@@ -19,6 +19,9 @@
       }
       
       .navbar {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
         background-color: rgba(15, 15, 20, 0.6) !important;
         backdrop-filter: blur(20px);
         border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -50,6 +53,11 @@
         text-shadow: 0 0 10px #ff1f4b88;
       }
       
+      .nav-link.active {
+        color: #d858c7 !important;
+        text-shadow: 0 0 10px #d858c7;
+      }
+
       .page-header {
         background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://source.unsplash.com/1600x900/?airplane,flight');
         background-size: cover;
@@ -227,6 +235,27 @@
       }
         </style>
 </head>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const currentPath = window.location.pathname;
+
+    // Loop through each nav link
+    document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
+      const linkPath = new URL(link.href).pathname;
+
+      // Match path and apply 'active' class
+      if (linkPath === currentPath || (linkPath === "/" && currentPath === "/index.html")) {
+        link.classList.add('active');
+        link.style.color = "#ff1f4b"; // optional: override color
+        link.style.textShadow = "0 0 10px #ff1f4baa";
+      } else {
+        link.classList.remove('active');
+      }
+    });
+  });
+</script>
+
 <body>
   <!-- Navigation -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
