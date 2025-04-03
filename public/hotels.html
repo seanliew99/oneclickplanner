@@ -327,153 +327,54 @@
         </div>
       </div>
 
-      <!-- Hotel Search Form -->
+      <!-- Modified Search Container - Map Search Only -->
       <div class="search-container">
-        <ul class="nav nav-tabs search-tabs" id="searchTabs" role="tablist">
-          <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="city-tab" data-bs-toggle="tab" data-bs-target="#city-search" type="button" role="tab" aria-controls="city-search" aria-selected="true">
-              <i class="bi bi-building me-1"></i>City
-            </button>
-          </li>
-          <li class="nav-item" role="presentation">
-            <button class="nav-link" id="map-tab" data-bs-toggle="tab" data-bs-target="#map-search" type="button" role="tab" aria-controls="map-search" aria-selected="false">
-              <i class="bi bi-geo-alt me-1"></i>Map
-            </button>
-          </li>
-          <li class="nav-item" role="presentation">
-            <button class="nav-link" id="hotel-tab" data-bs-toggle="tab" data-bs-target="#hotel-search" type="button" role="tab" aria-controls="hotel-search" aria-selected="false">
-              <i class="bi bi-house-door me-1"></i>Hotel Name
-            </button>
-          </li>
-        </ul>
-        
-        <div class="tab-content" id="searchTabsContent">
-          <!-- City Search Tab -->
-          <div class="tab-pane fade show active" id="city-search" role="tabpanel" aria-labelledby="city-tab">
-            <form id="city-search-form">
-              <div class="row g-3">
-                <div class="col-md-4">
-                  <label for="city-input" class="form-label">City</label>
-                  <div class="position-relative">
-                    <input type="text" class="form-control" id="city-input" placeholder="Enter city name" required>
-                    <input type="hidden" id="city-code">
-                    <div id="city-suggestions" class="suggestion-container"></div>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <label for="check-in-date" class="form-label">Check-in Date</label>
-                  <input type="date" class="form-control" id="check-in-date" required>
-                </div>
-                <div class="col-md-3">
-                  <label for="check-out-date" class="form-label">Check-out Date</label>
-                  <input type="date" class="form-control" id="check-out-date" required>
-                </div>
-                <div class="col-md-2">
-                  <label for="guests" class="form-label">Guests</label>
-                  <select class="form-select" id="guests">
-                    <option value="1">1 Adult</option>
-                    <option value="2" selected>2 Adults</option>
-                    <option value="3">3 Adults</option>
-                    <option value="4">4 Adults</option>
-                  </select>
-                </div>
-              </div>
-              <div class="text-center mt-3">
-                <button type="submit" class="btn btn-primary btn-lg px-4">
-                  <i class="bi bi-search me-2"></i>Search Hotels
-                </button>
-              </div>
-            </form>
+        <form id="map-search-form">
+          <div class="row mb-3">
+            <div class="col-md-12">
+              <div id="search-map" style="height: 300px; border-radius: 8px;"></div>
+            </div>
           </div>
-          
-          <!-- Map Search Tab -->
-          <div class="tab-pane fade" id="map-search" role="tabpanel" aria-labelledby="map-tab">
-            <form id="map-search-form">
-              <div class="row mb-3">
-                <div class="col-md-12">
-                  <div id="search-map" style="height: 300px; border-radius: 8px;"></div>
-                </div>
-              </div>
-              <div class="row g-3">
-                <div class="col-md-4">
-                  <label for="map-location" class="form-label">Location</label>
-                  <input type="text" class="form-control" id="map-location" placeholder="Search or click on map" readonly>
-                  <input type="hidden" id="map-latitude">
-                  <input type="hidden" id="map-longitude">
-                </div>
-                <div class="col-md-2">
-                  <label for="map-radius" class="form-label">Radius (km)</label>
-                  <select class="form-select" id="map-radius">
-                    <option value="1">1 km</option>
-                    <option value="3">3 km</option>
-                    <option value="5" selected>5 km</option>
-                    <option value="10">10 km</option>
-                  </select>
-                </div>
-                <div class="col-md-2">
-                  <label for="map-check-in" class="form-label">Check-in</label>
-                  <input type="date" class="form-control" id="map-check-in" required>
-                </div>
-                <div class="col-md-2">
-                  <label for="map-check-out" class="form-label">Check-out</label>
-                  <input type="date" class="form-control" id="map-check-out" required>
-                </div>
-                <div class="col-md-2">
-                  <label for="map-guests" class="form-label">Guests</label>
-                  <select class="form-select" id="map-guests">
-                    <option value="1">1 Adult</option>
-                    <option value="2" selected>2 Adults</option>
-                    <option value="3">3 Adults</option>
-                    <option value="4">4 Adults</option>
-                  </select>
-                </div>
-              </div>
-              <div class="text-center mt-3">
-                <button type="submit" class="btn btn-primary btn-lg px-4">
-                  <i class="bi bi-search me-2"></i>Search Area
-                </button>
-              </div>
-            </form>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label for="map-location" class="form-label">Location</label>
+              <input type="text" class="form-control" id="map-location" placeholder="Enter a location or click on map">
+              <input type="hidden" id="map-latitude">
+              <input type="hidden" id="map-longitude">
+            </div>
+            <div class="col-md-2">
+              <label for="map-radius" class="form-label">Radius (km)</label>
+              <select class="form-select" id="map-radius">
+                <option value="1">1 km</option>
+                <option value="3">3 km</option>
+                <option value="5" selected>5 km</option>
+                <option value="10">10 km</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label for="map-check-in" class="form-label">Check-in</label>
+              <input type="date" class="form-control" id="map-check-in" required>
+            </div>
+            <div class="col-md-2">
+              <label for="map-check-out" class="form-label">Check-out</label>
+              <input type="date" class="form-control" id="map-check-out" required>
+            </div>
+            <div class="col-md-2">
+              <label for="map-guests" class="form-label">Guests</label>
+              <select class="form-select" id="map-guests">
+                <option value="1">1 Adult</option>
+                <option value="2" selected>2 Adults</option>
+                <option value="3">3 Adults</option>
+                <option value="4">4 Adults</option>
+              </select>
+            </div>
           </div>
-          
-          <!-- Hotel Name Search Tab -->
-          <div class="tab-pane fade" id="hotel-search" role="tabpanel" aria-labelledby="hotel-tab">
-            <form id="hotel-search-form">
-              <div class="row g-3">
-                <div class="col-md-4">
-                  <label for="hotel-name" class="form-label">Hotel Name</label>
-                  <div class="position-relative">
-                    <input type="text" class="form-control" id="hotel-name" placeholder="Enter hotel name" required>
-                    <div id="hotel-suggestions" class="suggestion-container"></div>
-                    <input type="hidden" id="hotel-id">
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <label for="hotel-check-in" class="form-label">Check-in Date</label>
-                  <input type="date" class="form-control" id="hotel-check-in" required>
-                </div>
-                <div class="col-md-3">
-                  <label for="hotel-check-out" class="form-label">Check-out Date</label>
-                  <input type="date" class="form-control" id="hotel-check-out" required>
-                </div>
-                <div class="col-md-2">
-                  <label for="hotel-guests" class="form-label">Guests</label>
-                  <select class="form-select" id="hotel-guests">
-                    <option value="1">1 Adult</option>
-                    <option value="2" selected>2 Adults</option>
-                    <option value="3">3 Adults</option>
-                    <option value="4">4 Adults</option>
-                  </select>
-                </div>
-              </div>
-              <div class="text-center mt-3">
-                <button type="submit" class="btn btn-primary btn-lg px-4">
-                  <i class="bi bi-search me-2"></i>Check Availability
-                </button>
-              </div>
-            </form>
+          <div class="text-center mt-3">
+            <button type="submit" class="btn btn-primary btn-lg px-4">
+              <i class="bi bi-search me-2"></i>Search Area
+            </button>
           </div>
-        </div>
+        </form>
       </div>
       
       <!-- Results Section -->
@@ -726,6 +627,41 @@
       loadCurrentPlan();
     });
     
+
+    // Add an event listener for the map location input
+  document.getElementById('map-location').addEventListener('change', function() {
+    const address = this.value;
+    
+    // Use Google Maps Geocoding API to convert address to coordinates
+    const geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ address: address }, function(results, status) {
+      if (status === 'OK' && results[0]) {
+        const location = results[0].geometry.location;
+        
+        // Update hidden fields with coordinates
+        document.getElementById('map-latitude').value = location.lat();
+        document.getElementById('map-longitude').value = location.lng();
+        
+        // Update map and place marker
+        searchMap.setCenter(location);
+        
+        // Create or move the search marker
+        if (searchMarker) {
+          searchMarker.setPosition(location);
+        } else {
+          searchMarker = new google.maps.Marker({
+            position: location,
+            map: searchMap,
+            animation: google.maps.Animation.DROP
+          });
+        }
+      } else {
+        console.error('Geocode was not successful for the following reason: ' + status);
+        alert('Could not find location. Please try a different search term or click directly on the map.');
+      }
+    });
+  });
+
     // Update minimum check-out date based on check-in date
     function updateCheckoutMin(e) {
       const checkInId = e.target.id;
