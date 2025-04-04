@@ -19,7 +19,7 @@ const isAuthenticated = (req, res, next) => {
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
+3000
 // Google API Key
 const API_KEY = process.env.GOOGLE_API_KEY;
 
@@ -799,6 +799,6 @@ app.get('/hotels', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, '0,0,0,0', () => {
   console.log(`Travel Planner running on http://localhost:${PORT}`);
 });
