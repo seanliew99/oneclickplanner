@@ -685,7 +685,7 @@ footer {
         <div class="col-md-8">
           <div class="planning-card">
             <h2 class="text-center mb-4" data-scroll>Create Your Trip Plan</h2>
-            <form id="plan-form">
+            <form id="plan-form" novalidate>
               <!-- Country -->
               <div class="mb-3">
                 <label for="country" class="form-label">Country</label>
@@ -731,10 +731,10 @@ footer {
                   <div id="cities-container">
                     <div class="row mb-2 city-entry">
                       <div class="col-md-6">
-                        <input type="text" class="form-control city-name" placeholder="City name" required />
+                        <input type="text" class="form-control city-name" name="city-name[]" placeholder="City name" required />
                       </div>
                       <div class="col-md-4">
-                        <input type="number" class="form-control city-days" placeholder="Days" min="1" required />
+                        <input type="number" class="form-control city-days" name="city-days[]" placeholder="Days" min="1" required />
                       </div>
                       <div class="col-md-2">
                         <button type="button" class="btn btn-danger remove-city w-100">−</button>
@@ -896,13 +896,6 @@ function toggleCityInputValidation() {
     // Enable single city input and make it required
     destinationInput.disabled = false;
     destinationInput.required = true;
-    
-    // Disable all multi-city inputs
-    const multiCityInputs = multiCityWrapper.querySelectorAll('input');
-    multiCityInputs.forEach(input => {
-      input.disabled = true;
-      input.required = false;
-    });
   } 
   // Handle multi-city mode
   else {
@@ -917,6 +910,11 @@ function toggleCityInputValidation() {
       input.required = true;
     });
     
+      // Enable all multi-city inputs
+  multiCityInputs.forEach(input => {
+    input.disabled = false;
+    input.required = true;
+  });
     
     // If switching to multi-city mode and there are no entries, add one
 // If switching to multi-city mode and there are no entries, add one
@@ -968,30 +966,6 @@ function addCityEntry() {
 const isMulti = cityToggle.checked;
 const destinationInput = document.getElementById('destination');
 const multiCityInputs = document.getElementById('multi-city-wrapper').querySelectorAll('input');
-
-if (isMulti) {
-  // Multi-city mode: disable single city input
-  destinationInput.disabled = true;
-  destinationInput.required = false;
-  
-  // Enable all multi-city inputs - select them at this moment to ensure we get all current inputs
-  const currentMultiCityInputs = document.getElementById('multi-city-wrapper').querySelectorAll('input');
-  currentMultiCityInputs.forEach(input => {
-    input.disabled = false;
-    input.required = true;
-  });
-} else {
-  // Single city mode: enable single city input
-  destinationInput.disabled = false;
-  destinationInput.required = true;
-  
-  // Disable all multi-city inputs
-  const currentMultiCityInputs = document.getElementById('multi-city-wrapper').querySelectorAll('input');
-  currentMultiCityInputs.forEach(input => {
-    input.disabled = true;
-    input.required = false;
-  });
-}
 
   function displayCurrentPlan(plan) {
     if (!plan || !plan.destination) return;
@@ -1679,14 +1653,14 @@ fetch('/api/plan')
   })
   .catch(error => console.error('Error loading plan:', error));
 
-// Handle form submission
-planForm.addEventListener('submit', function (e) {
+  planForm.addEventListener('submit', function (e) {
   e.preventDefault();
 
   const startDate = startDateInput.value;
   const endDate = endDateInput.value;
   const country = document.getElementById('country').value.trim();
 
+  // Basic date validation
   if (!startDate || !endDate) {
     alert('Please select both a start and end date.');
     return;
@@ -1697,42 +1671,42 @@ planForm.addEventListener('submit', function (e) {
     return;
   }
 
-  // Check if the current button text indicates an update
+  // Check if we're updating or creating
   const isUpdating = document.querySelector('#plan-form button[type="submit"]').textContent === 'Update Plan';
 
-  if (cityToggle.checked && !validateCityDaysExactly()) {
-    // If it was in "Update Plan" mode, keep it in update mode
-    if (isUpdating) {
-      const submitButton = document.querySelector('#plan-form button[type="submit"]');
-      submitButton.textContent = 'Update Plan';
-      submitButton.classList.remove('btn-primary');
-      submitButton.classList.add('btn-success');
+  // For multi-city mode, validate the day allocation
+  if (cityToggle.checked) {
+    if (!validateCityDaysExactly()) {
+      return;
     }
-    return;
+  } else {
+    // For single-city mode, validate the destination
+    const destinationInput = document.getElementById('destination');
+    if (!destinationInput.value.trim()) {
+      alert('Please enter a city name.');
+      return;
+    }
   }
 
+  // Prepare the data to send to the server
   let destination = '';
   let cities = [];
 
   if (!cityToggle.checked) {
+    // Single city mode
     const name = document.getElementById('destination').value.trim();
     destination = name;
     const totalDays = calculateTripDays(startDate, endDate);
     cities = [{ name, days: totalDays }];
   } else {
-    const cityInputs = citiesContainer.querySelectorAll('.city-entry');
-    cities = Array.from(cityInputs).map(entry => {
+    // Multi-city mode
+    const cityEntries = document.querySelectorAll('.city-entry');
+    cities = Array.from(cityEntries).map(entry => {
       const name = entry.querySelector('.city-name').value.trim();
       const days = parseInt(entry.querySelector('.city-days').value);
       return { name, days };
     });
     destination = cities.map(city => `${city.name} (${city.days}d)`).join(', ');
-  }
-
-  // Disable unused multi-city inputs if single-city mode is active
-  if (!cityToggle.checked) {
-    const hiddenInputs = multiCityWrapper.querySelectorAll('input');
-    hiddenInputs.forEach(input => input.disabled = true);
   }
 
   // Send plan to server
@@ -1749,45 +1723,43 @@ planForm.addEventListener('submit', function (e) {
       country,
     }),
   })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        // Update current plan UI - INCLUDE COUNTRY
-        planDestination.textContent = country ? `${destination} in ${country}` : destination;
-        planDates.textContent = formatDateRange(startDate, endDate);
-        currentPlanAlert.style.display = 'block';
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      // Update current plan UI
+      planDestination.textContent = country ? `${destination} in ${country}` : destination;
+      planDates.textContent = formatDateRange(startDate, endDate);
+      currentPlanAlert.style.display = 'block';
 
-        if (isUpdating) {
-          // Show update confirmation popup
-          showCustomMessage('Success', 'Your trip plan has been updated successfully!');
-          
-          // Reset the form modified state (to change button back to "Start Planning")
-          const formModified = false;
-          const submitButton = document.querySelector('#plan-form button[type="submit"]');
-          submitButton.textContent = 'Start Planning';
-          submitButton.classList.remove('btn-success');
-          submitButton.classList.add('btn-primary');
-        } else {
-          // For new plans, redirect to attractions as before
-          // Show forecast (optional)
-          fetch(`/api/weather?city=${encodeURIComponent(destination)}`)
-            .then(res => res.json())
-            .then(weatherData => {
-              showWeatherForDateRange(weatherData.forecast, startDate, endDate);
-            });
-
-          // Redirect to attractions
-          window.location.href = '/attractions';
-        }
+      if (isUpdating) {
+        // Show update confirmation popup
+        showCustomMessage('Success', 'Your trip plan has been updated successfully!');
+        
+        // Reset the form modified state
+        const submitButton = document.querySelector('#plan-form button[type="submit"]');
+        submitButton.textContent = 'Start Planning';
+        submitButton.classList.remove('btn-success');
+        submitButton.classList.add('btn-primary');
       } else {
-        console.error('Plan submission failed:', data);
-        alert('Failed to save plan.');
+        // For new plans, show forecast and redirect
+        fetch(`/api/weather?city=${encodeURIComponent(destination)}`)
+          .then(res => res.json())
+          .then(weatherData => {
+            showWeatherForDateRange(weatherData.forecast, startDate, endDate);
+          });
+
+        // Redirect to attractions
+        window.location.href = '/attractions';
       }
-    })
-    .catch(error => {
-      console.error('Error saving plan:', error);
-      alert('Error saving plan.');
-    });
+    } else {
+      console.error('Plan submission failed:', data);
+      alert('Failed to save plan.');
+    }
+  })
+  .catch(error => {
+    console.error('Error saving plan:', error);
+    alert('Error saving plan.');
+  });
 });
 
 // Add a new function to show a custom success message popup
