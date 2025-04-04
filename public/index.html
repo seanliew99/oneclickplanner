@@ -690,6 +690,9 @@ footer {
               <div class="mb-3">
                 <label for="country" class="form-label">Country</label>
                 <input type="text" class="form-control" id="country" placeholder="e.g. Japan" required>
+                <small class="form-text text-muted d-none" id="country-edit-hint">
+                  <i class="bi bi-info-circle"></i> To modify the country, clear your current plan first
+                </small>
               </div>
 
               <div class="row mb-3">
@@ -868,6 +871,109 @@ footer {
   const addCityBtn = document.getElementById('add-city-btn');
   const cityToggle = document.getElementById('city-selection-toggle');
 
+
+// This function updates the "Add City" button state based solely on trip duration vs used days
+function updateAddCityButtonState() {
+  const startDate = document.getElementById('start-date').value;
+  const endDate = document.getElementById('end-date').value;
+  const addCityBtn = document.getElementById('add-city-btn');
+  const dateWarning = document.getElementById('date-warning');
+
+  // First check if dates are set
+  if (!startDate || !endDate) {
+    if (dateWarning) dateWarning.classList.remove('d-none');
+    if (addCityBtn) addCityBtn.disabled = true;
+    return;
+  }
+
+  // Hide warning
+  if (dateWarning) dateWarning.classList.add('d-none');
+
+  // Calculate total trip days
+  const totalDays = calculateTripDays(startDate, endDate);
+  
+  // Get used days
+  const usedDays = getUsedCityDays();
+  
+  // Enable button if there are days available to allocate
+  if (addCityBtn) {
+    addCityBtn.disabled = usedDays >= totalDays;
+  }
+  
+  // Update days left indicator
+  updateDaysLeft();
+}
+
+// Event listeners for date changes - these will trigger the button update
+function addDateChangeListeners() {
+  const startDateInput = document.getElementById('start-date');
+  const endDateInput = document.getElementById('end-date');
+  
+  if (startDateInput) {
+    startDateInput.addEventListener('change', function() {
+      // Wait for any other handlers to update the form
+      setTimeout(updateAddCityButtonState, 10);
+    });
+  }
+  
+  if (endDateInput) {
+    endDateInput.addEventListener('change', function() {
+      // Wait for any other handlers to update the form
+      setTimeout(updateAddCityButtonState, 10);
+    });
+  }
+}
+
+// Override the existing event listeners for city days changes
+function attachImprovedCityDaysListeners() {
+  const dayInputs = document.querySelectorAll('.city-days');
+  
+  dayInputs.forEach(input => {
+    // Remove any existing listeners to avoid duplicates
+    const newInput = input.cloneNode(true);
+    input.parentNode.replaceChild(newInput, input);
+    
+    // Add our improved listener
+    newInput.addEventListener('input', function() {
+      updateAddCityButtonState();
+      validateCityDaysInput(this);
+    });
+  });
+}
+
+// Initialize the fix when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+  
+  // Set up our improved event listeners
+  addDateChangeListeners();
+  
+  // Override the existing add city entry function
+  const originalAddCityBtn = document.getElementById('add-city-btn');
+  if (originalAddCityBtn) {
+    originalAddCityBtn.addEventListener('click', function(e) {
+      // After the original handler adds a city
+      setTimeout(function() {
+        attachImprovedCityDaysListeners();
+        updateAddCityButtonState();
+      }, 10);
+    });
+  }
+  
+  // Override the city removal listener
+  const citiesContainer = document.getElementById('cities-container');
+  if (citiesContainer) {
+    citiesContainer.addEventListener('click', function(e) {
+      if (e.target.classList.contains('remove-city')) {
+        // After the original handler removes a city
+        setTimeout(updateAddCityButtonState, 10);
+      }
+    });
+  }
+  
+  // Initialize with the current state
+  attachImprovedCityDaysListeners();
+  updateAddCityButtonState();
+});
 
   // This function properly toggles form validation based on the city selection mode
 function toggleCityInputValidation() {
@@ -1692,22 +1798,57 @@ fetch('/api/plan')
   let destination = '';
   let cities = [];
 
-  if (!cityToggle.checked) {
-    // Single city mode
-    const name = document.getElementById('destination').value.trim();
-    destination = name;
-    const totalDays = calculateTripDays(startDate, endDate);
-    cities = [{ name, days: totalDays }];
-  } else {
-    // Multi-city mode
-    const cityEntries = document.querySelectorAll('.city-entry');
-    cities = Array.from(cityEntries).map(entry => {
-      const name = entry.querySelector('.city-name').value.trim();
-      const days = parseInt(entry.querySelector('.city-days').value);
-      return { name, days };
-    });
-    destination = cities.map(city => `${city.name} (${city.days}d)`).join(', ');
+if (!cityToggle.checked) {
+  // Single city mode
+  const name = document.getElementById('destination').value.trim();
+  if (!name) {
+    alert('Please enter a city name.');
+    return;
   }
+  destination = name;
+  const totalDays = calculateTripDays(startDate, endDate);
+  cities = [{ name, days: totalDays }];
+} else {
+  // Multi-city mode
+  const cityEntries = document.querySelectorAll('.city-entry');
+  cities = [];
+
+  // Validate each city entry
+  for (const entry of cityEntries) {
+    const nameInput = entry.querySelector('.city-name');
+    const daysInput = entry.querySelector('.city-days');
+    
+    const name = nameInput.value.trim();
+    const days = parseInt(daysInput.value);
+
+    // Validate name is not empty
+    if (!name) {
+      alert('Please enter a city name for all cities.');
+      nameInput.focus();
+      return;
+    }
+
+    // Validate days is a positive number
+    if (isNaN(days) || days < 1) {
+      alert('Please enter a valid number of days for each city.');
+      daysInput.focus();
+      return;
+    }
+
+    cities.push({ name, days });
+  }
+
+  // Validate total days match trip duration
+  const totalCityDays = cities.reduce((sum, city) => sum + city.days, 0);
+  const tripDays = calculateTripDays(startDate, endDate);
+  
+  if (totalCityDays !== tripDays) {
+    alert(`Total city days (${totalCityDays}) must match trip duration (${tripDays} days). Please adjust.`);
+    return;
+  }
+
+  destination = cities.map(city => `${city.name} (${city.days}d)`).join(', ');
+}
 
   // Send plan to server
   fetch('/api/plan', {
@@ -2068,7 +2209,156 @@ document.getElementById('get-weather-btn').addEventListener('click', () => {
     });
   </script>
   
+<script>
+// This is a direct fix for the "Add City" button issue
+// It must be added at the end of your page, just before the closing </body> tag
 
+(function() {
+  // Direct reference to key elements
+  const addCityBtn = document.getElementById('add-city-btn');
+  const startDateInput = document.getElementById('start-date');
+  const endDateInput = document.getElementById('end-date');
+  
+  // Create a MutationObserver to watch for disabled attribute changes
+  const buttonObserver = new MutationObserver((mutations) => {
+    // Check if we need to force enable the button
+    checkAndFixAddButton();
+  });
+  
+  // Watch for attribute changes on the Add City button
+  if (addCityBtn) {
+    buttonObserver.observe(addCityBtn, { 
+      attributes: true, 
+      attributeFilter: ['disabled'] 
+    });
+  }
+  
+  // Add direct event listeners to date inputs
+  if (startDateInput) {
+    startDateInput.addEventListener('change', directDateChangeHandler);
+  }
+  
+  if (endDateInput) {
+    endDateInput.addEventListener('change', directDateChangeHandler);
+  }
+  
+  // Handler for date changes - directly checks and fixes the button
+  function directDateChangeHandler() {
+    // Short delay to ensure all other handlers have run
+    setTimeout(checkAndFixAddButton, 50);
+  }
+  
+  // The core fix function that determines if button should be enabled
+  function checkAndFixAddButton() {
+    if (!addCityBtn) return;
+    
+    const startDate = startDateInput.value;
+    const endDate = endDateInput.value;
+    
+    // Skip if dates aren't set
+    if (!startDate || !endDate) return;
+    
+    // Calculate total trip days
+    const totalDays = calculateTripDays(startDate, endDate);
+    
+    // Calculate currently used days
+    const usedDays = getUsedCityDays();
+    
+    // If there are days available, force enable the button
+    if (usedDays < totalDays) {
+      addCityBtn.disabled = false;
+    }
+    
+    // Also update the days left indicator
+    updateDaysLeftDisplay(totalDays, usedDays);
+  }
+  
+  // Calculate trip days
+  function calculateTripDays(start, end) {
+    const s = new Date(start);
+    const e = new Date(end);
+    const diff = Math.floor((e - s) / (1000 * 60 * 60 * 24)) + 1;
+    return diff > 0 ? diff : 0;
+  }
+  
+  // Get total days currently allocated to cities
+  function getUsedCityDays() {
+    const dayInputs = document.querySelectorAll('.city-days');
+    let usedDays = 0;
+    dayInputs.forEach(input => {
+      const val = parseInt(input.value);
+      if (!isNaN(val)) usedDays += val;
+    });
+    return usedDays;
+  }
+  
+  // Update the days left indicator
+  function updateDaysLeftDisplay(totalDays, usedDays) {
+    const daysLeftElement = document.getElementById('days-left');
+    if (daysLeftElement) {
+      const daysLeft = totalDays - usedDays;
+      daysLeftElement.textContent = `Days Left: ${daysLeft}`;
+      daysLeftElement.style.color = daysLeft === 0 ? '#66ff99' : (daysLeft < 0 ? '#ff6f61' : 'inherit');
+    }
+  }
+  
+  // Run the fix immediately and also whenever cities are added or removed
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('remove-city') || 
+        e.target.id === 'add-city-btn') {
+      setTimeout(checkAndFixAddButton, 50);
+    }
+  });
+  
+  // Run once on page load
+  setTimeout(checkAndFixAddButton, 100);
+})();
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const countryInput = document.getElementById('country');
+    const currentPlanAlert = document.getElementById('current-plan-alert');
+    const clearPlanBtn = document.getElementById('clear-plan-btn');
+
+    function updateCountryInputState() {
+      // Check if the current plan alert is visible
+      const hasPlan = currentPlanAlert.style.display !== 'none';
+      
+      if (hasPlan) {
+        // Disable input when a plan exists
+        countryInput.disabled = true;
+        countryInput.classList.add('bg-secondary', 'text-muted');
+        countryInput.setAttribute('title', 'To change the country, clear your current plan first');
+      } else {
+        // Enable input when no plan exists
+        countryInput.disabled = false;
+        countryInput.classList.remove('bg-secondary', 'text-muted');
+        countryInput.removeAttribute('title');
+      }
+    }
+
+    // Initial check when page loads
+    updateCountryInputState();
+
+    // Create a MutationObserver to watch for changes in the current plan alert
+    const observer = new MutationObserver(updateCountryInputState);
+    
+    // Configure the observer to watch for style attribute changes
+    observer.observe(currentPlanAlert, { 
+      attributes: true, 
+      attributeFilter: ['style'] 
+    });
+
+    // Also update when clear plan button is clicked (as a fallback)
+    if (clearPlanBtn) {
+      clearPlanBtn.addEventListener('click', function() {
+        // Give a short delay to allow for the plan clearing process
+        setTimeout(updateCountryInputState, 100);
+      });
+    }
+  });
+</script>
 
 <script src="/js/auth.js"></script>
 </body>
