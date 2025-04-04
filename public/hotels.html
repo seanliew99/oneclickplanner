@@ -1,305 +1,466 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hotels - One Click Planner</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
-    <style>
-  body {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background: linear-gradient(to bottom right, #0a0f1f, #1a2b55); /* dark navy to rich blue */
-  }
-  
-  .main-content {
-    flex: 1;
-  }
-  
-  .navbar {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    background-color: rgba(15, 15, 20, 0.6) !important;
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    transition: background-color 0.4s ease;
-  }
-  
-  .navbar-brand {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #4db8ff !important; /* nice glowing blue */
-    text-shadow: 0 0 10px #4db8ff88;
-  }
-  
-  .logo-img {
-    width: 80px;
-    height: auto;
-    border-radius: 12px;
-    object-fit: contain;
-    background-color: transparent;
-  }
-  
-  .nav-link {
-    color: white !important;
-  }
-  
-  .nav-link:hover {
-    color: #ff1f4b !important;
-    text-shadow: 0 0 10px #ff1f4b88;
-  }
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hotels - Travel Planner</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+  <style>
+    /* Insert the entire CSS code here */
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(to bottom right, #0a0f1f, #1a2b55); /* dark navy to rich blue */
+      color: white;
+    }
+    
+    .main-content {
+      flex: 1;
+    }
+    
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background-color: rgba(15, 15, 20, 0.6) !important;
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+      transition: background-color 0.4s ease;
+    }
+    
+    .navbar-brand {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #4db8ff !important; /* nice glowing blue */
+      text-shadow: 0 0 10px #4db8ff88;
+    }
+    
+    .logo-img {
+      width: 80px;
+      height: auto;
+      border-radius: 12px;
+      object-fit: contain;
+      background-color: transparent;
+    }
+    
+    .nav-link {
+      color: white !important;
+    }
+    
+    .nav-link:hover {
+      color: #ff1f4b !important;
+      text-shadow: 0 0 10px #ff1f4b88;
+    }
+    
+    .nav-link.active {
+      color: #d858c7 !important;
+      text-shadow: 0 0 10px #d858c7;
+    }
+    
+    /* Typography styles */
+    body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .nav-link, .lead {
+      color: white !important;
+    }
+    
+    .page-header {
+      background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://source.unsplash.com/1600x900/?hotel,resort');
+      background-size: cover;
+      background-position: center;
+      color: white;
+      padding: 60px 0;
+      margin-bottom: 30px;
+    }
+    
+    /* Search container styles */
+    .search-container {
+      background-color: rgba(255, 255, 255, 0.05); /* translucent dark */
+      color: white;
+      backdrop-filter: blur(12px);
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .search-container input,
+    .search-container .form-control,
+    .search-container .form-select {
+      background-color: rgba(0, 0, 0, 0.4);
+      color: white;
+      border: none;
+    }
+    
+    .search-container input::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+    
+    /* Hotel card styles */
+    .hotel-card {
+      background: rgba(255, 255, 255, 0.05); /* dark glassy look */
+      backdrop-filter: blur(10px);
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      color: white;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      margin-bottom: 20px;
+      overflow: hidden;
+      height: 100%;
+    }
+    
+    .hotel-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 0 16px rgba(255, 31, 75, 0.4), 0 0 40px rgba(255, 31, 75, 0.3);
+      border: 1px solid #ff1f4b88;
+    }
+    
+    .hotel-image {
+      height: 200px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+    
+    .hotel-rating {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    
+    .hotel-price {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background-color: rgba(76, 184, 255, 0.9);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 1rem;
+      text-shadow: 0 0 10px rgba(76, 184, 255, 0.8);
+    }
+    
+    .hotel-body {
+      padding: 20px;
+    }
+    
+    .hotel-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 5px;
+      line-height: 1.3;
+    }
+    
+    .hotel-address {
+      color: #adb5bd;
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+    }
+    
+    /* Filter section styles */
+    .filter-section {
+      background-color: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      padding: 20px;
+      margin-bottom: 30px;
+      color: white;
+    }
+    
+    .filter-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: white;
+    }
+    
+    .star-btn {
+      background-color: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .star-btn.active {
+      background-color: #4db8ff;
+      border-color: #4db8ff;
+      color: white;
+      box-shadow: 0 0 10px rgba(77, 184, 255, 0.5);
+    }
+    
+    .facility-badge {
+      background-color: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.85rem;
+    }
+    
+    .facility-badge.active {
+      background-color: #4db8ff;
+      border-color: #4db8ff;
+      color: white;
+      box-shadow: 0 0 10px rgba(77, 184, 255, 0.5);
+    }
+    
+    /* Amenity badges */
+    .amenity-badge {
+      background-color: rgba(0, 0, 0, 0.4);
+      color: #f8f9fa;
+      font-size: 0.75rem;
+      padding: 5px 8px;
+      border-radius: 12px;
+      margin-right: 5px;
+      margin-bottom: 5px;
+      display: inline-block;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Loading spinner */
+    .loading-spinner {
+      display: flex;
+      justify-content: center;
+      margin: 50px 0;
+    }
+    
+    /* Result count */
+    .result-count {
+      font-weight: 600;
+      color: white;
+      background-color: rgba(0, 0, 0, 0.3); /* subtle dark background */
+      padding: 10px 16px;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+    
+    /* Suggestions */
+    .suggestion-container {
+      position: absolute;
+      z-index: 1000;
+      background-color: rgba(30, 39, 64, 0.9);
+      width: 100%;
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    }
+    
+    .suggestion-item {
+      padding: 10px;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      transition: background-color 0.3s ease;
+    }
+    
+    .suggestion-item:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Modal styles */
+    .modal-content {
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 0 20px rgba(255, 31, 75, 0.2);
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+      border: none;
+      color: white;
+    }
+    
+    .hotel-detail-header {
+      background-size: cover;
+      background-position: center;
+      color: white;
+      padding: 100px 0 30px;
+      position: relative;
+    }
+    
+    .hotel-detail-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.8) 100%);
+    }
+    
+    .hotel-detail-name {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+    
+    /* Room cards */
+    .room-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      margin-bottom: 15px;
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+    
+    .room-card:hover {
+      box-shadow: 0 0 16px rgba(77, 184, 255, 0.3);
+    }
+    
+    .room-header {
+      background-color: rgba(0, 0, 0, 0.3);
+      padding: 12px 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .room-price {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #4db8ff;
+      text-shadow: 0 0 10px rgba(77, 184, 255, 0.5);
+      margin-bottom: 5px;
+    }
+    
+    /* Stars */
+    .stars {
+      color: #ffc107;
+    }
+    
+    /* Footer */
+    footer {
+      background-color: #111;
+      color: #ccc;
+      padding: 30px 0;
+      font-size: 0.9rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    
+    /* Map styling */
+    #search-map, #results-map, #hotel-map {
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Button styling */
+    .btn-primary {
+      background-color: #4db8ff;
+      border-color: #4db8ff;
+      box-shadow: 0 0 10px rgba(77, 184, 255, 0.5);
+    }
+    
+    .btn-primary:hover {
+      background-color: #3d94cc;
+      border-color: #3d94cc;
+      box-shadow: 0 0 15px rgba(77, 184, 255, 0.7);
+    }
+    
+    .btn-outline-primary {
+      color: #4db8ff;
+      border-color: #4db8ff;
+    }
+    
+    .btn-outline-primary:hover {
+      background-color: #4db8ff;
+      border-color: #4db8ff;
+      box-shadow: 0 0 10px rgba(77, 184, 255, 0.5);
+    }
+    
+    .btn-outline-light {
+      border-color: rgba(255, 255, 255, 0.3);
+      color: white;
+    }
+    
+    .btn-outline-light:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.5);
+      color: white;
+    }
 
-  .nav-link.active {
-    color: #d858c7 !important;
-    text-shadow: 0 0 10px #d858c7;
-  }
-  
-  .page-header {
-    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://source.unsplash.com/1600x900/?hotel,resort');
-    background-size: cover;
-    background-position: center;
-    color: white;
-    padding: 60px 0;
-    margin-bottom: 30px;
-  }
-  
-  body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .nav-link, .lead {
-    color: white !important;
-  }
-  
-  .search-container {
-    background-color: rgba(255, 255, 255, 0.05); /* translucent dark */
-    color: white;
-    backdrop-filter: blur(12px);
-    border: none;
-    border-radius: 12px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-    padding: 20px;
-  }
-  
-  .search-container input,
-  .search-container .form-control {
-    background-color: rgba(0, 0, 0, 0.4);
-    color: white;
-    border: none;
-  }
-  
-  .search-container input::placeholder {
-    color: rgba(255, 255, 255, 0.6);
-  }
-  
-  .hotel-card {
-    background: rgba(255, 255, 255, 0.05); /* dark glassy look */
-    backdrop-filter: blur(10px);
-    border: none;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    color: white;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    height: 100%;
-  }
-  
-  .hotel-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 0 16px rgba(255, 31, 75, 0.4), 0 0 40px rgba(255, 31, 75, 0.3);
-    border: 1px solid #ff1f4b88;
-  }
-  
-  #typewriter-hotels::after {
-    content: '|';
-    animation: blink 0.8s infinite;
-    margin-left: 2px;
-  }
-  
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50%      { opacity: 0; }
-  }
-  
-  .result-count {
-    font-weight: 600;
-    color: white;
-    background-color: rgba(0, 0, 0, 0.3); /* subtle dark background */
-    padding: 10px 16px;
-    border-radius: 8px;
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
-    display: inline-block;
-  }
-  
-  .modal-content {
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    backdrop-filter: blur(16px);
-    box-shadow: 0 0 20px rgba(255, 31, 75, 0.2);
-  }
-  
-  .modal-header,
-  .modal-body,
-  .modal-footer {
-    border: none;
-    color: white;
-  }
-  
-  .modal-title {
-    color: #ff1f4b;
-    text-shadow: 0 0 8px #ff1f4b88;
-  }
-  
-  footer {
-    background-color: #111;
-    color: #ccc;
-    padding: 30px 0;
-    font-size: 0.9rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.07);
-  }
-  .nav-tabs.search-tabs {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-  .nav-tabs.search-tabs .nav-link {
-    color: rgba(255, 255, 255, 0.6) !important;
-    background-color: transparent;
-    border: none;
-    padding: 10px 15px;
-    transition: all 0.3s ease;
-  }
-
-  .nav-tabs.search-tabs .nav-link:hover {
-    color: #ff1f4b !important;
-    background-color: rgba(255, 31, 75, 0.1);
-  }
-
-  .nav-tabs.search-tabs .nav-link.active {
-    color: #ff1f4b !important;
-    background-color: rgba(255, 31, 75, 0.2);
-    border: none;
-    font-weight: bold;
-  }
-
-  .nav-tabs.search-tabs .nav-link i {
-    margin-right: 5px;
-    color: rgba(255, 255, 255, 0.7);
-  }
-
-  .nav-tabs.search-tabs .nav-link.active i {
-    color: #ff1f4b;
-  }
-  .suggestion-container {
-    position: absolute;
-    z-index: 1000;
-    background-color: rgba(0, 0, 0, 0.4); /* Match search container input background */
-    width: 100%;
-    max-height: 300px;
-    overflow-y: auto;
-    border: none;
-    border-radius: 8px;
-    color: white;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  }
-
-  .suggestion-item {
-    padding: 10px;
-    cursor: pointer;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    transition: background-color 0.3s ease;
-    color: white;
-  }
-
-  .suggestion-item:hover {
-    background-color: rgba(255, 31, 75, 0.1);
-  }
-
-  .suggestion-item .suggestion-city {
-    color: white;
-    display: block;
-  }
-
-  .suggestion-item .suggestion-type {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 0.8rem;
-  }
-
-  .suggestion-item .suggestion-code {
-    color: #4db8ff;
-    font-weight: bold;
-  }
-    </style>
-  </head>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const currentPath = window.location.pathname;
-  
-      // Loop through each nav link
-      document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
-        const linkPath = new URL(link.href).pathname;
-  
-        // Match path and apply 'active' class
-        if (linkPath === currentPath || (linkPath === "/" && currentPath === "/index.html")) {
-          link.classList.add('active');
-          link.style.color = "#ff1f4b"; // optional: override color
-          link.style.textShadow = "0 0 10px #ff1f4baa";
-        } else {
-          link.classList.remove('active');
-        }
-      });
-    });
-  </script>
-
-  <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-      <div class="container">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="/">
-          <img src="/assets/logo.png" alt="Logo" class="logo-img" />
-          One Click Planner
-        </a>
-        
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item">
-              <a class="nav-link" href="/">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/attractions">Attractions</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/restaurants">Restaurants</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/flights">Flights</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link active" href="/hotels">Hotels</a>
-            </li>
-            <!-- Auth buttons -->
-            <li class="nav-item ms-3">
-              <a class="btn btn-outline-light" href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/login?client_id=3anj5rhtknc7i97jq3jgknai71&response_type=code&scope=email+openid+phone&redirect_uri=http%3A%2F%2Flocalhost%3A3000">Login</a>
-            </li>
-            <li class="nav-item ms-2">
-              <a class="btn btn-outline-light" href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/signup?client_id=3anj5rhtknc7i97jq3jgknai71&redirect_uri=http%3A%2F%2Flocalhost%3A3000&response_type=code&scope=email+openid+phone">Sign Up</a>
-            </li>
-          </ul>
-        </div>
+    /* Typewriter effect for title */
+    #typewriter-hotels::after {
+      content: '|';
+      animation: blink 0.8s infinite;
+      margin-left: 2px;
+    }
+    
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" href="/">Travel Planner</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/attractions">Attractions</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/restaurants">Restaurants</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/flights">Flights</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="/hotels">Hotels</a>
+          </li>
+          <!-- Auth buttons - these will be replaced by user info when logged in -->
+          <li class="nav-item ms-3">
+            <a class="btn btn-outline-light" href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/login?client_id=3anj5rhtknc7i97jq3jgknai71&response_type=code&scope=email+openid+phone&redirect_uri=http%3A%2F%2Flocalhost%3A3000">Login</a>
+          </li>
+          <li class="nav-item ms-2">
+            <a class="btn btn-outline-light" href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/signup?client_id=3anj5rhtknc7i97jq3jgknai71&redirect_uri=http%3A%2F%2Flocalhost%3A3000&response_type=code&scope=email+openid+phone">Sign Up</a>
+          </li>
+        </ul>
       </div>
-    </nav>
+    </div>
+  </nav>
 
   <!-- Main Content -->
   <div class="main-content">
     <!-- Page Header -->
     <header class="page-header text-center">
       <div class="container">
-        <h1 class="display-4"><span id="typewriter-hotels"></span></h1>
-        <p class="lead">Find the perfect accommodation for your trip</p>
+        <h1 class="display-4">Find Perfect Accommodations</h1>
+        <p class="lead">Discover amazing hotels and resorts for your next trip</p>
       </div>
     </header>
 
@@ -327,7 +488,7 @@
         </div>
       </div>
 
-      <!-- Modified Search Container - Map Search Only -->
+      <!-- Hotel Search Form -->
       <div class="search-container">
         <form id="map-search-form">
           <div class="row mb-3">
@@ -338,7 +499,7 @@
           <div class="row g-3">
             <div class="col-md-4">
               <label for="map-location" class="form-label">Location</label>
-              <input type="text" class="form-control" id="map-location" placeholder="Enter a location or click on map">
+              <input type="text" class="form-control" id="map-location" placeholder="Search or click on map" readonly>
               <input type="hidden" id="map-latitude">
               <input type="hidden" id="map-longitude">
             </div>
@@ -398,8 +559,6 @@
                 </div>
               </div>
             </div>
-            
-            
             <!-- Apply Filters Button -->
             <button id="apply-filters" class="btn btn-primary w-100">Apply Filters</button>
           </div>
@@ -529,28 +688,11 @@
   <!-- Footer -->
   <footer class="text-center py-4">
     <div class="container">
-      <p class="mb-0">© 2025 One Click Planner. All rights reserved.</p>
+      <p class="mb-0">© 2025 Travel Planner. All rights reserved.</p>
     </div>
   </footer>
-
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-
-    let apiKey = '';
-
-    fetch('/api/config')
-      .then(res => res.json())
-      .then(config => {
-        apiKey = config.apiKey;
-        console.log("✅ API Key Loaded:", apiKey);
-        // Load the Google Maps script with the API key
-        loadGoogleMapsScript(apiKey);
-        // 🔥 Now kick off your app logic
-        loadCurrentPlan();  // or initMap(), or searchAttractions()
-      })
-      .catch(err => {
-        console.error("❌ Failed to load API key:", err);
-      });
     // Global variables
     let hotelResults = [];
     let selectedHotel = null;
@@ -593,9 +735,7 @@
       document.getElementById('hotel-check-in').addEventListener('change', updateCheckoutMin);
       
       // Set up event listeners for search forms
-      document.getElementById('city-search-form').addEventListener('submit', searchHotelsByCity);
       document.getElementById('map-search-form').addEventListener('submit', searchHotelsByMap);
-      document.getElementById('hotel-search-form').addEventListener('submit', searchHotelById);
       
       // Set up event listeners for city input
       document.getElementById('city-input').addEventListener('input', function(e) {
@@ -643,41 +783,6 @@
       loadCurrentPlan();
     });
     
-
-    // Add an event listener for the map location input
-  document.getElementById('map-location').addEventListener('change', function() {
-    const address = this.value;
-    
-    // Use Google Maps Geocoding API to convert address to coordinates
-    const geocoder = new google.maps.Geocoder();
-    geocoder.geocode({ address: address }, function(results, status) {
-      if (status === 'OK' && results[0]) {
-        const location = results[0].geometry.location;
-        
-        // Update hidden fields with coordinates
-        document.getElementById('map-latitude').value = location.lat();
-        document.getElementById('map-longitude').value = location.lng();
-        
-        // Update map and place marker
-        searchMap.setCenter(location);
-        
-        // Create or move the search marker
-        if (searchMarker) {
-          searchMarker.setPosition(location);
-        } else {
-          searchMarker = new google.maps.Marker({
-            position: location,
-            map: searchMap,
-            animation: google.maps.Animation.DROP
-          });
-        }
-      } else {
-        console.error('Geocode was not successful for the following reason: ' + status);
-        alert('Could not find location. Please try a different search term or click directly on the map.');
-      }
-    });
-  });
-
     // Update minimum check-out date based on check-in date
     function updateCheckoutMin(e) {
       const checkInId = e.target.id;
@@ -706,47 +811,66 @@
     }
     
     // Initialize maps
-    function initMaps() {
-      // Initialize search map
-      searchMap = new google.maps.Map(document.getElementById('search-map'), {
-        center: { lat: 40.7128, lng: -74.0060 }, // Default to New York City
-        zoom: 12,
-        mapTypeControl: false,
-        streetViewControl: false
-      });
+  function initMaps() {
+    // Initialize search map with global view
+    searchMap = new google.maps.Map(document.getElementById('search-map'), {
+      center: { lat: 20, lng: 0 }, // Global view centered with slight northern hemisphere bias
+      zoom: 2, // Zoomed out to show most of the world
+      mapTypeControl: false,
+      streetViewControl: false
+    });
+    
+    // Add click event to search map
+    searchMap.addListener('click', function(e) {
+      placeSearchMarker(e.latLng);
+    });
+    
+    // Initialize results map with global view
+    map = new google.maps.Map(document.getElementById('results-map'), {
+      center: { lat: 20, lng: 0 },
+      zoom: 2,
+      mapTypeControl: false,
+      streetViewControl: false
+    });
+    
+    // Initialize hotel detail map
+    hotelMap = new google.maps.Map(document.getElementById('hotel-map'), {
+      center: { lat: 20, lng: 0 },
+      zoom: 14,
+      mapTypeControl: false,
+      streetViewControl: false
+    });
+    
+    // Add city search functionality to the map-location input
+    const locationInput = document.getElementById('map-location');
+    
+    // Make the input editable
+    locationInput.readOnly = false;
+    locationInput.placeholder = 'Search for a city or click on map';
+    
+    // Create the autocomplete object
+    const autocomplete = new google.maps.places.Autocomplete(locationInput, {
+      types: ['(cities)'] // Restrict to cities only
+    });
+    
+    // Add listener for place changed event
+    autocomplete.addListener('place_changed', function() {
+      const place = autocomplete.getPlace();
       
-      // Add click event to search map
-      searchMap.addListener('click', function(e) {
-        placeSearchMarker(e.latLng);
-      });
+      if (!place.geometry || !place.geometry.location) {
+        // User entered the name of a place that was not suggested
+        alert('No details available for: ' + place.name);
+        return;
+      }
       
-      // Initialize results map
-      map = new google.maps.Map(document.getElementById('results-map'), {
-        center: { lat: 40.7128, lng: -74.0060 },
-        zoom: 12,
-        mapTypeControl: false,
-        streetViewControl: false
-      });
+      // Center map on the selected place
+      searchMap.setCenter(place.geometry.location);
+      searchMap.setZoom(12); // Zoom in to city level
       
-      // Initialize hotel detail map
-      hotelMap = new google.maps.Map(document.getElementById('hotel-map'), {
-        center: { lat: 40.7128, lng: -74.0060 },
-        zoom: 14,
-        mapTypeControl: false,
-        streetViewControl: false
-      });
-    }
-
-    function loadGoogleMapsScript(apiKey) {
-      // Create the script element
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap`;
-      script.async = true;
-      script.defer = true;
-      
-      // Add the script to the document
-      document.body.appendChild(script);
-    }
+      // Place marker at location
+      placeSearchMarker(place.geometry.location);
+    });
+  }
     
     // Load current plan
     function loadCurrentPlan() {
@@ -931,91 +1055,6 @@
         });
     }, 300);
     let currentHotelSearchController = null;
-    // Search hotels by city form submission
-    function searchHotelsByCity(e) {
-  e.preventDefault();
-  
-  // Cancel any ongoing search
-  if (currentHotelSearchController) {
-    currentHotelSearchController.abort();
-  }
-  
-  // Create a new AbortController for this request
-  currentHotelSearchController = new AbortController();
-  
-  const cityCode = document.getElementById('city-code').value;
-  const cityName = document.getElementById('city-input').value;
-  const checkInDate = document.getElementById('check-in-date').value;
-  const checkOutDate = document.getElementById('check-out-date').value;
-  const adults = document.getElementById('guests').value;
-  
-  // Validate required fields
-  if (!cityName) {
-    alert('Please select a city from the suggestions');
-    return;
-  }
-  
-  if (!checkInDate || !checkOutDate) {
-    alert('Please select check-in and check-out dates');
-    return;
-  }
-  
-  // Show loading state
-  showLoading();
-  
-  // Build query string
-  let queryString = `cityCode=${encodeURIComponent(cityCode || cityName)}&checkInDate=${checkInDate}&checkOutDate=${checkOutDate}&adults=${adults}`;
-  
-  // Search hotels with cancellation support
-  fetch(`/api/hotels/search/city?${queryString}`, {
-    signal: currentHotelSearchController.signal
-  })
-    .then(response => {
-      // Check if the request was aborted
-      if (response.type === 'opaqueredirect' || response.type === 'error') {
-        throw new Error('Request aborted');
-      }
-      return response.json();
-    })
-    .then(data => {
-      // Clear the current controller
-      currentHotelSearchController = null;
-      
-      // Hide loading state
-      hideLoading();
-      
-      if (data.status === 'OK' && data.results && data.results.length > 0) {
-        hotelResults = data.results;
-        
-        // Display results
-        displayResults(hotelResults);
-        
-        // Show filters container
-        document.getElementById('filters-container').style.display = 'block';
-        
-        // Show/Update results map
-        showResultsOnMap(hotelResults);
-      } else {
-        // Show no hotels message
-        document.getElementById('no-hotels').style.display = 'block';
-        document.getElementById('filters-container').style.display = 'none';
-        document.getElementById('results-map-container').style.display = 'none';
-      }
-    })
-    .catch(error => {
-      // Check if the error is due to abort
-      if (error.name === 'AbortError') {
-        console.log('Hotel search was cancelled');
-        return;
-      }
-      
-      console.error('Error searching hotels:', error);
-      hideLoading();
-      document.getElementById('no-hotels').style.display = 'block';
-      document.getElementById('filters-container').style.display = 'none';
-      document.getElementById('results-map-container').style.display = 'none';
-    });
-}
 
 // Similar modifications for map and hotel name search
 function searchHotelsByMap(e) {
@@ -1104,93 +1143,10 @@ function searchHotelsByMap(e) {
     });
 }
 
-function searchHotelById(e) {
-  e.preventDefault();
-  
-  // Cancel any ongoing search
-  if (currentHotelSearchController) {
-    currentHotelSearchController.abort();
-  }
-  
-  // Create a new AbortController for this request
-  currentHotelSearchController = new AbortController();
-  
-  const hotelId = document.getElementById('hotel-id').value;
-  const hotelName = document.getElementById('hotel-name').value;
-  const checkInDate = document.getElementById('hotel-check-in').value;
-  const checkOutDate = document.getElementById('hotel-check-out').value;
-  const adults = document.getElementById('hotel-guests').value;
-  
-  // Validate required fields
-  if (!hotelId) {
-    alert('Please select a hotel from the suggestions');
-    return;
-  }
-  
-  if (!checkInDate || !checkOutDate) {
-    alert('Please select check-in and check-out dates');
-    return;
-  }
-  
-  // Show loading state
-  showLoading();
-  
-  // Build query string
-  let queryString = `hotelIds=${hotelId}&checkInDate=${checkInDate}&checkOutDate=${checkOutDate}&adults=${adults}`;
-  
-  // Search hotel offers with cancellation support
-  fetch(`/api/hotels/offers?${queryString}`, {
-    signal: currentHotelSearchController.signal
-  })
-    .then(response => {
-      // Check if the request was aborted
-      if (response.type === 'opaqueredirect' || response.type === 'error') {
-        throw new Error('Request aborted');
-      }
-      return response.json();
-    })
-    .then(data => {
-      // Clear the current controller
-      currentHotelSearchController = null;
-      
-      // Hide loading state
-      hideLoading();
-      
-      if (data.status === 'OK' && data.results && data.results.length > 0) {
-        hotelResults = data.results;
-        
-        // Display results
-        displayResults(hotelResults);
-        
-        // Show/Update results map
-        showResultsOnMap(hotelResults);
-      } else {
-        // Show no hotels message
-        document.getElementById('no-hotels').style.display = 'block';
-        document.getElementById('filters-container').style.display = 'none';
-        document.getElementById('results-map-container').style.display = 'none';
-      }
-    })
-    .catch(error => {
-      // Check if the error is due to abort
-      if (error.name === 'AbortError') {
-        console.log('Hotel search was cancelled');
-        return;
-      }
-      
-      console.error('Error searching hotels:', error);
-      hideLoading();
-      document.getElementById('no-hotels').style.display = 'block';
-      document.getElementById('filters-container').style.display = 'none';
-      document.getElementById('results-map-container').style.display = 'none';
-    });
-}
 
 // Update event listeners for forms
 document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('city-search-form').addEventListener('submit', searchHotelsByCity);
   document.getElementById('map-search-form').addEventListener('submit', searchHotelsByMap);
-  document.getElementById('hotel-search-form').addEventListener('submit', searchHotelById);
 });
     
     // Search hotels by map location
@@ -1966,23 +1922,14 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('result-count').style.display = 'none';
       document.getElementById('no-hotels').style.display = 'none';
     }
-    // Typewriter effect for page title
-    const typewriterText = "Find Your Hotel";
-    let i = 0;
-    function typeWriterEffect() {
-      if (i < typewriterText.length) {
-        document.getElementById("typewriter-hotels").innerHTML += typewriterText.charAt(i);
-        i++;
-        setTimeout(typeWriterEffect, 100);
-      }
-    }
-    window.addEventListener("DOMContentLoaded", typeWriterEffect);
+    
     // Hide loading spinner
     function hideLoading() {
       document.getElementById('loading-spinner').style.display = 'none';
     }
   </script>
-
+  
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBsFi3PIO1-KVTqlzsJdJ2Qs7-xN5GyiPc&libraries=places&callback=initMaps" async defer></script>
   <script src="/js/auth.js"></script>
 </body>
 </html>
