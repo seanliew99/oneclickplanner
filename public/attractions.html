@@ -526,8 +526,8 @@ fetch('/api/config')
     console.log("✅ API Key Loaded:", apiKey);
     // Load the Google Maps script with the API key
     loadGoogleMapsScript(apiKey);
-    // 🔥 Now kick off your app logic
-    loadCurrentPlan();  // or initMap(), or searchAttractions()
+
+    loadCurrentPlan();  
   })
   .catch(err => {
     console.error("❌ Failed to load API key:", err);
