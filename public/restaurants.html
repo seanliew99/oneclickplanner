@@ -328,7 +328,7 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
 
 
 
-img[src="/assets/logo.png"] {
+img[src="/logo.png"] {
   background-color: black;
   padding: 8px;
   border-radius: 12px;
@@ -363,7 +363,7 @@ img[src="/assets/logo.png"] {
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center gap-2" href="/">
-        <img src="/assets/logo.png" alt="Logo" class="logo-img" />
+        <img src="/logo.png" alt="Logo" class="logo-img" />
         One Click Planner
       </a>
       
@@ -1885,7 +1885,7 @@ fetch('/api/config')
       const photoName = place.photos[0].name;
       photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${apiKey}&maxWidthPx=600`;
     } else {
-      photoUrl = '/assets/logo.png';
+      photoUrl = '/logo.png';
     }
 
     const col = document.createElement('div');
@@ -1931,7 +1931,7 @@ fetch('/api/config')
       console.warn('Attempted image URL:', image.src);
 
       // Fallback to default image
-      image.src = '/assets/logo.png';
+      image.src = '/logo.png';
       image.onload = () => {
         image.style.display = 'block';
         setTimeout(() => col.style.opacity = 1, 10);
