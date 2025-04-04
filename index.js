@@ -799,6 +799,6 @@ app.get('/hotels', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, '0,0,0,0', () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Travel Planner running on http://localhost:${PORT}`);
 });
