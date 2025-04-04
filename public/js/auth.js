@@ -25,6 +25,7 @@ function addDropdownStyles() {
       /* User dropdown styling */
       .user-dropdown {
         position: relative;
+        z-index: 3000;
         display: inline-block;
       }
 
@@ -70,6 +71,7 @@ function addDropdownStyles() {
 
       .user-dropdown-menu {
         position: absolute;
+
         top: 100%;
         right: 0;
         margin-top: 8px;
@@ -80,7 +82,7 @@ function addDropdownStyles() {
         box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), 0 0 15px rgba(77, 184, 255, 0.2);
         min-width: 180px;
         overflow: hidden;
-        z-index: 1000;
+        z-index: 9999;
         
         /* Animation states */
         opacity: 0;
