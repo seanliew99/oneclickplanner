@@ -20,18 +20,28 @@
       --shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
     
-    body {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: linear-gradient(to bottom,rgba(0, 5, 36, 0.5), rgb(81, 70, 129)), url('assets/itinerary.jpg');
-  background-attachment: fixed;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  backdrop-filter: blur(4px);
+body {
+ min-height: 100vh;
+ display: flex;
+ flex-direction: column;
+ position: relative;
 }
 
+body::before {
+ content: "";
+ position: fixed;
+ top: 0;
+ left: 0;
+ width: 100%;
+ height: 100%;
+ z-index: -1;
+ background: linear-gradient(to bottom,rgba(0, 5, 36, 0.5), rgb(81, 70, 129)), url('assets/itinerary.jpg');
+ background-attachment: fixed;
+ background-size: cover;
+ background-position: center;
+ background-repeat: no-repeat;
+ filter: blur(4px);
+}
     
     .main-content {
       flex: 1;

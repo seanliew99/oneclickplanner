@@ -12,14 +12,26 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  position: relative; /* This is important for positioning the pseudo-element */
+}
+
+/* Create a pseudo-element for the background */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1; /* Place it behind all content */
   background: linear-gradient(to bottom,rgba(0, 5, 36, 0.5), rgba(40, 82, 42, 0.74)), url('assets/attraction.jpg');
   background-attachment: fixed;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  backdrop-filter: blur(4px);
+  filter: blur(4px); /* Use filter instead of backdrop-filter */
 }
-    
+
     .main-content {
       flex: 1;
     }
