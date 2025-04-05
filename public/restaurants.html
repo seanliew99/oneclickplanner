@@ -71,7 +71,7 @@ body {
 .navbar-brand {
   font-size: 2rem;
   font-weight: 700;
-  color: #4db8ff !important; /* nice glowing blue */
+  color: #4db8ff !important;
   text-shadow: 0 0 10px #4db8ff88;
 }
 
@@ -82,7 +82,6 @@ body {
 }
 
 
-/* Active tab (Day 1, etc.) */
 .nav-tabs .nav-link.active,
 .nav-tabs .nav-link:focus,
 .nav-tabs .nav-link.show {
@@ -93,7 +92,6 @@ body {
   font-weight: bold;
 }
 
-/* Inactive tabs — clean and minimal */
 .nav-tabs .nav-link {
   background-color: transparent;
   color: white;
@@ -102,7 +100,6 @@ body {
   font-weight: 500;
 }
 
-/* Optional: On hover, a soft black background */
 .nav-tabs .nav-link:hover {
   background-color: rgba(0, 0, 0, 0.3);
   color: #ff1f4b;
@@ -122,7 +119,7 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
     }
     
     .search-container {
-  background-color: rgba(255, 255, 255, 0.05); /* translucent dark */
+  background-color: rgba(255, 255, 255, 0.05);
   color: white;
   backdrop-filter: blur(12px);
   border: none;
@@ -156,7 +153,7 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
     }
     
     .restaurant-card {
-  background: rgba(255, 255, 255, 0.05); /* dark glassy look */
+  background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   border: none;
   border-radius: 12px;
@@ -211,7 +208,6 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
       margin-bottom: 20px;
     }
     
-    /* Loading spinner */
     .spinner-container {
       display: flex;
       justify-content: center;
@@ -229,7 +225,7 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
     }
 
     .tab-pane .card {
-  background: rgba(255, 255, 255, 0.05); /* translucent dark glass */
+  background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   border: none;
   color: white;
@@ -237,20 +233,20 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
 }
 
 .list-group-item {
-  background-color: rgba(0, 0, 0, 0.4); /* dark transparent background */
+  background-color: rgba(0, 0, 0, 0.4);
   color: white;
   border: none;
   transition: background-color 0.3s ease;
 }
 
 .list-group-item:hover {
-  background-color: rgba(255, 31, 75, 0.08); /* subtle red glow on hover */
+  background-color: rgba(255, 31, 75, 0.08);
 }
 
 .result-count {
   font-weight: 600;
   color: white;
-  background-color: rgba(0, 0, 0, 0.3); /* subtle dark background */
+  background-color: rgba(0, 0, 0, 0.3);
   padding: 10px 16px;
   border-radius: 8px;
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
@@ -346,21 +342,22 @@ img[src="/Logo.png"] {
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-  const currentPath = window.location.pathname.replace(/\/$/, ""); // remove trailing slash
+    const currentPath = window.location.pathname;
 
-  document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
-    const linkPath = new URL(link.href).pathname.replace(/\/$/, "");
+    // Loop through each nav link
+    document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
+      const linkPath = new URL(link.href).pathname;
 
-    if (linkPath === currentPath) {
-      link.classList.add('active');
-      link.style.color = "#ff1f4b";
-      link.style.textShadow = "0 0 10px #ff1f4baa";
-    } else {
-      link.classList.remove('active');
-    }
+      // Match path and apply 'active' class
+      if (linkPath === currentPath || (linkPath === "/" && currentPath === "/index.html")) {
+        link.classList.add('active');
+        link.style.color = "#ff1f4b"; 
+        link.style.textShadow = "0 0 10px #ff1f4baa";
+      } else {
+        link.classList.remove('active');
+      }
+    });
   });
-});
-
 </script>
 
 <body>
@@ -371,7 +368,6 @@ img[src="/Logo.png"] {
         <img src="/Logo.png" alt="Logo" class="logo-img" />
         One Click Planner
       </a>
-      
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -381,10 +377,10 @@ img[src="/Logo.png"] {
             <a class="nav-link" href="/">Home</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link active" href="/attractions">Attractions</a>
+            <a class="nav-link" href="/attractions">Attractions</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/restaurants">Restaurants</a>
+            <a class="nav-link active" href="/restaurants">Restaurants</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/flights">Flights</a>
@@ -410,17 +406,16 @@ img[src="/Logo.png"] {
     <header class="page-header text-center">
       <div class="container">
         <h1 class="display-4"><span id="typewriter-restaurants"></span></h1>
-
-        <p class="lead">Find the best places to visit at your destination</p>
+        <p class="lead">Find the best places to eat at your destination</p>
       </div>
     </header>
 
-    <div class="container">
+    <div class="container-fluid">
       <!-- No Plan Alert -->
       <div id="no-plan-alert" class="alert alert-warning no-plan-alert" role="alert" style="display: none;">
         <h4 class="alert-heading">No destination selected!</h4>
         <p>It looks like you haven't set a destination for your trip yet.</p>
-        <hr>
+        <hr />
         <p class="mb-0">
           <a href="/" class="btn btn-warning">Create a Trip Plan</a>
         </p>
@@ -429,54 +424,70 @@ img[src="/Logo.png"] {
       <!-- Current Plan Info -->
       <div id="current-plan-info" class="mb-4" style="display: none;">
         <h2>Finding Restaurants in <span id="destination-display"></span></h2>
-        <p id="date-display" class="text-muted"></p>
-      </div>
-      <!-- Dynamic Day Tabs Section -->
-      <section class="mt-4" id="itinerary-section" style="display: none;">
-        <h4 class="mb-3">Recommended Restaurants For Each Day</h4>
-        <ul class="nav nav-tabs" id="dayTabs" role="tablist"></ul>
-        <div class="tab-content pt-3" id="dayTabsContent"></div>
-      </section>
-
-      <!-- Search Container -->
-      <div class="search-container mb-4">
-        <form id="search-form" class="row g-3 align-items-end">
-          <div class="col-md-8">
-            <label for="keyword" class="form-label">Search Restaurants</label>
-            <input type="text" class="form-control form-control-lg" id="keyword" placeholder="Museum, park, landmark, etc.">
-          </div>
-          <div class="col-md-4">
-            <button type="submit" class="btn btn-primary btn-lg w-100">Search</button>
-          </div>
-        </form>
-        <!-- Weather-based filter toggle -->
-        <div class="form-check mt-3">
-          <input class="form-check-input" type="checkbox" id="indoor-toggle">
-          <label class="form-check-label" for="indoor-toggle">
-            Show indoor restaurants ☔
-          </label>
-        </div>
+        <p id="date-display" style="color: #00d4ff; font-weight: 500;"></p>
       </div>
 
-      <!-- Map and Results Container -->
+      <!-- Three columns -->
       <div class="row">
-        <!-- Map Column -->
-        <div class="text-center mb-4">
-          <div id="map" style="max-width: 800px; margin: 0 auto;"></div>
-        </div>
-        
-        <div class="text-center">
-          <div id="result-count" class="result-count"></div>
-        </div>
-        
-        <div id="spinner" class="spinner-container" style="display: none;">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
+        <!-- Left Column: For Found Restaurants -->
+        <div class="col-md-4">
+          <div class="text-center">
+            <div id="result-count" class="result-count"></div>
           </div>
+          <div id="spinner" class="spinner-container" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+          <div id="results-container" class="row g-4 justify-content-center"></div>
         </div>
-        
-        <div id="results-container" class="row g-4 justify-content-center"></div>
-        
+
+        <!-- Middle Column: Search Bar & Map -->
+        <div class="col-md-4" style="position: sticky; top: 90px; height: fit-content;">
+          <!-- Search Container -->
+          <div class="search-container mb-3">
+            <form id="search-form" class="row g-3 align-items-end">
+              <div class="col-md-8">
+                <label for="keyword" class="form-label">Search Restaurants</label>
+                <input type="text" class="form-control form-control-lg" id="keyword" placeholder="Italian, sushi, cafe, etc." />
+              </div>
+              <div class="col-md-4">
+                <button type="submit" class="btn btn-primary btn-lg w-100">Search</button>
+              </div>
+            </form>
+            <!-- Weather-based filter toggle -->
+            <div class="form-check mt-3">
+              <input class="form-check-input" type="checkbox" id="indoor-toggle" />
+              <label class="form-check-label" for="indoor-toggle">Show indoor restaurants ☔</label>
+            </div>
+          </div>
+          <!-- MAP (fills the column width) -->
+          <div id="map" style="border-radius: 12px; width: 100%; height: 400px;"></div>
+        </div>
+
+        <!-- Right Column: Recommended Itinerary -->
+        <div class="col-md-4" style="position: sticky; top: 90px; height: fit-content;">
+          <section class="mt-4" id="itinerary-section" style="display: none;">
+            <h4 class="mb-3">
+              <div class="d-flex justify-content-between align-items-center w-100">
+                <span>Recommended Restaurants For Each Day</span>
+                <button id="add-all-recommendations" class="btn btn-success btn-sm">
+                  <i class="bi bi-plus-circle me-1"></i>Add All to Itinerary
+                </button>
+              </div>
+            </h4>
+            <!-- Day Tabs -->
+            <ul class="nav nav-tabs" id="dayTabs" role="tablist"></ul>
+            <!-- Tab Content -->
+            <div class="tab-content pt-3" id="dayTabsContent">
+              <!-- "Purple box" container if needed -->
+              <div id="recommended-places-container" style="width: 95%; margin: 0 auto;">
+                <!-- Recommended places go here or inside each .tab-pane -->
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -489,7 +500,7 @@ img[src="/Logo.png"] {
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body" id="modal-body">
-          <!-- Content will be dynamically inserted here -->
+          <!-- Dynamically inserted content -->
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
