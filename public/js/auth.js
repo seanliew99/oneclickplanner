@@ -456,7 +456,7 @@ function logout() {
   // Call server-side logout endpoint
   fetch('/api/auth/logout')
     .then(response => {
-      clearAuthState(false); // Don't redirect, we'll handle it
+      clearAuthState(false); // Don't redirect
       
       // Create a logout notification
       createLogoutNotification();
