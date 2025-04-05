@@ -24,7 +24,12 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(to bottom right, #0a0f1f, #1a2b55); /* dark navy to rich blue */
+  background: linear-gradient(to bottom,rgba(0, 5, 36, 0.5), rgb(81, 70, 129)), url('assets/itinerary.jpg');
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  backdrop-filter: blur(4px);
 }
 
     
@@ -124,9 +129,9 @@
     
     /* Trip Info Card */
     .trip-info-card {
-      background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  color: white;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+      color: white;
       border-radius: 10px;
       box-shadow: var(--shadow);
       padding: 25px;
@@ -152,7 +157,7 @@
     }
     
     .stat-item {
-      background: rgba(0, 0, 0, 0.3);
+      background: rgba(0, 0, 0, 0.5);
       color: white;
       padding: 15px;
       border-radius: 8px;
@@ -223,7 +228,7 @@
     }
     
     .section-card {
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(10px);
   color: white;
       border-radius: 10px;
