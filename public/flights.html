@@ -225,6 +225,91 @@
         max-height: 70vh;
         overflow-y: auto;
       }
+
+      /* Toast notification styles */
+      .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .toast {
+        min-width: 300px;
+        background-color: rgba(15, 15, 20, 0.8);
+        backdrop-filter: blur(10px);
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        border-left: 4px solid;
+        transform: translateX(110%);
+        opacity: 0;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .toast.show {
+        transform: translateX(0);
+        opacity: 1;
+      }
+
+      .toast-success {
+        border-left-color: #4db8ff;
+      }
+
+      .toast-warning {
+        border-left-color: #ffcc00;
+      }
+
+      .toast-error {
+        border-left-color: #ff1f4b;
+      }
+
+      .toast-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .toast-icon {
+        font-size: 1.5rem;
+      }
+
+      .toast-success .toast-icon {
+        color: #4db8ff;
+      }
+
+      .toast-warning .toast-icon {
+        color: #ffcc00;
+      }
+
+      .toast-error .toast-icon {
+        color: #ff1f4b;
+      }
+
+      .toast-message {
+        font-weight: 500;
+      }
+
+      .toast-close {
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+        cursor: pointer;
+        font-size: 1.1rem;
+        padding: 0;
+        transition: color 0.2s;
+      }
+
+      .toast-close:hover {
+        color: white;
+      }
       
       footer {
         background-color: #111;
@@ -507,8 +592,154 @@
       });
       
       // Save flight button
-      document.getElementById('save-flight-btn').addEventListener('click', saveFlight);
+      //document.getElementById('save-flight-btn').addEventListener('click', saveFlight);
     });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const saveFlightBtn = document.getElementById('save-flight-btn');
+      
+      if (saveFlightBtn) {
+        // Remove any existing event listeners
+        const newBtn = saveFlightBtn.cloneNode(true);
+        saveFlightBtn.parentNode.replaceChild(newBtn, saveFlightBtn);
+        
+        // Add new click handler
+        newBtn.addEventListener('click', function() {
+          if (!selectedFlight) {
+            console.error('No flight selected');
+            return;
+          }
+          
+          console.log('Saving flight:', selectedFlight);
+          
+          // Show loading state
+          this.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Saving...';
+          this.disabled = true;
+          
+          const flight = selectedFlight.flight;
+          const itinerary = flight.itineraries[selectedFlight.itineraryIndex];
+          const segments = itinerary.segments;
+          
+          // Create flight data for saving
+          const flightData = {
+            id: flight.id,
+            price: flight.price,
+            departureAirport: segments[0].departure.iataCode,
+            arrivalAirport: segments[segments.length - 1].arrival.iataCode,
+            departureTime: segments[0].departure.at,
+            arrivalTime: segments[segments.length - 1].arrival.at,
+            airline: segments.map(s => s.carrierCode).join(' / '),
+            flightNumber: segments.map(s => s.number).join(','),
+            duration: itinerary.duration,
+            stops: segments.length - 1,
+            class: flight.travelerPricings[0].fareDetailsBySegment[0].cabin,
+            addedAt: new Date().toISOString()
+          };
+          
+          console.log('Sending flight data:', flightData);
+          
+          // Save to itinerary - use the correct endpoint path
+          fetch('/api/plan/flights', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              flight: flightData,
+              notes: ''
+            }),
+          })
+          .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+          })
+          .then(data => {
+            console.log('Response data:', data);
+            
+            // Reset button
+            this.innerHTML = '<i class="bi bi-bookmark-plus me-1"></i>Save Flight';
+            this.disabled = false;
+            
+            if (data.success) {
+              // Show success toast instead of alert
+              showToast('Flight successfully added to your itinerary!', 'success');
+              
+              // Close modal
+              const flightModal = bootstrap.Modal.getInstance(document.getElementById('flightModal'));
+              flightModal.hide();
+            } else if (data.duplicate) {
+              showToast('This flight is already in your itinerary', 'warning');
+            } else if (data.error) {
+              showToast('Error: ' + data.error, 'error');
+            } else {
+              showToast('Unknown error occurred', 'error');
+            }
+          })
+          .catch(error => {
+            console.error('Error saving flight:', error);
+            
+            // Reset button
+            this.innerHTML = '<i class="bi bi-bookmark-plus me-1"></i>Save Flight';
+            this.disabled = false;
+            
+            showToast('Error saving flight to itinerary. Please try again.', 'error');
+          });
+        });
+      }
+    });
+
+    function showToast(message, type = 'success', duration = 3000) {
+      // Create toast container if it doesn't exist
+      let toastContainer = document.querySelector('.toast-container');
+      if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container';
+        document.body.appendChild(toastContainer);
+      }
+      
+      // Create toast element
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      
+      // Add content to toast
+      toast.innerHTML = `
+        <div class="toast-content">
+          <div class="toast-icon">
+            <i class="bi ${type === 'success' ? 'bi-check-circle' : type === 'warning' ? 'bi-exclamation-triangle' : 'bi-info-circle'}"></i>
+          </div>
+          <div class="toast-message">${message}</div>
+        </div>
+        <button class="toast-close">
+          <i class="bi bi-x"></i>
+        </button>
+      `;
+      
+      // Add to container
+      toastContainer.appendChild(toast);
+      
+      // Show with animation
+      setTimeout(() => {
+        toast.classList.add('show');
+      }, 10);
+      
+      // Add close button functionality
+      toast.querySelector('.toast-close').addEventListener('click', () => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+          toast.remove();
+        }, 300);
+      });
+      
+      // Auto-dismiss after duration
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+          if (toast.parentNode) {
+            toast.remove();
+          }
+        }, 300);
+      }, duration);
+    }
     
     // Debounce function for airport search
     function debounce(func, wait) {

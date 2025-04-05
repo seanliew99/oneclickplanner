@@ -1034,6 +1034,46 @@
   backdrop-filter: blur(10px);
 }
 
+.item-card .item-title {
+  color: white !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.item-card .item-address,
+.item-card .item-notes, 
+.item-card .flight-details,
+.item-card .flight-info {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Improve contrast for item cards */
+#restaurants-container .item-card,
+#hotels-container .item-card,
+#flights-container .item-card {
+  background: rgba(30, 39, 64, 0.85) !important;
+  border: 1px solid rgba(77, 184, 255, 0.2);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Enhance visibility of flight details */
+.flight-details strong,
+.flight-info strong {
+  color: #4db8ff !important;
+  font-weight: 700;
+}
+
+.text-muted {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Better contrast for small text */
+.item-card small,
+.small,
+.text-muted small {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50%      { opacity: 0; }
@@ -1811,28 +1851,105 @@
         return;
       }
       
-      if (confirm('Are you sure you want to remove this from your itinerary?')) {
+      // Create the modal backdrop with blur effect
+      const modalBackdrop = document.createElement('div');
+      modalBackdrop.className = 'modal-backdrop';
+      
+      // Format the category name for display
+      const categoryDisplay = category.charAt(0).toUpperCase() + category.slice(1);
+      
+      // Create modal with glowing effects matching your site theme
+      const modalContent = document.createElement('div');
+      modalContent.className = 'custom-modal';
+      modalContent.innerHTML = `
+        <div class="modal-icon">
+          <i class="bi bi-trash-fill" style="color: #ff427f; text-shadow: 0 0 10px rgba(255, 66, 127, 0.5);"></i>
+        </div>
+        <h3 class="modal-title">Remove ${categoryDisplay}?</h3>
+        <p class="modal-message">Are you sure you want to remove this ${category} from your itinerary?</p>
+        <div class="modal-buttons">
+          <button class="modal-btn btn-cancel" id="deleteCancel">
+            <i class="bi bi-x-circle me-1"></i>Cancel
+          </button>
+          <button class="modal-btn btn-danger" id="deleteConfirm">
+            <i class="bi bi-trash me-1"></i>Remove
+          </button>
+        </div>
+      `;
+      
+      // Add the modal to the page
+      modalBackdrop.appendChild(modalContent);
+      document.body.appendChild(modalBackdrop);
+      
+      // Handle cancel button click
+      document.getElementById('deleteCancel').addEventListener('click', function() {
+        closeDeleteModal(modalBackdrop);
+      });
+      
+      // Handle confirm button click
+      document.getElementById('deleteConfirm').addEventListener('click', function() {
+        // First close the modal with animation
+        closeDeleteModal(modalBackdrop);
+        
+        // Then process the deletion
         console.log(`Deleting ${category} with ID: ${id}`);
         
+        // Send the DELETE request to your API
         fetch(`/api/plan/${category}s/${id}`, {
           method: 'DELETE'
         })
         .then(response => response.json())
         .then(data => {
           if (data.success) {
-            console.log(`${category} deleted successfully`);
-            // Reload the current plan
+            // Show success toast notification
+            showToast('success', `${categoryDisplay} removed successfully`);
+            // Reload the current plan to update the UI
             loadCurrentPlan();
           } else {
             console.error(`Error deleting ${category}:`, data);
-            alert(`Error removing ${category} from itinerary.`);
+            showToast('error', `Error removing ${category} from itinerary.`);
           }
         })
         .catch(error => {
           console.error(`Error deleting ${category}:`, error);
-          alert(`Error removing ${category} from itinerary. Please try again.`);
+          showToast('error', `Error removing ${category} from itinerary. Please try again.`);
         });
-      }
+      });
+      
+      // Close modal when clicking outside
+      modalBackdrop.addEventListener('click', function(e) {
+        if (e.target === modalBackdrop) {
+          closeDeleteModal(modalBackdrop);
+        }
+      });
+      
+      // Add keyboard navigation support
+      const keyHandler = function(e) {
+        if (e.key === 'Escape') {
+          closeDeleteModal(modalBackdrop);
+          document.removeEventListener('keydown', keyHandler);
+        } else if (e.key === 'Enter') {
+          document.getElementById('deleteConfirm').click();
+          document.removeEventListener('keydown', keyHandler);
+        }
+      };
+      document.addEventListener('keydown', keyHandler);
+    }
+
+    // Helper function to close the delete modal with animation
+    function closeDeleteModal(modalBackdrop) {
+      const modalContent = modalBackdrop.querySelector('.custom-modal');
+      
+      // Animate the modal out
+      modalContent.style.transform = 'translateY(20px)';
+      modalContent.style.opacity = '0';
+      
+      // Remove from DOM after animation completes
+      setTimeout(() => {
+        if (modalBackdrop.parentNode) {
+          modalBackdrop.parentNode.removeChild(modalBackdrop);
+        }
+      }, 300);
     }
     
     // Print itinerary

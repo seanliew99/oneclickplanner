@@ -90,6 +90,31 @@ const ItineraryModel = {
     }
   },
 
+  async addPlaceToItinerary(userId, itineraryId, place, category) {
+    try {
+      const docRef = doc(db, COLLECTION_NAME, itineraryId);
+      const docSnap = await getDoc(docRef);
+      
+      if (!docSnap.exists()) {
+        throw new Error('Itinerary not found');
+      }
+      
+      // Get the category array (attractions, restaurants, hotels, flights)
+      const categoryField = `${category}s`; // e.g., "attractions", "flights"
+      
+      // Update just the specific array with the new place
+      const updateData = {};
+      updateData[categoryField] = arrayUnion(place);
+      updateData.updatedAt = new Date().toISOString();
+      
+      await updateDoc(docRef, updateData);
+      return { success: true };
+    } catch (error) {
+      console.error(`Error adding ${category} to itinerary:`, error);
+      throw error;
+    }
+  },
+
   // Remove place from itinerary
   async removePlaceFromItinerary(userId, itineraryId, placeId, category) {
     try {

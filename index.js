@@ -246,46 +246,34 @@ app.post('/api/plan/hotels', async (req, res) => {
 
 // Add flight to itinerary
 app.post('/api/plan/flights', async (req, res) => {
-  const { 
-    id,
-    flightNumber, 
-    airline, 
-    departureTime, 
-    arrivalTime, 
-    departureAirport, 
-    arrivalAirport, 
-    price,
-    duration,
-    stops,
-    notes,
-    class: travelClass
-  } = req.body;
+  const { flight, notes } = req.body;
   
   if (!req.session.plan) {
     return res.status(400).json({ error: 'No active travel plan' });
   }
   
-  if (!airline || !departureAirport || !arrivalAirport) {
-    return res.status(400).json({ error: 'Missing required fields' });
+  if (!flight || !flight.airline || !flight.departureAirport || !flight.arrivalAirport) {
+    return res.status(400).json({ error: 'Missing required flight details' });
   }
   
-  // Generate a unique ID if none is provided
-  const flightId = id || `flight-${Date.now()}`;
+  // Generate a unique ID if none provided
+  const flightId = flight.id || `flight-${Date.now()}`;
   
-  const flight = {
+  // Create standardized flight object
+  const flightData = {
     id: flightId,
-    name: `${airline} ${flightNumber || ''}`.trim(), // Create a name field for consistency
-    airline,
-    flightNumber,
-    departureTime,
-    arrivalTime,
-    departureAirport,
-    arrivalAirport,
-    price,
-    duration,
-    stops,
+    name: `${flight.airline} ${flight.flightNumber || ''}`.trim(), // Create a name field for consistency
+    airline: flight.airline,
+    flightNumber: flight.flightNumber,
+    departureTime: flight.departureTime,
+    arrivalTime: flight.arrivalTime,
+    departureAirport: flight.departureAirport,
+    arrivalAirport: flight.arrivalAirport,
+    price: flight.price,
+    duration: flight.duration,
+    stops: flight.stops || 0,
     notes: notes || '',
-    class: travelClass,
+    class: flight.class,
     addedAt: new Date().toISOString()
   };
   
@@ -293,7 +281,13 @@ app.post('/api/plan/flights', async (req, res) => {
   req.session.plan.flights = req.session.plan.flights || [];
   
   // Check for duplicates
-  const isDuplicate = req.session.plan.flights.some(item => item.id === flightId);
+  const isDuplicate = req.session.plan.flights.some(item => 
+    // Consider flights with same flight number on same day as duplicates
+    (item.id === flightId) || 
+    (item.airline === flight.airline && 
+     item.flightNumber === flight.flightNumber &&
+     new Date(item.departureTime).toDateString() === new Date(flight.departureTime).toDateString())
+  );
   
   if (isDuplicate) {
     return res.json({ 
@@ -304,7 +298,7 @@ app.post('/api/plan/flights', async (req, res) => {
   }
   
   // Add to session
-  req.session.plan.flights.push(flight);
+  req.session.plan.flights.push(flightData);
   
   // If user is authenticated, also save to database
   if (req.session.user && req.session.user.sub && req.session.plan.itineraryId) {
@@ -312,41 +306,18 @@ app.post('/api/plan/flights', async (req, res) => {
       const userId = req.session.user.sub;
       const itineraryId = req.session.plan.itineraryId;
       
-      await ItineraryModel.addPlaceToItinerary(userId, itineraryId, flight, 'flight');
+      await ItineraryModel.addPlaceToItinerary(userId, itineraryId, flightData, 'flight');
     } catch (error) {
       console.error('Error adding flight to database:', error);
       // Continue even if DB save fails - at least it's in the session
     }
   }
   
-  res.json({ success: true, plan: req.session.plan });
-});
-
-// Delete hotel from itinerary
-app.delete('/api/plan/hotels/:id', async (req, res) => {
-  const { id } = req.params;
-  
-  if (!req.session.plan) {
-    return res.status(400).json({ error: 'No active travel plan' });
-  }
-  
-  // Remove from session
-  req.session.plan.hotels = (req.session.plan.hotels || []).filter(hotel => hotel.id !== id);
-  
-  // If user is authenticated, also remove from database
-  if (req.session.user && req.session.user.sub && req.session.plan.itineraryId) {
-    try {
-      const userId = req.session.user.sub;
-      const itineraryId = req.session.plan.itineraryId;
-      
-      await ItineraryModel.removePlaceFromItinerary(userId, itineraryId, id, 'hotel');
-    } catch (error) {
-      console.error('Error removing hotel from database:', error);
-      // Continue even if DB operation fails - at least it's removed from the session
-    }
-  }
-  
-  res.json({ success: true, plan: req.session.plan });
+  res.json({ 
+    success: true, 
+    flight: flightData,
+    plan: req.session.plan 
+  });
 });
 
 // Delete flight from itinerary
@@ -710,20 +681,32 @@ app.post('/api/plan/places', async (req, res) => {
   res.json({ success: true, plan: req.session.plan });
 });
 
-app.delete('/api/plan/places/:id', async (req, res) => {
-  const { id } = req.params;
-  const { category } = req.query;
+app.delete('/api/plan/:category/:id', async (req, res) => {
+  const { category, id } = req.params;
   
   if (!req.session.plan) {
     return res.status(400).json({ error: 'No active travel plan' });
   }
   
-  // Remove from session
-  if (category === 'attraction') {
-    req.session.plan.attractions = (req.session.plan.attractions || []).filter(place => place.id !== id);
-  } else if (category === 'restaurant') {
-    req.session.plan.restaurants = (req.session.plan.restaurants || []).filter(place => place.id !== id);
+  console.log(`Deleting ${category} with id ${id}`);
+  
+  // Normalize category (remove trailing 's' if present)
+  const normalizedCategory = category.endsWith('s') ? 
+    category.slice(0, -1) : category;
+  
+  // Get the array name (attractions, restaurants, hotels, flights)
+  const arrayName = `${normalizedCategory}s`;
+  
+  // Check if this category exists in the plan
+  if (!req.session.plan[arrayName]) {
+    return res.status(400).json({ 
+      error: `Invalid category: ${category}`,
+      success: false 
+    });
   }
+  
+  // Remove from session
+  req.session.plan[arrayName] = req.session.plan[arrayName].filter(item => item.id !== id);
   
   // If user is authenticated, also remove from DynamoDB
   if (req.session.user && req.session.user.sub && req.session.plan.itineraryId) {
@@ -731,16 +714,15 @@ app.delete('/api/plan/places/:id', async (req, res) => {
       const userId = req.session.user.sub;
       const itineraryId = req.session.plan.itineraryId;
       
-      await ItineraryModel.removePlaceFromItinerary(userId, itineraryId, id, category);
+      await ItineraryModel.removePlaceFromItinerary(userId, itineraryId, id, normalizedCategory);
     } catch (error) {
-      console.error(`Error removing ${category} from DynamoDB:`, error);
+      console.error(`Error removing ${normalizedCategory} from database:`, error);
       // Continue even if DB operation fails - at least it's removed from the session
     }
   }
   
   res.json({ success: true, plan: req.session.plan });
 });
-
 // Route to completely clear a travel plan
 app.delete('/api/plan', async (req, res) => {
   console.log('Clearing plan from session');
