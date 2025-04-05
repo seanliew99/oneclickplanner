@@ -1,655 +1,266 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hotels - Travel Planner</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
-  <style>
-    /* Insert the entire CSS code here */
-    body {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      background: linear-gradient(to bottom right, #0a0f1f, #1a2b55); /* dark navy to rich blue */
-      color: white;
-    }
-    
-    .main-content {
-      flex: 1;
-    }
-    
-    .navbar {
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      background-color: rgba(15, 15, 20, 0.6) !important;
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-      transition: background-color 0.4s ease;
-    }
-    
-    .navbar-brand {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #4db8ff !important; /* nice glowing blue */
-      text-shadow: 0 0 10px #4db8ff88;
-    }
-    
-    .logo-img {
-      width: 80px;
-      height: auto;
-      border-radius: 12px;
-      object-fit: contain;
-      background-color: transparent;
-    }
-    
-    .nav-link {
-      color: white !important;
-    }
-    
-    .nav-link:hover {
-      color: #ff1f4b !important;
-      text-shadow: 0 0 10px #ff1f4b88;
-    }
-    
-    .nav-link.active {
-      color: #d858c7 !important;
-      text-shadow: 0 0 10px #d858c7;
-    }
-    
-    /* Typography styles */
-    body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .nav-link, .lead {
-      color: white !important;
-    }
-    
-    .page-header {
-      background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://source.unsplash.com/1600x900/?hotel,resort');
-      background-size: cover;
-      background-position: center;
-      color: white;
-      padding: 60px 0;
-      margin-bottom: 30px;
-    }
-    
-    /* Search container styles */
-    .search-container {
-      background-color: rgba(255, 255, 255, 0.05); /* translucent dark */
-      color: white;
-      backdrop-filter: blur(12px);
-      border: none;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-      padding: 20px;
-      margin-bottom: 30px;
-    }
-    
-    .search-container input,
-    .search-container .form-control,
-    .search-container .form-select {
-      background-color: rgba(0, 0, 0, 0.4);
-      color: white;
-      border: none;
-    }
-    
-    .search-container input::placeholder {
-      color: rgba(255, 255, 255, 0.6);
-    }
-    
-    /* Hotel card styles */
-    .hotel-card {
-      background: rgba(255, 255, 255, 0.05); /* dark glassy look */
-      backdrop-filter: blur(10px);
-      border: none;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-      color: white;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      margin-bottom: 20px;
-      overflow: hidden;
-      height: 100%;
-    }
-    
-    .hotel-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 0 16px rgba(255, 31, 75, 0.4), 0 0 40px rgba(255, 31, 75, 0.3);
-      border: 1px solid #ff1f4b88;
-    }
-    
-    .hotel-image {
-      height: 200px;
-      background-size: cover;
-      background-position: center;
-      position: relative;
-    }
-    
-    .hotel-rating {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background-color: rgba(0, 0, 0, 0.7);
-      color: white;
-      padding: 5px 10px;
-      border-radius: 20px;
-      font-weight: 600;
-      font-size: 0.9rem;
-    }
-    
-    .hotel-price {
-      position: absolute;
-      bottom: 10px;
-      right: 10px;
-      background-color: rgba(76, 184, 255, 0.9);
-      color: white;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-weight: 600;
-      font-size: 1rem;
-      text-shadow: 0 0 10px rgba(76, 184, 255, 0.8);
-    }
-    
-    .hotel-body {
-      padding: 20px;
-    }
-    
-    .hotel-title {
-      font-size: 1.2rem;
-      font-weight: 600;
-      margin-bottom: 5px;
-      line-height: 1.3;
-    }
-    
-    .hotel-address {
-      color: #adb5bd;
-      font-size: 0.9rem;
-      margin-bottom: 10px;
-    }
-    
-    /* Filter section styles */
-    .filter-section {
-      background-color: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(12px);
-      border: none;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-      padding: 20px;
-      margin-bottom: 30px;
-      color: white;
-    }
-    
-    .filter-title {
-      font-size: 1.1rem;
-      font-weight: 600;
-      margin-bottom: 15px;
-      color: white;
-    }
-    
-    .star-btn {
-      background-color: rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: white;
-      padding: 5px 10px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    
-    .star-btn.active {
-      background-color: #4db8ff;
-      border-color: #4db8ff;
-      color: white;
-      box-shadow: 0 0 10px rgba(77, 184, 255, 0.5);
-    }
-    
-    .facility-badge {
-      background-color: rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: white;
-      padding: 5px 10px;
-      border-radius: 15px;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-size: 0.85rem;
-    }
-    
-    .facility-badge.active {
-      background-color: #4db8ff;
-      border-color: #4db8ff;
-      color: white;
-      box-shadow: 0 0 10px rgba(77, 184, 255, 0.5);
-    }
-    
-    /* Amenity badges */
-    .amenity-badge {
-      background-color: rgba(0, 0, 0, 0.4);
-      color: #f8f9fa;
-      font-size: 0.75rem;
-      padding: 5px 8px;
-      border-radius: 12px;
-      margin-right: 5px;
-      margin-bottom: 5px;
-      display: inline-block;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    /* Loading spinner */
-    .loading-spinner {
-      display: flex;
-      justify-content: center;
-      margin: 50px 0;
-    }
-    
-    /* Result count */
-    .result-count {
-      font-weight: 600;
-      color: white;
-      background-color: rgba(0, 0, 0, 0.3); /* subtle dark background */
-      padding: 10px 16px;
-      border-radius: 8px;
-      box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
-      display: inline-block;
-      margin-bottom: 20px;
-    }
-    
-    /* Suggestions */
-    .suggestion-container {
-      position: absolute;
-      z-index: 1000;
-      background-color: rgba(30, 39, 64, 0.9);
-      width: 100%;
-      max-height: 300px;
-      overflow-y: auto;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-    }
-    
-    .suggestion-item {
-      padding: 10px;
-      cursor: pointer;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      transition: background-color 0.3s ease;
-    }
-    
-    .suggestion-item:hover {
-      background-color: rgba(255, 255, 255, 0.1);
-    }
-    
-    /* Modal styles */
-    .modal-content {
-      background: rgba(0, 0, 0, 0.8);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      backdrop-filter: blur(16px);
-      box-shadow: 0 0 20px rgba(255, 31, 75, 0.2);
-    }
-    
-    .modal-header,
-    .modal-body,
-    .modal-footer {
-      border: none;
-      color: white;
-    }
-    
-    .hotel-detail-header {
-      background-size: cover;
-      background-position: center;
-      color: white;
-      padding: 100px 0 30px;
-      position: relative;
-    }
-    
-    .hotel-detail-header::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.8) 100%);
-    }
-    
-    .hotel-detail-name {
-      font-size: 2rem;
-      font-weight: 700;
-      margin-bottom: 5px;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-    }
-    
-    /* Room cards */
-    .room-card {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      margin-bottom: 15px;
-      overflow: hidden;
-      transition: all 0.2s;
-    }
-    
-    .room-card:hover {
-      box-shadow: 0 0 16px rgba(77, 184, 255, 0.3);
-    }
-    
-    .room-header {
-      background-color: rgba(0, 0, 0, 0.3);
-      padding: 12px 15px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .room-price {
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: #4db8ff;
-      text-shadow: 0 0 10px rgba(77, 184, 255, 0.5);
-      margin-bottom: 5px;
-    }
-    
-    /* Stars */
-    .stars {
-      color: #ffc107;
-    }
-    
-    /* Footer */
-    footer {
-      background-color: #111;
-      color: #ccc;
-      padding: 30px 0;
-      font-size: 0.9rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.07);
-    }
-    
-    /* Map styling */
-    #search-map, #results-map, #hotel-map {
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    /* Button styling */
-    .btn-primary {
-      background-color: #4db8ff;
-      border-color: #4db8ff;
-      box-shadow: 0 0 10px rgba(77, 184, 255, 0.5);
-    }
-    
-    .btn-primary:hover {
-      background-color: #3d94cc;
-      border-color: #3d94cc;
-      box-shadow: 0 0 15px rgba(77, 184, 255, 0.7);
-    }
-    
-    .btn-outline-primary {
-      color: #4db8ff;
-      border-color: #4db8ff;
-    }
-    
-    .btn-outline-primary:hover {
-      background-color: #4db8ff;
-      border-color: #4db8ff;
-      box-shadow: 0 0 10px rgba(77, 184, 255, 0.5);
-    }
-    
-    .btn-outline-light {
-      border-color: rgba(255, 255, 255, 0.3);
-      color: white;
-    }
-    
-    .btn-outline-light:hover {
-      background-color: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.5);
-      color: white;
-    }
-
-    /* Typewriter effect for title */
-    #typewriter-hotels::after {
-      content: '|';
-      animation: blink 0.8s infinite;
-      margin-left: 2px;
-    }
-
-    .item-card .item-title,
-    .hotel-title,
-    .hotel-card .hotel-title {
-      color: white !important;
-      font-weight: 700 !important;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-    }
-
-    .item-card .item-address,
-.item-card .item-notes, 
-.item-card .flight-details,
-.item-card .flight-info,
-.hotel-address,
-.hotel-card .hotel-address {
-  color: rgba(255, 255, 255, 0.75) !important;
-  font-weight: 300;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotels - One Click Planner</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(to bottom right, #0a0f1f, #1a2b55); /* dark navy to rich blue */
+  }
+  
+  .main-content {
+    flex: 1;
+  }
+  
+  .navbar {
+    background-color: rgba(15, 15, 20, 0.6) !important;
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    transition: background-color 0.4s ease;
+  }
+  
+  .navbar-brand {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #4db8ff !important; /* nice glowing blue */
+    text-shadow: 0 0 10px #4db8ff88;
+  }
+  
+  .logo-img {
+    width: 80px;
+    height: auto;
+    border-radius: 12px;
+    object-fit: contain;
+    background-color: transparent;
+  }
+  
+  .nav-link {
+    color: white !important;
+  }
+  
+  .nav-link:hover {
+    color: #ff1f4b !important;
+    text-shadow: 0 0 10px #ff1f4b88;
+  }
+  
+  .page-header {
+    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://source.unsplash.com/1600x900/?hotel,resort');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    padding: 60px 0;
+    margin-bottom: 30px;
+  }
+  
+  body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .nav-link, .lead {
+    color: white !important;
+  }
+  
+  .search-container {
+    background-color: rgba(255, 255, 255, 0.05); /* translucent dark */
+    color: white;
+    backdrop-filter: blur(12px);
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    padding: 20px;
+  }
+  
+  .search-container input,
+  .search-container .form-control {
+    background-color: rgba(0, 0, 0, 0.4);
+    color: white;
+    border: none;
+  }
+  
+  .search-container input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+  }
+  
+  .hotel-card {
+    background: rgba(255, 255, 255, 0.05); /* dark glassy look */
+    backdrop-filter: blur(10px);
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    color: white;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+  }
+  
+  .hotel-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 0 16px rgba(255, 31, 75, 0.4), 0 0 40px rgba(255, 31, 75, 0.3);
+    border: 1px solid #ff1f4b88;
+  }
+  
+  #typewriter-hotels::after {
+    content: '|';
+    animation: blink 0.8s infinite;
+    margin-left: 2px;
+  }
+  
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0; }
+  }
+  
+  .result-count {
+    font-weight: 600;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.3); /* subtle dark background */
+    padding: 10px 16px;
+    border-radius: 8px;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+    display: inline-block;
+  }
+  
+  .modal-content {
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 0 20px rgba(255, 31, 75, 0.2);
+  }
+  
+  .modal-header,
+  .modal-body,
+  .modal-footer {
+    border: none;
+    color: white;
+  }
+  
+  .modal-title {
+    color: #ff1f4b;
+    text-shadow: 0 0 8px #ff1f4b88;
+  }
+  
+  footer {
+    background-color: #111;
+    color: #ccc;
+    padding: 30px 0;
+    font-size: 0.9rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+  }
+  .nav-tabs.search-tabs {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Improved save button for hotel details modal */
-.save-hotel-btn {
-  background: linear-gradient(135deg, #4db8ff, #3a8eff);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: white;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  box-shadow: 
-    0 4px 15px rgba(77, 184, 255, 0.3),
-    0 0 20px rgba(77, 184, 255, 0.2);
-  transition: all 0.4s ease;
-  padding: 12px 24px;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  width: 100%;
-  position: relative;
-  overflow: hidden;
-}
+  .nav-tabs.search-tabs .nav-link {
+    color: rgba(255, 255, 255, 0.6) !important;
+    background-color: transparent;
+    border: none;
+    padding: 10px 15px;
+    transition: all 0.3s ease;
+  }
 
-.save-hotel-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    120deg, 
-    transparent, 
-    rgba(255, 255, 255, 0.1), 
-    transparent
-  );
-  transition: all 0.4s ease;
-}
+  .nav-tabs.search-tabs .nav-link:hover {
+    color: #ff1f4b !important;
+    background-color: rgba(255, 31, 75, 0.1);
+  }
 
-.save-hotel-btn:hover::before {
-  left: 100%;
-}
+  .nav-tabs.search-tabs .nav-link.active {
+    color: #ff1f4b !important;
+    background-color: rgba(255, 31, 75, 0.2);
+    border: none;
+    font-weight: bold;
+  }
 
-.save-hotel-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 
-    0 6px 20px rgba(77, 184, 255, 0.4),
-    0 0 30px rgba(77, 184, 255, 0.3);
-}
+  .nav-tabs.search-tabs .nav-link i {
+    margin-right: 5px;
+    color: rgba(255, 255, 255, 0.7);
+  }
 
-/* Hotel card save to itinerary button */
-.save-to-itinerary-btn {
-  background: linear-gradient(135deg, #4db8ff, #3a8eff);
-  color: white;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.4s ease;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 
-    0 4px 12px rgba(77, 184, 255, 0.3),
-    0 0 20px rgba(77, 184, 255, 0.2);
-}
+  .nav-tabs.search-tabs .nav-link.active i {
+    color: #ff1f4b;
+  }
+  .suggestion-container {
+    position: absolute;
+    z-index: 1000;
+    background-color: rgba(0, 0, 0, 0.4); /* Match search container input background */
+    width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
 
-.save-to-itinerary-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    120deg, 
-    transparent, 
-    rgba(255, 255, 255, 0.1), 
-    transparent
-  );
-  transition: all 0.4s ease;
-}
+  .suggestion-item {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition: background-color 0.3s ease;
+    color: white;
+  }
 
-.save-to-itinerary-btn:hover::before {
-  left: 100%;
-}
+  .suggestion-item:hover {
+    background-color: rgba(255, 31, 75, 0.1);
+  }
 
-.save-to-itinerary-btn:hover {
-  background: linear-gradient(135deg, #3a8eff, #4db8ff);
-  transform: translateY(-3px);
-  box-shadow: 
-    0 6px 20px rgba(77, 184, 255, 0.4),
-    0 0 30px rgba(77, 184, 255, 0.3);
-}
+  .suggestion-item .suggestion-city {
+    color: white;
+    display: block;
+  }
 
-/* Toast notifications with enhanced styling */
-.toast-container {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+  .suggestion-item .suggestion-type {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+  }
 
-/* Base Toast Styling */
-.toast {
-  min-width: 300px;
-  background-color: rgba(15, 15, 20, 0.8);
-  backdrop-filter: blur(10px);
-  color: white;
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  border-left: 4px solid;
-  transform: translateX(110%);
-  opacity: 0;
-  transition: transform 0.3s ease, opacity 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.toast.show {
-  transform: translateX(0);
-  opacity: 1;
-}
-
-/* Toast Type Specific Styles */
-.toast-success {
-  border-left-color: #4db8ff;
-}
-
-.toast-warning {
-  border-left-color: #ffcc00;
-}
-
-.toast-error {
-  border-left-color: #ff1f4b;
-}
-
-/* Toast Content */
-.toast-content {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.toast-icon {
-  font-size: 1.5rem;
-}
-
-.toast-success .toast-icon {
-  color: #4db8ff;
-}
-
-.toast-warning .toast-icon {
-  color: #ffcc00;
-}
-
-.toast-error .toast-icon {
-  color: #ff1f4b;
-}
-
-.toast-message {
-  font-weight: 500;
-}
-
-.toast-close {
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.7);
-  cursor: pointer;
-  font-size: 1.1rem;
-  padding: 0;
-  transition: color 0.2s;
-}
-
-.toast-close:hover {
-  color: white;
-}
-    
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50%      { opacity: 0; }
-    }
-  </style>
-</head>
-<body>
-  <!-- Navigation -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container">
-      <a class="navbar-brand" href="/">Travel Planner</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="/">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/attractions">Attractions</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/restaurants">Restaurants</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/flights">Flights</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" href="/hotels">Hotels</a>
-          </li>
-          <!-- Auth buttons - these will be replaced by user info when logged in -->
-          <li class="nav-item ms-3">
-            <a class="btn btn-outline-light" href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/login?client_id=3anj5rhtknc7i97jq3jgknai71&response_type=code&scope=email+openid+phone&redirect_uri=http%3A%2F%2Flocalhost%3A3000">Login</a>
-          </li>
-          <li class="nav-item ms-2">
-            <a class="btn btn-outline-light" href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/signup?client_id=3anj5rhtknc7i97jq3jgknai71&redirect_uri=http%3A%2F%2Flocalhost%3A3000&response_type=code&scope=email+openid+phone">Sign Up</a>
-          </li>
-        </ul>
-      </div>
+  .suggestion-item .suggestion-code {
+    color: #4db8ff;
+    font-weight: bold;
+  }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+          <img src="/assets/logo.png" alt="Logo" class="logo-img" />
+          One Click Planner
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/attractions">Attractions</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/restaurants">Restaurants</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/flights">Flights</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="/hotels">Hotels</a>
+            </li>
+            <!-- Auth buttons -->
+            <li class="nav-item ms-3">
+              <a class="btn btn-outline-light" href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/login?client_id=3anj5rhtknc7i97jq3jgknai71&response_type=code&scope=email+openid+phone&redirect_uri=http%3A%2F%2Flocalhost%3A3000">Login</a>
+            </li>
+            <li class="nav-item ms-2">
+              <a class="btn btn-outline-light" href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/signup?client_id=3anj5rhtknc7i97jq3jgknai71&redirect_uri=http%3A%2F%2Flocalhost%3A3000&response_type=code&scope=email+openid+phone">Sign Up</a>
+            </li>
+          </ul>
+        </div>
     </div>
   </nav>
 
@@ -658,8 +269,8 @@
     <!-- Page Header -->
     <header class="page-header text-center">
       <div class="container">
-        <h1 class="display-4">Find Perfect Accommodations</h1>
-        <p class="lead">Discover amazing hotels and resorts for your next trip</p>
+        <h1 class="display-4"><span id="typewriter-hotels"></span></h1>
+        <p class="lead">Find the perfect accommodation for your trip</p>
       </div>
     </header>
 
@@ -887,7 +498,7 @@
   <!-- Footer -->
   <footer class="text-center py-4">
     <div class="container">
-      <p class="mb-0">© 2025 Travel Planner. All rights reserved.</p>
+      <p class="mb-0">© 2025 One Click Planner. All rights reserved.</p>
     </div>
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
@@ -2231,7 +1842,17 @@ document.addEventListener('DOMContentLoaded', function() {
       }, 3000);
     }
 
-    
+    // Typewriter effect for page title
+    const typewriterText = "Find Your Hotel";
+    let i = 0;
+    function typeWriterEffect() {
+      if (i < typewriterText.length) {
+        document.getElementById("typewriter-hotels").innerHTML += typewriterText.charAt(i);
+        i++;
+        setTimeout(typeWriterEffect, 100);
+      }
+    }
+    window.addEventListener("DOMContentLoaded", typeWriterEffect);
     // Show loading spinner
     function showLoading() {
       document.getElementById('loading-spinner').style.display = 'flex';
