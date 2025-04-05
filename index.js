@@ -244,6 +244,44 @@ app.post('/api/plan/hotels', async (req, res) => {
   res.json({ success: true, plan: req.session.plan });
 });
 
+app.put('/api/plan/hotels/:id', async (req, res) => {
+  const { id } = req.params;
+  const { notes } = req.body;
+  
+  if (!req.session.plan) {
+    return res.status(400).json({ error: 'No active travel plan' });
+  }
+  
+  // Find and update hotel in session
+  const hotelIndex = (req.session.plan.hotels || []).findIndex(hotel => hotel.id === id);
+  
+  if (hotelIndex === -1) {
+    return res.status(404).json({ error: 'Hotel not found in itinerary' });
+  }
+  
+  // Update notes
+  if (notes !== undefined) {
+    req.session.plan.hotels[hotelIndex].notes = notes;
+  }
+  
+  // If user is authenticated, also update in database
+  if (req.session.user && req.session.user.sub && req.session.plan.itineraryId) {
+    try {
+      const userId = req.session.user.sub;
+      const itineraryId = req.session.plan.itineraryId;
+      
+      // Here you would call a method to update in DynamoDB
+      // This depends on your implementation of the ItineraryModel
+      await ItineraryModel.updatePlaceInItinerary(userId, itineraryId, id, req.session.plan.hotels[hotelIndex], 'hotel');
+    } catch (error) {
+      console.error('Error updating hotel in database:', error);
+      // Continue even if DB operation fails - at least it's updated in the session
+    }
+  }
+  
+  res.json({ success: true, hotel: req.session.plan.hotels[hotelIndex], plan: req.session.plan });
+});
+
 // Add flight to itinerary
 app.post('/api/plan/flights', async (req, res) => {
   const { flight, notes } = req.body;

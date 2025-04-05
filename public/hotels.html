@@ -410,6 +410,205 @@
       animation: blink 0.8s infinite;
       margin-left: 2px;
     }
+
+    .item-card .item-title,
+    .hotel-title,
+    .hotel-card .hotel-title {
+      color: white !important;
+      font-weight: 700 !important;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    }
+
+    .item-card .item-address,
+.item-card .item-notes, 
+.item-card .flight-details,
+.item-card .flight-info,
+.hotel-address,
+.hotel-card .hotel-address {
+  color: rgba(255, 255, 255, 0.75) !important;
+  font-weight: 300;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Improved save button for hotel details modal */
+.save-hotel-btn {
+  background: linear-gradient(135deg, #4db8ff, #3a8eff);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 
+    0 4px 15px rgba(77, 184, 255, 0.3),
+    0 0 20px rgba(77, 184, 255, 0.2);
+  transition: all 0.4s ease;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.save-hotel-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.1), 
+    transparent
+  );
+  transition: all 0.4s ease;
+}
+
+.save-hotel-btn:hover::before {
+  left: 100%;
+}
+
+.save-hotel-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 
+    0 6px 20px rgba(77, 184, 255, 0.4),
+    0 0 30px rgba(77, 184, 255, 0.3);
+}
+
+/* Hotel card save to itinerary button */
+.save-to-itinerary-btn {
+  background: linear-gradient(135deg, #4db8ff, #3a8eff);
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 4px 12px rgba(77, 184, 255, 0.3),
+    0 0 20px rgba(77, 184, 255, 0.2);
+}
+
+.save-to-itinerary-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.1), 
+    transparent
+  );
+  transition: all 0.4s ease;
+}
+
+.save-to-itinerary-btn:hover::before {
+  left: 100%;
+}
+
+.save-to-itinerary-btn:hover {
+  background: linear-gradient(135deg, #3a8eff, #4db8ff);
+  transform: translateY(-3px);
+  box-shadow: 
+    0 6px 20px rgba(77, 184, 255, 0.4),
+    0 0 30px rgba(77, 184, 255, 0.3);
+}
+
+/* Toast notifications with enhanced styling */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Base Toast Styling */
+.toast {
+  min-width: 300px;
+  background-color: rgba(15, 15, 20, 0.8);
+  backdrop-filter: blur(10px);
+  color: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border-left: 4px solid;
+  transform: translateX(110%);
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+/* Toast Type Specific Styles */
+.toast-success {
+  border-left-color: #4db8ff;
+}
+
+.toast-warning {
+  border-left-color: #ffcc00;
+}
+
+.toast-error {
+  border-left-color: #ff1f4b;
+}
+
+/* Toast Content */
+.toast-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toast-icon {
+  font-size: 1.5rem;
+}
+
+.toast-success .toast-icon {
+  color: #4db8ff;
+}
+
+.toast-warning .toast-icon {
+  color: #ffcc00;
+}
+
+.toast-error .toast-icon {
+  color: #ff1f4b;
+}
+
+.toast-message {
+  font-weight: 500;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.toast-close:hover {
+  color: white;
+}
     
     @keyframes blink {
       0%, 100% { opacity: 1; }
@@ -1331,21 +1530,67 @@ document.addEventListener('DOMContentLoaded', function() {
           <div class="hotel-amenities">
             ${getAmenityBadges(hotelData.amenities || [])}
           </div>
-          <button class="btn btn-primary w-100 view-details-btn" data-hotel-index="${index}">
-            View Details
+          <button class="btn btn-primary w-100 save-to-itinerary-btn" data-hotel-id="${hotelData.hotelId}" data-hotel-name="${hotelData.name}">
+            <i class="bi bi-bookmark-plus me-1"></i>Save Hotel
           </button>
         </div>
       `;
       
-      // Add event listener to view details button
-      card.querySelector('.view-details-btn').addEventListener('click', function() {
-        const hotelIndex = this.getAttribute('data-hotel-index');
-        showHotelDetails(hotelIndex);
+      // Add event listener to save to itinerary button
+      card.querySelector('.save-to-itinerary-btn').addEventListener('click', function(e) {
+        e.stopPropagation();
+        const hotelId = this.getAttribute('data-hotel-id');
+        const hotelName = this.getAttribute('data-hotel-name');
+        saveHotelToItinerary(hotelId, hotelName, hotelData.address);
       });
       
       col.appendChild(card);
       return col;
     }
+
+
+    function saveHotelToItinerary(hotelId, hotelName, address) {
+      // Create hotel data for saving
+      const hotelData = {
+        hotelId,
+        name: hotelName,
+        address: typeof address === 'string' ? address : formatAddress(address),
+        notes: ''
+      };
+      
+      // Save to itinerary
+      return fetch('/api/plan/hotels', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(hotelData),
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.success) {
+          // Show success message
+          showToast('success', 'Hotel added to your itinerary!');
+          return true;
+        } else if (data.duplicate) {
+          showToast('info', 'This hotel is already in your itinerary');
+          return false;
+        } else {
+          throw new Error('Failed to save hotel');
+        }
+      })
+      .catch(error => {
+        console.error('Error saving hotel:', error);
+        showToast('error', 'Error saving to itinerary. Please try again.');
+        return false;
+      });
+    }
+
     
     // Show hotel details in modal
     function showHotelDetails(hotelIndex) {
@@ -1655,6 +1900,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function formatAddress(address) {
       if (!address) return 'Address not available';
       
+      if (typeof address === 'string') return address;
+      
       const parts = [];
       
       if (address.line1) parts.push(address.line1);
@@ -1664,6 +1911,15 @@ document.addEventListener('DOMContentLoaded', function() {
       if (address.countryName) parts.push(address.countryName);
       
       return parts.join(', ');
+    }
+
+    // Export functions if using modules
+    if (typeof module !== 'undefined' && module.exports) {
+      module.exports = {
+        saveHotelToItinerary,
+        showToast,
+        formatAddress
+      };
     }
     
     // Get amenity badges
@@ -1852,16 +2108,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
       
-      // Check if user is authenticated
-      const authUser = localStorage.getItem('authUser');
-      
-      if (!authUser) {
-        // Show login required modal
-        const loginModal = new bootstrap.Modal(document.getElementById('loginRequiredModal'));
-        loginModal.show();
-        return;
-      }
-      
       const hotelData = selectedHotel.hotel || selectedHotel;
       
       // Create hotel data for saving
@@ -1869,13 +2115,12 @@ document.addEventListener('DOMContentLoaded', function() {
         id: hotelData.hotelId,
         name: hotelData.name,
         address: formatAddress(hotelData.address),
-        category: 'hotel',
         notes: '',
         addedAt: new Date().toISOString()
       };
       
       // Save to itinerary
-      fetch('/api/plan/places', {
+      fetch('/api/plan/hotels', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1888,32 +2133,104 @@ document.addEventListener('DOMContentLoaded', function() {
         const hotelModal = bootstrap.Modal.getInstance(document.getElementById('hotelModal'));
         hotelModal.hide();
         
-        // Show success message
-        const alertContainer = document.createElement('div');
-        alertContainer.className = 'position-fixed top-0 start-0 end-0 p-3 text-center';
-        alertContainer.style.zIndex = '5000';
-        alertContainer.innerHTML = `
-          <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <strong>Success!</strong> Hotel added to your itinerary!
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-          </div>
-        `;
-        
-        document.body.appendChild(alertContainer);
-        
-        // Remove after 3 seconds
-        setTimeout(() => {
-          if (alertContainer.parentNode) {
-            alertContainer.querySelector('.alert').classList.remove('show');
-            setTimeout(() => alertContainer.remove(), 300);
-          }
-        }, 3000);
+        if (data.success) {
+          // Show success message
+          showToast('success', 'Hotel added to your itinerary!');
+        } else if (data.duplicate) {
+          showToast('info', 'This hotel is already in your itinerary');
+        } else {
+          throw new Error('Failed to save hotel');
+        }
       })
       .catch(error => {
         console.error('Error saving hotel:', error);
-        alert('Error saving to itinerary. Please try again.');
+        showToast('error', 'Error saving to itinerary. Please try again.');
       });
     }
+
+    
+    function showToast(type, message) {
+      // Create toast container if it doesn't exist
+      let toastContainer = document.querySelector('.toast-container');
+      if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container';
+        document.body.appendChild(toastContainer);
+      }
+      
+      // Create toast element
+      const toast = document.createElement('div');
+      
+      // Determine toast type and icon
+      let iconClass = '';
+      let toastTypeClass = '';
+      
+      switch(type) {
+        case 'success':
+          iconClass = 'bi-check-circle-fill';
+          toastTypeClass = 'toast-success';
+          break;
+        case 'error':
+          iconClass = 'bi-exclamation-circle-fill';
+          toastTypeClass = 'toast-error';
+          break;
+        case 'warning':
+          iconClass = 'bi-exclamation-triangle-fill';
+          toastTypeClass = 'toast-warning';
+          break;
+        default:
+          iconClass = 'bi-info-circle-fill';
+          toastTypeClass = 'toast-info';
+      }
+      
+      toast.className = `toast ${toastTypeClass} show`;
+      
+      // Set toast content
+      toast.innerHTML = `
+        <div class="toast-content">
+          <i class="bi ${iconClass} toast-icon"></i>
+          <span class="toast-message">${message}</span>
+        </div>
+        <button class="toast-close" aria-label="Close">&times;</button>
+      `;
+      
+      // Add to container
+      toastContainer.appendChild(toast);
+      
+      // Add close button functionality
+      const closeBtn = toast.querySelector('.toast-close');
+      closeBtn.addEventListener('click', () => {
+        toast.style.transform = 'translateX(110%)';
+        toast.style.opacity = '0';
+        setTimeout(() => {
+          if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+          }
+          
+          // Remove container if empty
+          if (toastContainer.children.length === 0 && toastContainer.parentNode) {
+            toastContainer.parentNode.removeChild(toastContainer);
+          }
+        }, 300);
+      });
+      
+      // Auto-remove after delay
+      setTimeout(() => {
+        toast.style.transform = 'translateX(110%)';
+        toast.style.opacity = '0';
+        setTimeout(() => {
+          if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+          }
+          
+          // Remove container if empty
+          if (toastContainer.children.length === 0 && toastContainer.parentNode) {
+            toastContainer.parentNode.removeChild(toastContainer);
+          }
+        }, 300);
+      }, 3000);
+    }
+
     
     // Show loading spinner
     function showLoading() {
