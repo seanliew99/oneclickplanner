@@ -11,10 +11,10 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  position: relative; /* This is important for positioning the pseudo-element */
+  position: relative;
 }
 
-/* Create a pseudo-element for the background */
+
 body::before {
   content: "";
   position: fixed;
@@ -22,14 +22,15 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: -1; /* Place it behind all content */
+  z-index: -1;
   background: linear-gradient(to bottom, rgba(0, 5, 36, 0.5), rgba(0, 27, 97, 0.7)), url('assets/index.jpg');
   background-attachment: fixed;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  filter: blur(4px); /* Use filter instead of backdrop-filter */
+  filter: blur(4px); 
 }
+
 /* Make all text white */
 body,
 h1, h2, h3, h4, h5, h6,
@@ -101,6 +102,7 @@ label, h1, h2, h3, h4, h5, h6 {
   animation-delay: 0.3s;
   transform: translateY(-10px) scale(0.95);
 }
+
 /* Keyframes */
 @keyframes floatInGlow {
   0% {
@@ -421,7 +423,7 @@ footer {
 .circle2 {
   width: 120px;
   height: 120px;
-  top: 18%; /* moved up from 30% */
+  top: 18%;
   left: 65%;
   animation-delay: 1s;
 }
@@ -902,7 +904,6 @@ footer {
   const cityToggle = document.getElementById('city-selection-toggle');
 
 
-// This function updates the "Add City" button state based solely on trip duration vs used days
 function updateAddCityButtonState() {
   const startDate = document.getElementById('start-date').value;
   const endDate = document.getElementById('end-date').value;
@@ -941,14 +942,12 @@ function addDateChangeListeners() {
   
   if (startDateInput) {
     startDateInput.addEventListener('change', function() {
-      // Wait for any other handlers to update the form
       setTimeout(updateAddCityButtonState, 10);
     });
   }
   
   if (endDateInput) {
     endDateInput.addEventListener('change', function() {
-      // Wait for any other handlers to update the form
       setTimeout(updateAddCityButtonState, 10);
     });
   }
@@ -959,11 +958,9 @@ function attachImprovedCityDaysListeners() {
   const dayInputs = document.querySelectorAll('.city-days');
   
   dayInputs.forEach(input => {
-    // Remove any existing listeners to avoid duplicates
     const newInput = input.cloneNode(true);
     input.parentNode.replaceChild(newInput, input);
     
-    // Add our improved listener
     newInput.addEventListener('input', function() {
       updateAddCityButtonState();
       validateCityDaysInput(this);
@@ -971,17 +968,13 @@ function attachImprovedCityDaysListeners() {
   });
 }
 
-// Initialize the fix when the page loads
 document.addEventListener('DOMContentLoaded', function() {
   
-  // Set up our improved event listeners
   addDateChangeListeners();
   
-  // Override the existing add city entry function
   const originalAddCityBtn = document.getElementById('add-city-btn');
   if (originalAddCityBtn) {
     originalAddCityBtn.addEventListener('click', function(e) {
-      // After the original handler adds a city
       setTimeout(function() {
         attachImprovedCityDaysListeners();
         updateAddCityButtonState();
@@ -989,12 +982,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
-  // Override the city removal listener
   const citiesContainer = document.getElementById('cities-container');
   if (citiesContainer) {
     citiesContainer.addEventListener('click', function(e) {
       if (e.target.classList.contains('remove-city')) {
-        // After the original handler removes a city
         setTimeout(updateAddCityButtonState, 10);
       }
     });
@@ -1124,16 +1115,13 @@ const multiCityInputs = document.getElementById('multi-city-wrapper').querySelec
     
     // Check if this is a multi-city plan
     if (plan.cities && plan.cities.length > 1) {
-      // 1. Set the toggle to checked
       const cityToggle = document.getElementById('city-selection-toggle');
       
       cityToggle.checked = true;
       
-      // 2. Trigger the UI update for multi-city mode
       document.getElementById('single-city-wrapper').classList.add('d-none');
       document.getElementById('multi-city-wrapper').classList.remove('d-none');
       
-      // 3. Populate multi-city UI with the cities from the plan
       setupMultiCityUI(plan.cities);
     } else {
       // Single city mode
@@ -1151,15 +1139,12 @@ const multiCityInputs = document.getElementById('multi-city-wrapper').querySelec
 
   // Add/improve the setupMultiCityUI function if it doesn't exist or needs enhancement
   function setupMultiCityUI(cities) {
-    // 1. Show multi-city UI
     document.getElementById('single-city-wrapper').classList.add('d-none');
     document.getElementById('multi-city-wrapper').classList.remove('d-none');
     
-    // 2. Clear existing entries and add cities
     const citiesContainer = document.getElementById('cities-container');
     citiesContainer.innerHTML = '';
     
-    // 3. Add each city with its day allocation
     cities.forEach(city => {
       const entry = document.createElement('div');
       entry.className = 'row mb-2 city-entry';
@@ -1243,7 +1228,6 @@ const multiCityInputs = document.getElementById('multi-city-wrapper').querySelec
       durationElement.innerHTML = `<i class="bi bi-calendar-check"></i> Trip Duration: <strong>${diffDays} day${diffDays !== 1 ? 's' : ''}</strong>`;
       durationElement.style.display = 'block';
     } else {
-      // Hide the element if either date is not set
       durationElement.style.display = 'none';
     }
   }
@@ -1267,7 +1251,7 @@ const multiCityInputs = document.getElementById('multi-city-wrapper').querySelec
 
   document.getElementById('start-date').addEventListener('change', toggleCitySectionVisibility);
   document.getElementById('end-date').addEventListener('change', toggleCitySectionVisibility);
-  attachCityDaysListeners(); // for the initial city-days input on page load
+  attachCityDaysListeners(); 
 
   document.getElementById('start-date').addEventListener('change', updateTripDuration);
   document.getElementById('end-date').addEventListener('change', updateTripDuration);
@@ -1297,7 +1281,6 @@ document.getElementById('end-date').addEventListener('change', function() {
     daysLeftContainer.style.display = 'none';
   }
   
-    // Initial call to set up the display
     updateTripDuration();
   });
 
@@ -1325,7 +1308,6 @@ document.getElementById('end-date').addEventListener('change', function() {
     if (isMulti) {
       destinationInput.removeAttribute('required');
       
-      // If switching to multi-city mode and there are no entries, add one
       const citiesContainer = document.getElementById('cities-container');
       if (citiesContainer.children.length === 0) {
         const entry = document.createElement('div');
@@ -1373,7 +1355,7 @@ document.getElementById('end-date').addEventListener('change', function() {
       </div>
     `;
     citiesContainer.appendChild(entry);
-    attachCityDaysListeners(); // <== CALL HERE
+    attachCityDaysListeners();
     updateAddCityBtnState();
   });
 
@@ -1988,14 +1970,11 @@ function setupChangeDetection() {
   // Get the submit button
   const submitButton = document.querySelector('#plan-form button[type="submit"]');
   
-  // Original button styles (save these for reference)
   const originalButtonText = 'Start Planning';
   const originalButtonClass = 'btn-primary';
   
-  // Change flag to track if form has been modified
   let formModified = false;
   
-  // Trip exists flag - we'll set this based on the presence of the current plan alert
   let tripExists = document.getElementById('current-plan-alert').style.display !== 'none';
   
   // Function to update button appearance
@@ -2083,7 +2062,6 @@ function updateButtonAppearance() {
     });
   }
   
-  // Make this function globally available
   window.addListenersToDynamicInputs = addListenersToDynamicInputs;
   
   // Initial call to ensure existing inputs have listeners
@@ -2108,10 +2086,8 @@ function updateButtonAppearance() {
 // Call setup function
 setupChangeDetection();
 
-// Modify the existing addCityEntry function to add our change listeners
 const originalAddCityEntry = addCityEntry;
 addCityEntry = function() {
-  // Call the original function
   originalAddCityEntry();
   
   // Add our listeners to the new inputs
@@ -2120,7 +2096,6 @@ addCityEntry = function() {
   }
 };
 
-  // Add this at the very end of the function
   setupClearPlanButton();
   
 });
@@ -2240,18 +2215,14 @@ document.getElementById('get-weather-btn').addEventListener('click', () => {
   </script>
   
 <script>
-// This is a direct fix for the "Add City" button issue
-// It must be added at the end of your page, just before the closing </body> tag
 
 (function() {
-  // Direct reference to key elements
   const addCityBtn = document.getElementById('add-city-btn');
   const startDateInput = document.getElementById('start-date');
   const endDateInput = document.getElementById('end-date');
   
   // Create a MutationObserver to watch for disabled attribute changes
   const buttonObserver = new MutationObserver((mutations) => {
-    // Check if we need to force enable the button
     checkAndFixAddButton();
   });
   
@@ -2380,10 +2351,9 @@ document.getElementById('get-weather-btn').addEventListener('click', () => {
       attributeFilter: ['style'] 
     });
 
-    // Also update when clear plan button is clicked (as a fallback)
+    // update when clear plan button is clicked
     if (clearPlanBtn) {
       clearPlanBtn.addEventListener('click', function() {
-        // Give a short delay to allow for the plan clearing process
         setTimeout(updateCountryInputState, 100);
       });
     }
