@@ -12,10 +12,9 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  position: relative; /* This is important for positioning the pseudo-element */
+  position: relative;
 }
 
-/* Create a pseudo-element for the background */
 body::before {
   content: "";
   position: fixed;
@@ -23,13 +22,13 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: -1; /* Place it behind all content */
+  z-index: -1;
   background: linear-gradient(to bottom,rgba(0, 5, 36, 0.5), rgba(40, 82, 42, 0.74)), url('assets/attraction.jpg');
   background-attachment: fixed;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  filter: blur(4px); /* Use filter instead of backdrop-filter */
+  filter: blur(4px);
 }
 
     .main-content {
@@ -360,7 +359,7 @@ img[src="/Logo.png"] {
     document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
       const linkPath = new URL(link.href).pathname;
 
-      // Match path and apply 'active' class
+      // Match path and apply active class
       if (linkPath === currentPath || (linkPath === "/" && currentPath === "/index.html")) {
         link.classList.add('active');
         link.style.color = "#ff1f4b"; 
@@ -473,7 +472,7 @@ img[src="/Logo.png"] {
             <label class="form-check-label" for="indoor-toggle">Show indoor attractions ☔</label>
           </div>
         </div>
-        <!-- MAP (fills the column width) -->
+        <!-- Map -->
         <div id="map" style="border-radius: 12px; width: 100%; height: 400px;"></div>
       </div>
 
@@ -492,9 +491,7 @@ img[src="/Logo.png"] {
           <ul class="nav nav-tabs" id="dayTabs" role="tablist"></ul>
           <!-- Tab Content -->
           <div class="tab-content pt-3" id="dayTabsContent">
-            <!-- “Purple box” container if needed -->
             <div id="recommended-places-container" style="width: 95%; margin: 0 auto;">
-              <!-- Recommended places go here or inside each .tab-pane -->
             </div>
           </div>
         </section>
@@ -512,7 +509,6 @@ img[src="/Logo.png"] {
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body" id="modal-body">
-        <!-- Dynamically inserted content -->
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -824,7 +820,7 @@ fetch('/api/config')
     }
 
     function centerMapOnRecommended(dayIndex) {
-      // Gather all recommended markers that belong to the chosen day
+      // Get all recommended markers that belong to the chosen day
       const bounds = new google.maps.LatLngBounds();
       let foundAny = false;
 
@@ -835,14 +831,12 @@ fetch('/api/config')
         }
       });
 
-      // Only fitBounds if there is at least one recommended marker for that day
       if (foundAny) {
         map.fitBounds(bounds);
       }
     }
 
     // Generate itinerary tabs using pre-fetched recommendations.
-    // Before generating, for days with the same city, remove duplicates already used in an earlier day.
     function generateItineraryTabs() {
       document.getElementById('itinerary-section').style.display = 'block';
       const dayTabs = document.getElementById('dayTabs');
@@ -961,7 +955,6 @@ fetch('/api/config')
           }
         });
       } else {
-        // For plans without explicit cities array, create entries based on date range
         const start = new Date(plan.startDate);
         const end = new Date(plan.endDate);
         const totalDays = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
@@ -1130,7 +1123,6 @@ fetch('/api/config')
         
         function addNext() {
           if (currentIndex >= attractions.length) {
-            // All done
             console.log(`Completed adding attractions. Success: ${successCount}, Duplicates: ${duplicateCount}, Errors: ${errorCount}`);
             
             // Update notification with success message
@@ -1735,7 +1727,6 @@ fetch('/api/config')
               fetchPromises.push(promise);
             }
             Promise.all(fetchPromises).then(() => {
-              // Remove duplicate recommended attractions for the same city across days.
               const cityUsed = {};
               for (let i = 0; i < currentPlan.perDayCityMap.length; i++) {
                 const city = currentPlan.perDayCityMap[i];
@@ -1861,10 +1852,9 @@ fetch('/api/config')
         recs.forEach(place => {
           if (!place.geometry || !place.geometry.location) return;
           
-          // Add place_id to the set so we know it's recommended
           recommendedPlaceIds.add(place.place_id);
           
-          // Create the recommended (blue) marker
+          // Create blue marker
           const marker = new google.maps.Marker({
             position: place.geometry.location,
             map: map,
@@ -1898,7 +1888,7 @@ fetch('/api/config')
       marker.addListener('click', () => showPlaceDetails(place));
     }
 
-    // Use Google photo if available, else fallback
+    // Use Google photo if available
     let photoUrl;
     if (place.photos && place.photos.length > 0) {
       const photoName = place.photos[0].name;
@@ -2173,7 +2163,7 @@ function showPlaceDetails(place) {
       if (index < text.length) {
         element.textContent += text.charAt(index);
         index++;
-        setTimeout(type, 100); // typing speed
+        setTimeout(type, 100);
       }
     }
   
