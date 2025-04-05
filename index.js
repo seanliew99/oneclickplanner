@@ -1,10 +1,11 @@
-// Travel Planner Server using Google Places API v1
+// One click planner Server using Google Places API v1
 const express = require('express');
 const path = require('path');
 const axios = require('axios');
 const session = require('express-session');
 require('dotenv').config();
 
+// JS files
 const ItineraryModel = require('./models/itinerary');
 const flightsRoutes = require('./public/js/flights');
 const hotelsRoutes = require('./public/js/hotels');
@@ -19,7 +20,7 @@ const isAuthenticated = (req, res, next) => {
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-3000
+
 // Google API Key
 const API_KEY = process.env.GOOGLE_API_KEY;
 
@@ -32,7 +33,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Configure session
 app.use(session({
-  secret: 'travel-planner-secret',
+  secret: 'oneclickplanner-secret',
   resave: false,
   saveUninitialized: true,
   cookie: { maxAge: 24 * 60 * 60 * 1000 } // 24 hours
@@ -50,7 +51,7 @@ app.use('/api/hotels', hotelsRoutes);
 
 // Save or update travel plan
 app.post('/api/plan', async (req, res) => {
-  // Extract data from request body (either from form submission or import)
+  // Extract data from request body
   const { 
     destination, 
     cities = [], 
@@ -74,12 +75,11 @@ app.post('/api/plan', async (req, res) => {
     endDate,
     country,
     createdAt: new Date().toISOString(),
-    // Use imported attractions/restaurants or fallback to existing ones
     attractions: attractions.length > 0 ? attractions : (req.session.plan?.attractions || []),
     restaurants: restaurants.length > 0 ? restaurants : (req.session.plan?.restaurants || [])
   };
   
-  // If user is authenticated, also save to DynamoDB
+  // If user is authenticated, also save to DB
   if (req.session.user && req.session.user.sub) {
     try {
       const userId = req.session.user.sub;
@@ -114,8 +114,7 @@ app.post('/api/plan', async (req, res) => {
       // Update session with the saved data
       req.session.plan = savedItinerary;
     } catch (error) {
-      console.error('Error saving itinerary to DynamoDB:', error);
-      // Continue even if DB save fails - at least it's in the session
+      console.error('Error saving itinerary to DB:', error);
     }
   }
   
@@ -171,7 +170,7 @@ app.post('/api/plan/places', async (req, res) => {
     });
   }
   
-  // If user is authenticated, also update in DynamoDB
+  // If user is authenticated, also update in DB
   if (req.session.user && req.session.user.sub && req.session.plan.itineraryId) {
     try {
       const userId = req.session.user.sub;
@@ -179,8 +178,7 @@ app.post('/api/plan/places', async (req, res) => {
       
       await ItineraryModel.addPlaceToItinerary(userId, itineraryId, place, category);
     } catch (error) {
-      console.error(`Error adding ${category} to DynamoDB:`, error);
-      // Continue even if DB save fails - at least it's in the session
+      console.error(`Error adding ${category} to DB:`, error);
     }
   }
   
@@ -237,7 +235,6 @@ app.post('/api/plan/hotels', async (req, res) => {
       await ItineraryModel.addPlaceToItinerary(userId, itineraryId, hotel, 'hotel');
     } catch (error) {
       console.error('Error adding hotel to database:', error);
-      // Continue even if DB save fails - at least it's in the session
     }
   }
   
@@ -269,13 +266,10 @@ app.put('/api/plan/hotels/:id', async (req, res) => {
     try {
       const userId = req.session.user.sub;
       const itineraryId = req.session.plan.itineraryId;
-      
-      // Here you would call a method to update in DynamoDB
-      // This depends on your implementation of the ItineraryModel
+    
       await ItineraryModel.updatePlaceInItinerary(userId, itineraryId, id, req.session.plan.hotels[hotelIndex], 'hotel');
     } catch (error) {
       console.error('Error updating hotel in database:', error);
-      // Continue even if DB operation fails - at least it's updated in the session
     }
   }
   
@@ -300,7 +294,7 @@ app.post('/api/plan/flights', async (req, res) => {
   // Create standardized flight object
   const flightData = {
     id: flightId,
-    name: `${flight.airline} ${flight.flightNumber || ''}`.trim(), // Create a name field for consistency
+    name: `${flight.airline} ${flight.flightNumber || ''}`.trim(),
     airline: flight.airline,
     flightNumber: flight.flightNumber,
     departureTime: flight.departureTime,
@@ -347,7 +341,6 @@ app.post('/api/plan/flights', async (req, res) => {
       await ItineraryModel.addPlaceToItinerary(userId, itineraryId, flightData, 'flight');
     } catch (error) {
       console.error('Error adding flight to database:', error);
-      // Continue even if DB save fails - at least it's in the session
     }
   }
   
@@ -378,7 +371,6 @@ app.delete('/api/plan/flights/:id', async (req, res) => {
       await ItineraryModel.removePlaceFromItinerary(userId, itineraryId, id, 'flight');
     } catch (error) {
       console.error('Error removing flight from database:', error);
-      // Continue even if DB operation fails - at least it's removed from the session
     }
   }
   
@@ -537,7 +529,7 @@ app.get('/api/weather', async (req, res) => {
       }
     }
 
-    // Old format (optional)
+    // Old format
     const dailyWeather = {};
     const rainDays = [];
 
@@ -565,14 +557,9 @@ app.get('/api/weather', async (req, res) => {
   }
 });
 
-
-
-
-
-
 // Get current travel plan
 app.get('/api/plan', async (req, res) => {
-  // If user is authenticated, try to get plan from DynamoDB
+  // If user is authenticated, try to get plan from DB
   if (req.session.user && req.session.user.sub) {
     try {
       const userId = req.session.user.sub;
@@ -584,8 +571,7 @@ app.get('/api/plan', async (req, res) => {
         return res.json({ plan: itinerary });
       }
     } catch (error) {
-      console.error('Error fetching itinerary from DynamoDB:', error);
-      // Fall back to session if DB fails
+      console.error('Error fetching itinerary from DB:', error);
     }
   }
   
@@ -643,7 +629,7 @@ app.post('/api/plan/places', async (req, res) => {
     });
   }
   
-  // If user is authenticated, also update in DynamoDB
+  // If user is authenticated, also update in DB
   if (req.session.user && req.session.user.sub && req.session.plan.itineraryId) {
     try {
       const userId = req.session.user.sub;
@@ -651,13 +637,15 @@ app.post('/api/plan/places', async (req, res) => {
       
       await ItineraryModel.addPlaceToItinerary(userId, itineraryId, place, category);
     } catch (error) {
-      console.error(`Error adding ${category} to DynamoDB:`, error);
-      // Continue even if DB save fails - at least it's in the session
+      console.error(`Error adding ${category} to DB:`, error);
     }
   }
   
   res.json({ success: true, plan: req.session.plan });
-});app.post('/api/plan/places', async (req, res) => {
+});
+
+
+app.post('/api/plan/places', async (req, res) => {
   const { placeId, name, address, category, notes } = req.body;
   
   if (!req.session.plan) {
@@ -703,7 +691,7 @@ app.post('/api/plan/places', async (req, res) => {
     });
   }
   
-  // If user is authenticated, also update in DynamoDB
+  // If user is authenticated, also update in DB
   if (req.session.user && req.session.user.sub && req.session.plan.itineraryId) {
     try {
       const userId = req.session.user.sub;
@@ -711,8 +699,7 @@ app.post('/api/plan/places', async (req, res) => {
       
       await ItineraryModel.addPlaceToItinerary(userId, itineraryId, place, category);
     } catch (error) {
-      console.error(`Error adding ${category} to DynamoDB:`, error);
-      // Continue even if DB save fails - at least it's in the session
+      console.error(`Error adding ${category} to DB:`, error);
     }
   }
   
@@ -728,7 +715,7 @@ app.delete('/api/plan/:category/:id', async (req, res) => {
   
   console.log(`Deleting ${category} with id ${id}`);
   
-  // Normalize category (remove trailing 's' if present)
+  // Normalize category
   const normalizedCategory = category.endsWith('s') ? 
     category.slice(0, -1) : category;
   
@@ -746,7 +733,7 @@ app.delete('/api/plan/:category/:id', async (req, res) => {
   // Remove from session
   req.session.plan[arrayName] = req.session.plan[arrayName].filter(item => item.id !== id);
   
-  // If user is authenticated, also remove from DynamoDB
+  // If user is authenticated, also remove from DB
   if (req.session.user && req.session.user.sub && req.session.plan.itineraryId) {
     try {
       const userId = req.session.user.sub;
@@ -755,12 +742,12 @@ app.delete('/api/plan/:category/:id', async (req, res) => {
       await ItineraryModel.removePlaceFromItinerary(userId, itineraryId, id, normalizedCategory);
     } catch (error) {
       console.error(`Error removing ${normalizedCategory} from database:`, error);
-      // Continue even if DB operation fails - at least it's removed from the session
     }
   }
   
   res.json({ success: true, plan: req.session.plan });
 });
+
 // Route to completely clear a travel plan
 app.delete('/api/plan', async (req, res) => {
   console.log('Clearing plan from session');
@@ -780,13 +767,11 @@ app.delete('/api/plan', async (req, res) => {
       }
     } catch (error) {
       console.error('Error clearing itinerary from database:', error);
-      // Continue even if DB operation fails - at least it's removed from the session
     }
   }
   
   res.json({ success: true, message: 'Plan cleared successfully' });
 });
-
 
 app.post('/api/plan/migrate', isAuthenticated, async (req, res) => {
   try {
@@ -797,17 +782,16 @@ app.post('/api/plan/migrate', isAuthenticated, async (req, res) => {
       return res.json({ success: true, message: 'No plan to migrate' });
     }
     
-    // Check if user already has an itinerary in DynamoDB
+    // Check if user already has an itinerary in DB
     const existingItinerary = await ItineraryModel.getItineraryByUserId(userId);
     
     if (!existingItinerary) {
-      // Save the session plan to DynamoDB
+      // Save the session plan to DB
       const savedItinerary = await ItineraryModel.saveItinerary(userId, req.session.plan);
       req.session.plan = savedItinerary;
       return res.json({ success: true, message: 'Plan migrated successfully' });
     } else {
-      // User already has a plan in DB, merge if needed
-      // For simplicity, we'll just keep the DB version
+
       req.session.plan = existingItinerary;
       return res.json({ success: true, message: 'Using existing plan from database' });
     }
@@ -817,12 +801,12 @@ app.post('/api/plan/migrate', isAuthenticated, async (req, res) => {
   }
 });
 
-// Route to search for places using Places API v1 - with location bounds
+// Route to search for places
 app.get('/api/places', async (req, res) => {
   try {
     const { 
       keyword = '',
-      type = 'attraction',  // attraction or restaurant
+      type = 'attraction',
       location = ''
     } = req.query;
     
@@ -895,11 +879,10 @@ app.get('/api/places', async (req, res) => {
           lng: place.location?.longitude
         }
       },
-      photos: place.photos || [] // ✅ ADD THIS
+      photos: place.photos || []
     })) : [];
 
     // Filter results by checking if they contain the location name in the address
-    // This is an additional step to ensure we only get results from the specified location
     const filteredResults = transformedResults.filter(place => {
       const address = place.formatted_address.toLowerCase();
       return address.includes(location.toLowerCase());
@@ -932,7 +915,7 @@ app.get('/api/places/:id', async (req, res) => {
     const { id } = req.params;
     console.log(`Getting details for place ID: ${id}`);
     
-    // Call the Google Place Details API v1
+    // Call the Google Place Details API
     const response = await axios.get(
       `https://places.googleapis.com/v1/places/${id}`,
       {
@@ -1009,5 +992,5 @@ app.get('/hotels', (req, res) => {
 
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Travel Planner running on http://localhost:${PORT}`);
+  console.log(`One Click Planner running on http://localhost:${PORT}`);
 });

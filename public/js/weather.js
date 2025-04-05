@@ -1,3 +1,4 @@
+// Weather.js
 
 function showWeatherForDateRange(forecast, startDate, endDate, containerSelector = 'body') {
   const container = document.querySelector(containerSelector);

@@ -24,8 +24,8 @@ const ItineraryModel = {
         country: itineraryData.country || '',
         attractions: itineraryData.attractions || [],
         restaurants: itineraryData.restaurants || [],
-        hotels: itineraryData.hotels || [],        // Include hotels array
-        flights: itineraryData.flights || [],      // Include flights array
+        hotels: itineraryData.hotels || [],
+        flights: itineraryData.flights || [],
         updatedAt: new Date().toISOString(),
         createdAt: itineraryData.createdAt || new Date().toISOString()
       };
@@ -100,7 +100,7 @@ const ItineraryModel = {
       }
       
       // Get the category array (attractions, restaurants, hotels, flights)
-      const categoryField = `${category}s`; // e.g., "attractions", "flights"
+      const categoryField = `${category}s`; 
       
       // Update just the specific array with the new place
       const updateData = {};

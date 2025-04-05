@@ -294,7 +294,7 @@ router.get('/search/geo', async (req, res) => {
   }
 });
 
-// Search for hotels by keyword (autocomplete)
+// Search for hotels by keyword
 router.get('/locations/search', async (req, res) => {
   try {
     const { keyword } = req.query;
