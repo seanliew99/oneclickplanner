@@ -323,6 +323,63 @@ body {
         font-size: 0.9rem;
         border-top: 1px solid rgba(255, 255, 255, 0.07);
       }
+      /* Dark background modal fix */
+
+/* Set modal content to dark background */
+#flightModal .modal-content {
+  background: rgba(25, 30, 45, 0.95) !important;
+  color: white !important;
+}
+
+/* Ensure card inside modal is also dark */
+#flightModal .card {
+  background: rgba(30, 35, 50, 0.9) !important;
+  color: white !important;
+}
+
+/* Style card header */
+#flightModal .card-header {
+  background: rgba(40, 45, 60, 0.9) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Make sure all text is white */
+#flightModal .card-body,
+#flightModal .card-header,
+#flightModal p,
+#flightModal strong,
+#flightModal .flight-time,
+#flightModal .flight-date,
+#flightModal .flight-airport,
+#flightModal .flight-terminal,
+#flightModal h6,
+#flightModal .segment-airline,
+#flightModal .segment-duration {
+  color: white !important;
+}
+
+/* Style the connection info section */
+#flightModal .connection-info {
+  background: rgba(20, 25, 40, 0.7) !important;
+  color: white !important;
+}
+
+/* Style headers in the modal */
+#flightModal h6 {
+  color: #4db8ff !important;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+/* Ensure modal header is styled nicely */
+#flightModal .modal-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Ensure modal footer is styled nicely */
+#flightModal .modal-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
         </style>
 </head>
 
