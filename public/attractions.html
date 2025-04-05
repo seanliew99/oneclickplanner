@@ -419,13 +419,13 @@ img[src="/Logo.png"] {
     <!-- Current Plan Info -->
     <div id="current-plan-info" class="mb-4" style="display: none;">
       <h2>Finding Attractions in <span id="destination-display"></span></h2>
-      <p id="date-display" class="text-muted"></p>
+      <p id="date-display" style="color: #00d4ff; font-weight: 500;"></p>
     </div>
 
     <!-- Three columns -->
     <div class="row">
       <!-- Left Column: For Found Attractions -->
-      <div class="col-md-4" style="max-height: 70vh; overflow-y: auto;">
+      <div class="col-md-4">
         <div class="text-center">
           <div id="result-count" class="result-count"></div>
         </div>
@@ -438,7 +438,7 @@ img[src="/Logo.png"] {
       </div>
 
       <!-- Middle Column: Search Bar & Map -->
-      <div class="col-md-4">
+      <div class="col-md-4" style="position: sticky; top: 90px; height: fit-content;">
         <!-- Search Container -->
         <div class="search-container mb-3">
           <form id="search-form" class="row g-3 align-items-end">
@@ -461,7 +461,7 @@ img[src="/Logo.png"] {
       </div>
 
       <!-- Right Column: Recommended Itinerary -->
-      <div class="col-md-4" style="max-height: 80vh; overflow-y: auto;">
+     <div class="col-md-4" style="position: sticky; top: 90px; height: fit-content;">
         <section class="mt-4" id="itinerary-section" style="display: none;">
           <h4 class="mb-3">
             <div class="d-flex justify-content-between align-items-center w-100">
