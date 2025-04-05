@@ -188,6 +188,195 @@ app.post('/api/plan/places', async (req, res) => {
 });
 
 
+// Add hotel to itinerary
+app.post('/api/plan/hotels', async (req, res) => {
+  const { 
+    hotelId, 
+    name,
+    notes
+  } = req.body;
+  
+  if (!req.session.plan) {
+    return res.status(400).json({ error: 'No active travel plan' });
+  }
+  
+  if (!hotelId || !name) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+  
+  const hotel = {
+    id: hotelId,
+    name,
+    notes: notes || '',
+    addedAt: new Date().toISOString()
+  };
+  
+  // Initialize hotels array if it doesn't exist
+  req.session.plan.hotels = req.session.plan.hotels || [];
+  
+  // Check for duplicates
+  const isDuplicate = req.session.plan.hotels.some(item => item.id === hotelId);
+  
+  if (isDuplicate) {
+    return res.json({ 
+      success: false, 
+      duplicate: true,
+      message: 'This hotel is already in your itinerary'
+    });
+  }
+  
+  // Add to session
+  req.session.plan.hotels.push(hotel);
+  
+  // If user is authenticated, also save to database
+  if (req.session.user && req.session.user.sub && req.session.plan.itineraryId) {
+    try {
+      const userId = req.session.user.sub;
+      const itineraryId = req.session.plan.itineraryId;
+      
+      await ItineraryModel.addPlaceToItinerary(userId, itineraryId, hotel, 'hotel');
+    } catch (error) {
+      console.error('Error adding hotel to database:', error);
+      // Continue even if DB save fails - at least it's in the session
+    }
+  }
+  
+  res.json({ success: true, plan: req.session.plan });
+});
+
+// Add flight to itinerary
+app.post('/api/plan/flights', async (req, res) => {
+  const { 
+    id,
+    flightNumber, 
+    airline, 
+    departureTime, 
+    arrivalTime, 
+    departureAirport, 
+    arrivalAirport, 
+    price,
+    duration,
+    stops,
+    notes,
+    class: travelClass
+  } = req.body;
+  
+  if (!req.session.plan) {
+    return res.status(400).json({ error: 'No active travel plan' });
+  }
+  
+  if (!airline || !departureAirport || !arrivalAirport) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+  
+  // Generate a unique ID if none is provided
+  const flightId = id || `flight-${Date.now()}`;
+  
+  const flight = {
+    id: flightId,
+    name: `${airline} ${flightNumber || ''}`.trim(), // Create a name field for consistency
+    airline,
+    flightNumber,
+    departureTime,
+    arrivalTime,
+    departureAirport,
+    arrivalAirport,
+    price,
+    duration,
+    stops,
+    notes: notes || '',
+    class: travelClass,
+    addedAt: new Date().toISOString()
+  };
+  
+  // Initialize flights array if it doesn't exist
+  req.session.plan.flights = req.session.plan.flights || [];
+  
+  // Check for duplicates
+  const isDuplicate = req.session.plan.flights.some(item => item.id === flightId);
+  
+  if (isDuplicate) {
+    return res.json({ 
+      success: false, 
+      duplicate: true,
+      message: 'This flight is already in your itinerary'
+    });
+  }
+  
+  // Add to session
+  req.session.plan.flights.push(flight);
+  
+  // If user is authenticated, also save to database
+  if (req.session.user && req.session.user.sub && req.session.plan.itineraryId) {
+    try {
+      const userId = req.session.user.sub;
+      const itineraryId = req.session.plan.itineraryId;
+      
+      await ItineraryModel.addPlaceToItinerary(userId, itineraryId, flight, 'flight');
+    } catch (error) {
+      console.error('Error adding flight to database:', error);
+      // Continue even if DB save fails - at least it's in the session
+    }
+  }
+  
+  res.json({ success: true, plan: req.session.plan });
+});
+
+// Delete hotel from itinerary
+app.delete('/api/plan/hotels/:id', async (req, res) => {
+  const { id } = req.params;
+  
+  if (!req.session.plan) {
+    return res.status(400).json({ error: 'No active travel plan' });
+  }
+  
+  // Remove from session
+  req.session.plan.hotels = (req.session.plan.hotels || []).filter(hotel => hotel.id !== id);
+  
+  // If user is authenticated, also remove from database
+  if (req.session.user && req.session.user.sub && req.session.plan.itineraryId) {
+    try {
+      const userId = req.session.user.sub;
+      const itineraryId = req.session.plan.itineraryId;
+      
+      await ItineraryModel.removePlaceFromItinerary(userId, itineraryId, id, 'hotel');
+    } catch (error) {
+      console.error('Error removing hotel from database:', error);
+      // Continue even if DB operation fails - at least it's removed from the session
+    }
+  }
+  
+  res.json({ success: true, plan: req.session.plan });
+});
+
+// Delete flight from itinerary
+app.delete('/api/plan/flights/:id', async (req, res) => {
+  const { id } = req.params;
+  
+  if (!req.session.plan) {
+    return res.status(400).json({ error: 'No active travel plan' });
+  }
+  
+  // Remove from session
+  req.session.plan.flights = (req.session.plan.flights || []).filter(flight => flight.id !== id);
+  
+  // If user is authenticated, also remove from database
+  if (req.session.user && req.session.user.sub && req.session.plan.itineraryId) {
+    try {
+      const userId = req.session.user.sub;
+      const itineraryId = req.session.plan.itineraryId;
+      
+      await ItineraryModel.removePlaceFromItinerary(userId, itineraryId, id, 'flight');
+    } catch (error) {
+      console.error('Error removing flight from database:', error);
+      // Continue even if DB operation fails - at least it's removed from the session
+    }
+  }
+  
+  res.json({ success: true, plan: req.session.plan });
+});
+
+
 // Authentication routes
 const jwt = require('jsonwebtoken');
 

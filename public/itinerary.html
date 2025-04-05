@@ -7,6 +7,7 @@
   <title>My Itinerary - Travel Planner</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
       --primary-color: #4361ee;
@@ -1134,6 +1135,14 @@
               <div class="stat-label">Restaurants</div>
             </div>
             <div class="stat-item">
+              <div class="stat-number" id="hotels-count">0</div>
+              <div class="stat-label">Hotels</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-number" id="flights-count">0</div>
+              <div class="stat-label">Flights</div>
+            </div>
+            <div class="stat-item">
               <div class="stat-number" id="days-count">0</div>
               <div class="stat-label">Days of Travel</div>
             </div>
@@ -1188,7 +1197,7 @@
           <div class="section-body">
             <div class="section-header">
               <h3 class="section-title">
-                <i class="bi bi-cup-hot"></i>Restaurants
+                <i class="fas fa-utensils" style="font-size: 1.5rem; margin-right: 8px;"></i> Restaurants
               </h3>
               <a href="/restaurants" class="btn btn-sm btn-outline-primary">
                 <i class="bi bi-plus me-1"></i>Add More
@@ -1200,6 +1209,40 @@
               <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Loading...</span>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hotels Section -->
+        <div class="section-card">
+          <div class="section-body">
+            <div class="section-header">
+              <h3 class="section-title">
+                <i class="bi bi-building"></i>Hotels
+              </h3>
+              <a href="/hotels" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-plus me-1"></i>Add More
+              </a>
+            </div>
+            <div id="hotels-container">
+              <!-- Hotels will be dynamically loaded here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Flights Section -->
+        <div class="section-card">
+          <div class="section-body">
+            <div class="section-header">
+              <h3 class="section-title">
+                <i class="fas fa-plane" style="font-size: 1.5rem; margin-right: 8px;"></i> Flights
+              </h3>
+              <a href="/flights" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-plus me-1"></i>Add More
+              </a>
+            </div>
+            <div id="flights-container">
+              <!-- Flights will be dynamically loaded here -->
             </div>
           </div>
         </div>
@@ -1569,10 +1612,16 @@
 
     // Initialize current plan
     function loadCurrentPlan() {
+      console.log('Loading current plan...');
+      
       fetch('/api/plan')
         .then(response => response.json())
         .then(data => {
+          console.log('Plan data received:', data);
+          
           if (data.plan && data.plan.destination) {
+            console.log('Valid plan found with destination:', data.plan.destination);
+            
             // We have a plan, show the trip info
             document.getElementById('no-plan-alert').style.display = 'none';
             document.getElementById('trip-info').style.display = 'block';
@@ -1584,16 +1633,52 @@
             // Update stats
             const attractionsCount = data.plan.attractions ? data.plan.attractions.length : 0;
             const restaurantsCount = data.plan.restaurants ? data.plan.restaurants.length : 0;
+            const hotelsCount = data.plan.hotels ? data.plan.hotels.length : 0;
+            const flightsCount = data.plan.flights ? data.plan.flights.length : 0;
             const daysCount = calculateDays(data.plan.startDate, data.plan.endDate);
             
             document.getElementById('attractions-count').textContent = attractionsCount;
             document.getElementById('restaurants-count').textContent = restaurantsCount;
+            
+            // If we added hotel and flight count elements to the stats
+            if (document.getElementById('hotels-count')) {
+              document.getElementById('hotels-count').textContent = hotelsCount;
+            }
+            if (document.getElementById('flights-count')) {
+              document.getElementById('flights-count').textContent = flightsCount;
+            }
+            
             document.getElementById('days-count').textContent = daysCount;
             
-            // Use our day-based organization function
-            organizeItineraryByDay();
+            // Use our day-based organization function for attractions and restaurants
+            try {
+              organizeItineraryByDay();
+            } catch (error) {
+              console.error('Error organizing itinerary by day:', error);
+            }
+            
+            // Display hotels and flights with error handling
+            try {
+              if (typeof displayHotels === 'function') {
+                displayHotels(data.plan.hotels || []);
+              } else {
+                console.error('displayHotels function is not defined');
+              }
+            } catch (error) {
+              console.error('Error displaying hotels:', error);
+            }
+            
+            try {
+              if (typeof displayFlights === 'function') {
+                displayFlights(data.plan.flights || []);
+              } else {
+                console.error('displayFlights function is not defined');
+              }
+            } catch (error) {
+              console.error('Error displaying flights:', error);
+            }
           } else {
-            // No plan found
+            console.log('No valid plan found in response');
             document.getElementById('no-plan-alert').style.display = 'block';
             document.getElementById('trip-info').style.display = 'none';
             
@@ -1610,23 +1695,142 @@
           document.getElementById('trip-info').style.display = 'none';
         });
     }
+
+
+    // Function to display hotels
+    function displayHotels(hotels) {
+      const container = document.getElementById('hotels-container');
+      
+      if (!hotels || hotels.length === 0) {
+        container.innerHTML = `
+          <div class="empty-section">
+            <div class="empty-icon">
+              <i class="bi bi-building"></i>
+            </div>
+            <h4>No hotels added yet</h4>
+            <p class="empty-text">Start adding hotels to your itinerary</p>
+            <a href="/hotels" class="btn btn-primary">Find Hotels</a>
+          </div>
+        `;
+        return;
+      }
+      
+      // Display hotels with simplified view showing only the name
+      container.innerHTML = hotels.map(hotel => `
+        <div class="item-card mb-3" data-id="${hotel.id}">
+          <div class="item-image" style="background-image: url('https://source.unsplash.com/300x200/?hotel,building')"></div>
+          <div class="item-content">
+            <h4 class="item-title">${hotel.name}</h4>
+            <button class="item-delete" onclick="deletePlace('${hotel.id}', 'hotel')">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Function to display flights with complete details
+    function displayFlights(flights) {
+      const container = document.getElementById('flights-container');
+      
+      if (!flights || flights.length === 0) {
+        container.innerHTML = `
+          <div class="empty-section">
+            <div class="empty-icon">
+              <i class="bi bi-airplane"></i>
+            </div>
+            <h4>No flights added yet</h4>
+            <p class="empty-text">Start adding flights to your itinerary</p>
+            <a href="/flights" class="btn btn-primary">Find Flights</a>
+          </div>
+        `;
+        return;
+      }
+      
+      // Display flights with all details
+      container.innerHTML = flights.map(flight => {
+        // Format dates and times
+        const departureTime = flight.departureTime ? new Date(flight.departureTime) : null;
+        const arrivalTime = flight.arrivalTime ? new Date(flight.arrivalTime) : null;
+        
+        const formattedDepartureTime = departureTime ? departureTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
+        const formattedArrivalTime = arrivalTime ? arrivalTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
+        
+        const formattedDepartureDate = departureTime ? departureTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+        const formattedArrivalDate = arrivalTime ? arrivalTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+        
+        return `
+          <div class="item-card mb-3" data-id="${flight.id}">
+            <div class="item-image" style="background-image: url('https://source.unsplash.com/300x200/?airplane,airport')"></div>
+            <div class="item-content">
+              <h4 class="item-title">${flight.airline} ${flight.flightNumber || ''}</h4>
+              
+              <div class="flight-details mb-2">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <strong>${flight.departureAirport}</strong> ${formattedDepartureTime}
+                    <div class="text-muted small">${formattedDepartureDate}</div>
+                  </div>
+                  <div class="mx-2">
+                    <i class="bi bi-arrow-right"></i>
+                  </div>
+                  <div>
+                    <strong>${flight.arrivalAirport}</strong> ${formattedArrivalTime}
+                    <div class="text-muted small">${formattedArrivalDate}</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="flight-info d-flex justify-content-between">
+                <div>
+                  ${flight.duration ? `<i class="bi bi-clock me-1"></i> ${flight.duration}` : ''}
+                </div>
+                <div>
+                  ${flight.price?.currency ? `<i class="bi bi-currency-dollar me-1"></i> ${flight.price.currency} ${flight.price.total}` : ''}
+                </div>
+                <div>
+                  ${flight.stops === 0 ? 'Direct' : `${flight.stops} stop${flight.stops > 1 ? 's' : ''}`}
+                </div>
+              </div>
+              
+              ${flight.notes ? `<p class="item-notes mt-2">"${flight.notes}"</p>` : ''}
+              
+              <button class="item-delete" onclick="deletePlace('${flight.id}', 'flight')">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
     
     // Delete a place from the itinerary
     function deletePlace(id, category) {
+      if (!id || !category) {
+        console.error('Missing ID or category for deletion');
+        return;
+      }
+      
       if (confirm('Are you sure you want to remove this from your itinerary?')) {
-        fetch(`/api/plan/places/${id}?category=${category}`, {
+        console.log(`Deleting ${category} with ID: ${id}`);
+        
+        fetch(`/api/plan/${category}s/${id}`, {
           method: 'DELETE'
         })
         .then(response => response.json())
         .then(data => {
           if (data.success) {
+            console.log(`${category} deleted successfully`);
             // Reload the current plan
             loadCurrentPlan();
+          } else {
+            console.error(`Error deleting ${category}:`, data);
+            alert(`Error removing ${category} from itinerary.`);
           }
         })
         .catch(error => {
-          console.error('Error deleting place:', error);
-          alert('Error removing item from itinerary. Please try again.');
+          console.error(`Error deleting ${category}:`, error);
+          alert(`Error removing ${category} from itinerary. Please try again.`);
         });
       }
     }

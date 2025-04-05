@@ -24,6 +24,8 @@ const ItineraryModel = {
         country: itineraryData.country || '',
         attractions: itineraryData.attractions || [],
         restaurants: itineraryData.restaurants || [],
+        hotels: itineraryData.hotels || [],        // Include hotels array
+        flights: itineraryData.flights || [],      // Include flights array
         updatedAt: new Date().toISOString(),
         createdAt: itineraryData.createdAt || new Date().toISOString()
       };
@@ -62,68 +64,28 @@ const ItineraryModel = {
     }
   },
 
-  // Add place to itinerary (attraction or restaurant)
-  async addPlaceToItinerary(userId, itineraryId, place, category) {
+  // Get an itinerary by userId
+  async getItineraryByUserId(userId) {
     try {
-      const docRef = doc(db, COLLECTION_NAME, itineraryId);
-      const docSnap = await getDoc(docRef);
+      const q = query(collection(db, COLLECTION_NAME), where("userId", "==", userId));
+      const querySnapshot = await getDocs(q);
       
-      if (!docSnap.exists()) {
-        throw new Error('Itinerary not found');
+      if (querySnapshot.empty) {
+        return null;
       }
       
-      // Include dayIndex and indoor properties if they exist
-      const placeToAdd = {
-        id: place.id,
-        name: place.name,
-        address: place.address,
-        notes: place.notes || '',
-        indoor: place.indoor || false,
-        dayIndex: place.dayIndex !== undefined ? place.dayIndex : null,
-        addedAt: new Date().toISOString()
-      };
+      // Convert to array and sort by updatedAt
+      const itineraries = [];
+      querySnapshot.forEach(doc => {
+        itineraries.push(doc.data());
+      });
       
-      // Get the current itinerary data
-      const itineraryData = docSnap.data();
-      
-      // Check if we need to update the attractions or restaurants array
-      if (category === 'attraction') {
-        // Initialize attractions array if it doesn't exist
-        if (!itineraryData.attractions) {
-          itineraryData.attractions = [];
-        }
-        
-        // Add the new place
-        itineraryData.attractions.push(placeToAdd);
-        
-        // Update the document
-        await setDoc(docRef, {
-          ...itineraryData,
-          attractions: itineraryData.attractions,
-          updatedAt: new Date().toISOString()
-        });
-      } else if (category === 'restaurant') {
-        // Initialize restaurants array if it doesn't exist
-        if (!itineraryData.restaurants) {
-          itineraryData.restaurants = [];
-        }
-        
-        // Add the new place
-        itineraryData.restaurants.push(placeToAdd);
-        
-        // Update the document
-        await setDoc(docRef, {
-          ...itineraryData,
-          restaurants: itineraryData.restaurants,
-          updatedAt: new Date().toISOString()
-        });
-      }
-      
-      // Get the updated document
-      const updatedDoc = await getDoc(docRef);
-      return updatedDoc.data();
+      // Return the most recently updated itinerary
+      return itineraries.sort((a, b) => 
+        new Date(b.updatedAt) - new Date(a.updatedAt)
+      )[0];
     } catch (error) {
-      console.error('Error adding place to itinerary:', error);
+      console.error('Error getting itinerary:', error);
       throw error;
     }
   },
@@ -140,11 +102,12 @@ const ItineraryModel = {
       
       const itinerary = docSnap.data();
       
-      // Filter out the place to remove
-      if (category === 'attraction' && itinerary.attractions) {
-        itinerary.attractions = itinerary.attractions.filter(place => place.id !== placeId);
-      } else if (category === 'restaurant' && itinerary.restaurants) {
-        itinerary.restaurants = itinerary.restaurants.filter(place => place.id !== placeId);
+      // Get the category array (attractions, restaurants, hotels, flights)
+      const categoryArray = category + 's';
+      
+      // Filter out the place to remove if the array exists
+      if (itinerary[categoryArray]) {
+        itinerary[categoryArray] = itinerary[categoryArray].filter(place => place.id !== placeId);
       }
       
       // Update the itinerary
@@ -153,10 +116,11 @@ const ItineraryModel = {
       await setDoc(docRef, itinerary);
       return itinerary;
     } catch (error) {
-      console.error('Error removing place from itinerary:', error);
+      console.error(`Error removing ${category} from itinerary:`, error);
       throw error;
     }
   },
+
 
   // Delete an itinerary
   async deleteItinerary(userId, itineraryId) {
