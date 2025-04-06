@@ -35,7 +35,7 @@ router.get('/search', async (req, res) => {
       max
     };
 
-    // Add optional parameters if provided
+    // Add optional parameters 
     if (returnDate) searchParams.returnDate = returnDate;
     if (travelClass) searchParams.travelClass = travelClass;
     if (nonStop === 'true') searchParams.nonStop = true;
@@ -128,7 +128,6 @@ router.get('/:id', async (req, res) => {
 // Search for airport locations
 router.get('/locations/search', async (req, res) => {
     try {
-      // Only use valid subType values according to Amadeus API
       const { keyword, subType = 'AIRPORT,CITY' } = req.query;
       
       if (!keyword) {
@@ -140,7 +139,6 @@ router.get('/locations/search', async (req, res) => {
       const response = await amadeus.referenceData.locations.get({
         keyword,
         subType,
-        // No need for page limit if not supported by API
       });
       
       console.log(`Found ${response.data.length} locations`);

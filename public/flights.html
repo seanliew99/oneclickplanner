@@ -1,339 +1,364 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flights - One Click Planner</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
-    <style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flights - One Click Planner</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+  <style>
 body {
- min-height: 100vh;
- display: flex;
- flex-direction: column;
- position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
 
 body::before {
- content: "";
- position: fixed;
- top: 0;
- left: 0;
- width: 100%;
- height: 100%;
- z-index: -1;
- background: linear-gradient(to bottom,rgba(0, 5, 36, 0.5), rgba(32, 92, 89, 0.74)), url('assets/flight.jpg');
- background-attachment: fixed;
- background-size: cover;
- background-position: center;
- background-repeat: no-repeat;
- filter: blur(4px);
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background: linear-gradient(to bottom, rgba(0, 5, 36, 0.5), rgba(32, 92, 89, 0.74)), url('assets/flight.jpg');
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: blur(4px);
 }
-      .main-content {
-        flex: 1;
-      }
-      
-      .navbar {
-        position: sticky;
-        top: 0;
-        z-index: 1000;
-        background-color: rgba(15, 15, 20, 0.6) !important;
-        backdrop-filter: blur(20px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-        transition: background-color 0.4s ease;
-      }
-      
-      .navbar-brand {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #4db8ff !important; /* nice glowing blue */
-        text-shadow: 0 0 10px #4db8ff88;
-      }
-      
-      .logo-img {
-        width: 80px;
-        height: auto;
-        border-radius: 12px;
-        object-fit: contain;
-        background-color: transparent;
-      }
-      
-      .nav-link {
-        color: white !important;
-      }
-      
-      .nav-link:hover {
-        color: #ff1f4b !important;
-        text-shadow: 0 0 10px #ff1f4b88;
-      }
-      
-      .nav-link.active {
-        color: #d858c7 !important;
-        text-shadow: 0 0 10px #d858c7;
-      }
 
-      .page-header {
-        background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://source.unsplash.com/1600x900/?airplane,flight');
-        background-size: cover;
-        background-position: center;
-        color: white;
-        padding: 60px 0;
-        margin-bottom: 30px;
-      }
-      
-      body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .nav-link, .lead {
-        color: white !important;
-      }
-      
-      .search-container {
-        background-color: rgba(255, 255, 255, 0.05); /* translucent dark */
-        color: white;
-        backdrop-filter: blur(12px);
-        border: none;
-        border-radius: 12px;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-        padding: 20px;
-      }
-      
-      .search-container input,
-      .search-container .form-control {
-        background-color: rgba(0, 0, 0, 0.4);
-        color: white;
-        border: none;
-      }
-      
-      .search-container input::placeholder {
-        color: rgba(255, 255, 255, 0.6);
-      }
-      
-      .flight-card {
-        background: rgba(255, 255, 255, 0.05); /* dark glassy look */
-        backdrop-filter: blur(10px);
-        border: none;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-        color: white;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-      }
-      
-      .flight-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 0 16px rgba(255, 31, 75, 0.4), 0 0 40px rgba(255, 31, 75, 0.3);
-        border: 1px solid #ff1f4b88;
-      }
-      
-      .result-count {
-        font-weight: 600;
-        color: white;
-        background-color: rgba(0, 0, 0, 0.3); /* subtle dark background */
-        padding: 10px 16px;
-        border-radius: 8px;
-        box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
-        display: inline-block;
-      }
-      
-      .loading-spinner {
-        display: flex;
-        justify-content: center;
-        margin: 50px 0;
-      }
-      
-      .suggestion-container {
-        position: absolute;
-        z-index: 1000;
-        background-color: rgba(30, 39, 64, 0.9);
-        width: 100%;
-        max-height: 300px;
-        overflow-y: auto;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-      }
-      
-      .suggestion-item {
-        padding: 10px;
-        cursor: pointer;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        transition: background-color 0.3s ease;
-      }
-      
-      .suggestion-item:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-      }
-      
-      #typewriter-flights::after {
-        content: '|';
-        animation: blink 0.8s infinite;
-        margin-left: 2px;
-      }
-      
-      @keyframes blink {
-        0%, 100% { opacity: 1; }
-        50%      { opacity: 0; }
-      }
-      
-      .price-analysis-card {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(10px);
-        border: none;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-        color: white;
-        padding: 20px;
-      }
-      
-      .price-stats {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 20px;
-      }
-      
-      .price-stat {
-        text-align: center;
-      }
-      
-      .price-value {
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: #4db8ff;
-      }
-      
-      .price-label {
-        font-size: 0.9rem;
-        color: rgba(255, 255, 255, 0.7);
-      }
-      
-      .price-chart {
-        height: 200px;
-        margin-top: 20px;
-      }
-      
-      .travel-class-select {
-        background-color: rgba(0, 0, 0, 0.4);
-        color: white;
-        border: none;
-      }
-      
-      .modal-content {
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        backdrop-filter: blur(16px);
-        box-shadow: 0 0 20px rgba(255, 31, 75, 0.2);
-      }
-      
-      .modal-header,
-      .modal-body,
-      .modal-footer {
-        border: none;
-        color: white;
-      }
-      
-      .modal-title {
-        color: #ff1f4b;
-        text-shadow: 0 0 8px #ff1f4b88;
-      }
-      
-      .modal-body {
-        max-height: 70vh;
-        overflow-y: auto;
-      }
+.main-content {
+  flex: 1;
+}
 
-      /* Toast notification styles */
-      .toast-container {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: rgba(15, 15, 20, 0.6) !important;
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  transition: background-color 0.4s ease;
+}
 
-      .toast {
-        min-width: 300px;
-        background-color: rgba(15, 15, 20, 0.8);
-        backdrop-filter: blur(10px);
-        color: white;
-        padding: 15px;
-        border-radius: 10px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        border-left: 4px solid;
-        transform: translateX(110%);
-        opacity: 0;
-        transition: transform 0.3s ease, opacity 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
+.navbar-brand {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #4db8ff !important;
+  /* nice glowing blue */
+  text-shadow: 0 0 10px #4db8ff88;
+}
 
-      .toast.show {
-        transform: translateX(0);
-        opacity: 1;
-      }
+.logo-img {
+  width: 80px;
+  height: auto;
+  border-radius: 12px;
+  object-fit: contain;
+  background-color: transparent;
+}
 
-      .toast-success {
-        border-left-color: #4db8ff;
-      }
+.nav-link {
+  color: white !important;
+}
 
-      .toast-warning {
-        border-left-color: #ffcc00;
-      }
+.nav-link:hover {
+  color: #ff1f4b !important;
+  text-shadow: 0 0 10px #ff1f4b88;
+}
 
-      .toast-error {
-        border-left-color: #ff1f4b;
-      }
+.nav-link.active {
+  color: #d858c7 !important;
+  text-shadow: 0 0 10px #d858c7;
+}
 
-      .toast-content {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
+.page-header {
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://source.unsplash.com/1600x900/?airplane,flight');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  padding: 60px 0;
+  margin-bottom: 30px;
+}
 
-      .toast-icon {
-        font-size: 1.5rem;
-      }
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+label,
+.form-label,
+.card-title,
+.card-text,
+.nav-link,
+.lead {
+  color: white !important;
+}
 
-      .toast-success .toast-icon {
-        color: #4db8ff;
-      }
+.search-container {
+  background-color: rgba(255, 255, 255, 0.05);
+  /* translucent dark */
+  color: white;
+  backdrop-filter: blur(12px);
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  padding: 20px;
+}
 
-      .toast-warning .toast-icon {
-        color: #ffcc00;
-      }
+.search-container input,
+.search-container .form-control {
+  background-color: rgba(0, 0, 0, 0.4);
+  color: white;
+  border: none;
+}
 
-      .toast-error .toast-icon {
-        color: #ff1f4b;
-      }
+.search-container input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
 
-      .toast-message {
-        font-weight: 500;
-      }
+.flight-card {
+  background: rgba(255, 255, 255, 0.05);
+  /* dark glassy look */
+  backdrop-filter: blur(10px);
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  color: white;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
 
-      .toast-close {
-        background: none;
-        border: none;
-        color: rgba(255, 255, 255, 0.7);
-        cursor: pointer;
-        font-size: 1.1rem;
-        padding: 0;
-        transition: color 0.2s;
-      }
+.flight-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 0 16px rgba(255, 31, 75, 0.4), 0 0 40px rgba(255, 31, 75, 0.3);
+  border: 1px solid #ff1f4b88;
+}
 
-      .toast-close:hover {
-        color: white;
-      }
-      
-      footer {
-        background-color: #111;
-        color: #ccc;
-        padding: 30px 0;
-        font-size: 0.9rem;
-        border-top: 1px solid rgba(255, 255, 255, 0.07);
-      }
-      /* Dark background modal fix */
+.result-count {
+  font-weight: 600;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.3);
+  /* subtle dark background */
+  padding: 10px 16px;
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+  display: inline-block;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  margin: 50px 0;
+}
+
+.suggestion-container {
+  position: absolute;
+  z-index: 1000;
+  background-color: rgba(30, 39, 64, 0.9);
+  width: 100%;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+.suggestion-item {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background-color 0.3s ease;
+}
+
+.suggestion-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+#typewriter-flights::after {
+  content: '|';
+  animation: blink 0.8s infinite;
+  margin-left: 2px;
+}
+
+@keyframes blink {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+}
+
+.price-analysis-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  color: white;
+  padding: 20px;
+}
+
+.price-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.price-stat {
+  text-align: center;
+}
+
+.price-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #4db8ff;
+}
+
+.price-label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.price-chart {
+  height: 200px;
+  margin-top: 20px;
+}
+
+.travel-class-select {
+  background-color: rgba(0, 0, 0, 0.4);
+  color: white;
+  border: none;
+}
+
+.modal-content {
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 0 20px rgba(255, 31, 75, 0.2);
+}
+
+.modal-header,
+.modal-body,
+.modal-footer {
+  border: none;
+  color: white;
+}
+
+.modal-title {
+  color: #ff1f4b;
+  text-shadow: 0 0 8px #ff1f4b88;
+}
+
+.modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* Toast notification styles */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  min-width: 300px;
+  background-color: rgba(15, 15, 20, 0.8);
+  backdrop-filter: blur(10px);
+  color: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border-left: 4px solid;
+  transform: translateX(110%);
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.toast-success {
+  border-left-color: #4db8ff;
+}
+
+.toast-warning {
+  border-left-color: #ffcc00;
+}
+
+.toast-error {
+  border-left-color: #ff1f4b;
+}
+
+.toast-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toast-icon {
+  font-size: 1.5rem;
+}
+
+.toast-success .toast-icon {
+  color: #4db8ff;
+}
+
+.toast-warning .toast-icon {
+  color: #ffcc00;
+}
+
+.toast-error .toast-icon {
+  color: #ff1f4b;
+}
+
+.toast-message {
+  font-weight: 500;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.toast-close:hover {
+  color: white;
+}
+
+footer {
+  background-color: #111;
+  color: #ccc;
+  padding: 30px 0;
+  font-size: 0.9rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
 
 /* Set modal content to dark background */
 #flightModal .modal-content {
@@ -390,7 +415,7 @@ body::before {
 #flightModal .modal-footer {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
-        </style>
+  </style>
 </head>
 
 <script>
@@ -421,7 +446,7 @@ body::before {
         <img src="/Logo.png" alt="Logo" class="logo-img" />
         One Click Planner
       </a>
-      
+
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -444,10 +469,13 @@ body::before {
           </li>
           <!-- Auth buttons -->
           <li class="nav-item ms-3">
-            <a class="btn btn-outline-light" href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/login?client_id=3anj5rhtknc7i97jq3jgknai71&response_type=code&scope=email+openid+phone&redirect_uri=http%3A%2F%2Flocalhost%3A3000">Login</a>
+            <a class="btn btn-outline-light"
+              href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/login?client_id=3anj5rhtknc7i97jq3jgknai71&response_type=code&scope=email+openid+phone&redirect_uri=http%3A%2F%2Flocalhost%3A3000">Login</a>
           </li>
           <li class="nav-item ms-2">
-            <a class="btn btn-outline-light" href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/signup?client_id=3anj5rhtknc7i97jq3jgknai71&redirect_uri=http%3A%2F%2Flocalhost%3A3000&response_type=code&scope=email+openid+phone">Sign Up</a>
+            <a class="btn btn-outline-light"
+              href="https://us-east-1zjt65d7ot.auth.us-east-1.amazoncognito.com/signup?client_id=3anj5rhtknc7i97jq3jgknai71&redirect_uri=http%3A%2F%2Flocalhost%3A3000&response_type=code&scope=email+openid+phone">Sign
+              Up</a>
           </li>
         </ul>
       </div>
@@ -472,7 +500,8 @@ body::before {
             <div class="col-md-6 mb-3">
               <label for="origin" class="form-label">From</label>
               <div class="position-relative">
-                <input type="text" class="form-control" id="origin" placeholder="City or airport code" autocomplete="off" required>
+                <input type="text" class="form-control" id="origin" placeholder="City or airport code"
+                  autocomplete="off" required>
                 <input type="hidden" id="origin-code">
                 <div id="origin-suggestions" class="suggestion-container"></div>
               </div>
@@ -480,13 +509,14 @@ body::before {
             <div class="col-md-6 mb-3">
               <label for="destination" class="form-label">To</label>
               <div class="position-relative">
-                <input type="text" class="form-control" id="destination" placeholder="City or airport code" autocomplete="off" required>
+                <input type="text" class="form-control" id="destination" placeholder="City or airport code"
+                  autocomplete="off" required>
                 <input type="hidden" id="destination-code">
                 <div id="destination-suggestions" class="suggestion-container"></div>
               </div>
             </div>
           </div>
-          
+
           <div class="row mb-3">
             <div class="col-md-3 mb-3">
               <label for="departure-date" class="form-label">Departure Date</label>
@@ -524,7 +554,7 @@ body::before {
               </div>
             </div>
           </div>
-          
+
           <div class="text-center">
             <button type="submit" class="btn btn-primary btn-lg px-5">
               <i class="bi bi-search me-2"></i>Search Flights
@@ -532,7 +562,7 @@ body::before {
           </div>
         </form>
       </div>
-      
+
       <!-- Price Analysis Section -->
       <div id="price-analysis" class="price-analysis-card" style="display: none;">
         <h3 class="text-center mb-4">Price Analysis</h3>
@@ -541,7 +571,7 @@ body::before {
           <canvas id="price-chart" class="price-chart"></canvas>
         </div>
       </div>
-      
+
       <!-- Flight Results Section -->
       <div id="flights-container">
         <!-- Loading Spinner -->
@@ -550,17 +580,19 @@ body::before {
             <span class="visually-hidden">Loading flights...</span>
           </div>
         </div>
-        
+
         <!-- Results Tabs -->
         <div id="results-tabs" style="display: none;">
           <ul class="nav nav-tabs mb-4" id="flightTabs" role="tablist">
             <li class="nav-item" role="presentation">
-              <button class="nav-link active" id="outbound-tab" data-bs-toggle="tab" data-bs-target="#outbound" type="button" role="tab" aria-controls="outbound" aria-selected="true">
+              <button class="nav-link active" id="outbound-tab" data-bs-toggle="tab" data-bs-target="#outbound"
+                type="button" role="tab" aria-controls="outbound" aria-selected="true">
                 Outbound <span id="outbound-date" class="ms-2 text-muted"></span>
               </button>
             </li>
             <li class="nav-item" role="presentation" id="return-tab-container" style="display: none;">
-              <button class="nav-link" id="return-tab" data-bs-toggle="tab" data-bs-target="#return" type="button" role="tab" aria-controls="return" aria-selected="false">
+              <button class="nav-link" id="return-tab" data-bs-toggle="tab" data-bs-target="#return" type="button"
+                role="tab" aria-controls="return" aria-selected="false">
                 Return <span id="return-date-display" class="ms-2 text-muted"></span>
               </button>
             </li>
@@ -574,28 +606,28 @@ body::before {
             </div>
           </div>
         </div>
-        
+
         <!-- Flight Details Modal -->
-          <div class="modal fade" id="flightModal" tabindex="-1" aria-labelledby="flightModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="flightModalLabel">Flight Details</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="flight-modal-body">
-                  <!-- Flight details will be populated here -->
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                  <button type="button" class="btn btn-primary" id="save-flight-btn">
-                    <i class="bi bi-bookmark-plus me-1"></i>Save Flight
-                  </button>
-                </div>
+        <div class="modal fade" id="flightModal" tabindex="-1" aria-labelledby="flightModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="flightModalLabel">Flight Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body" id="flight-modal-body">
+                <!-- Flight details will be populated here -->
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="save-flight-btn">
+                  <i class="bi bi-bookmark-plus me-1"></i>Save Flight
+                </button>
               </div>
             </div>
           </div>
-        
+        </div>
+
         <!-- No Flights Message -->
         <div id="no-flights" class="no-flights" style="display: none;">
           <i class="bi bi-exclamation-circle text-warning" style="font-size: 3rem;"></i>
@@ -621,40 +653,40 @@ body::before {
     let selectedFlight = null;
     let airlines = {}; // To store airline info
     let currentQuery = {}; // To store current search parameters
-    
+
     // Set min date for date inputs to today
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       // Set min date for departure date (today)
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('departure-date').setAttribute('min', today);
       document.getElementById('departure-date').value = today;
-      
+
       // Handle departure date change to set min return date
-      document.getElementById('departure-date').addEventListener('change', function() {
+      document.getElementById('departure-date').addEventListener('change', function () {
         const departureDate = this.value;
         document.getElementById('return-date').setAttribute('min', departureDate);
-        
+
         // If return date is before departure date, update it
         const returnDate = document.getElementById('return-date');
         if (returnDate.value && returnDate.value < departureDate) {
           returnDate.value = departureDate;
         }
       });
-      
+
       // Set up event listeners
       document.getElementById('flight-search-form').addEventListener('submit', searchFlights);
-      
+
       // Set up airport search
-      document.getElementById('origin').addEventListener('input', function(e) {
+      document.getElementById('origin').addEventListener('input', function (e) {
         searchAirports(e.target.value, 'origin-suggestions');
       });
-      
-      document.getElementById('destination').addEventListener('input', function(e) {
+
+      document.getElementById('destination').addEventListener('input', function (e) {
         searchAirports(e.target.value, 'destination-suggestions');
       });
-      
+
       // Handle click outside of suggestion containers
-      document.addEventListener('click', function(e) {
+      document.addEventListener('click', function (e) {
         if (!e.target.closest('#origin') && !e.target.closest('#origin-suggestions')) {
           document.getElementById('origin-suggestions').style.display = 'none';
         }
@@ -662,36 +694,36 @@ body::before {
           document.getElementById('destination-suggestions').style.display = 'none';
         }
       });
-      
+
       // Save flight button
       //document.getElementById('save-flight-btn').addEventListener('click', saveFlight);
     });
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       const saveFlightBtn = document.getElementById('save-flight-btn');
-      
+
       if (saveFlightBtn) {
         // Remove any existing event listeners
         const newBtn = saveFlightBtn.cloneNode(true);
         saveFlightBtn.parentNode.replaceChild(newBtn, saveFlightBtn);
-        
+
         // Add new click handler
-        newBtn.addEventListener('click', function() {
+        newBtn.addEventListener('click', function () {
           if (!selectedFlight) {
             console.error('No flight selected');
             return;
           }
-          
+
           console.log('Saving flight:', selectedFlight);
-          
+
           // Show loading state
           this.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Saving...';
           this.disabled = true;
-          
+
           const flight = selectedFlight.flight;
           const itinerary = flight.itineraries[selectedFlight.itineraryIndex];
           const segments = itinerary.segments;
-          
+
           // Create flight data for saving
           const flightData = {
             id: flight.id,
@@ -707,9 +739,9 @@ body::before {
             class: flight.travelerPricings[0].fareDetailsBySegment[0].cabin,
             addedAt: new Date().toISOString()
           };
-          
+
           console.log('Sending flight data:', flightData);
-          
+
           // Save to itinerary - use the correct endpoint path
           fetch('/api/plan/flights', {
             method: 'POST',
@@ -721,41 +753,41 @@ body::before {
               notes: ''
             }),
           })
-          .then(response => {
-            console.log('Response status:', response.status);
-            return response.json();
-          })
-          .then(data => {
-            console.log('Response data:', data);
-            
-            // Reset button
-            this.innerHTML = '<i class="bi bi-bookmark-plus me-1"></i>Save Flight';
-            this.disabled = false;
-            
-            if (data.success) {
-              // Show success toast instead of alert
-              showToast('Flight successfully added to your itinerary!', 'success');
-              
-              // Close modal
-              const flightModal = bootstrap.Modal.getInstance(document.getElementById('flightModal'));
-              flightModal.hide();
-            } else if (data.duplicate) {
-              showToast('This flight is already in your itinerary', 'warning');
-            } else if (data.error) {
-              showToast('Error: ' + data.error, 'error');
-            } else {
-              showToast('Unknown error occurred', 'error');
-            }
-          })
-          .catch(error => {
-            console.error('Error saving flight:', error);
-            
-            // Reset button
-            this.innerHTML = '<i class="bi bi-bookmark-plus me-1"></i>Save Flight';
-            this.disabled = false;
-            
-            showToast('Error saving flight to itinerary. Please try again.', 'error');
-          });
+            .then(response => {
+              console.log('Response status:', response.status);
+              return response.json();
+            })
+            .then(data => {
+              console.log('Response data:', data);
+
+              // Reset button
+              this.innerHTML = '<i class="bi bi-bookmark-plus me-1"></i>Save Flight';
+              this.disabled = false;
+
+              if (data.success) {
+                // Show success toast instead of alert
+                showToast('Flight successfully added to your itinerary!', 'success');
+
+                // Close modal
+                const flightModal = bootstrap.Modal.getInstance(document.getElementById('flightModal'));
+                flightModal.hide();
+              } else if (data.duplicate) {
+                showToast('This flight is already in your itinerary', 'warning');
+              } else if (data.error) {
+                showToast('Error: ' + data.error, 'error');
+              } else {
+                showToast('Unknown error occurred', 'error');
+              }
+            })
+            .catch(error => {
+              console.error('Error saving flight:', error);
+
+              // Reset button
+              this.innerHTML = '<i class="bi bi-bookmark-plus me-1"></i>Save Flight';
+              this.disabled = false;
+
+              showToast('Error saving flight to itinerary. Please try again.', 'error');
+            });
         });
       }
     });
@@ -768,11 +800,11 @@ body::before {
         toastContainer.className = 'toast-container';
         document.body.appendChild(toastContainer);
       }
-      
+
       // Create toast element
       const toast = document.createElement('div');
       toast.className = `toast toast-${type}`;
-      
+
       // Add content to toast
       toast.innerHTML = `
         <div class="toast-content">
@@ -785,15 +817,15 @@ body::before {
           <i class="bi bi-x"></i>
         </button>
       `;
-      
+
       // Add to container
       toastContainer.appendChild(toast);
-      
+
       // Show with animation
       setTimeout(() => {
         toast.classList.add('show');
       }, 10);
-      
+
       // Add close button functionality
       toast.querySelector('.toast-close').addEventListener('click', () => {
         toast.classList.remove('show');
@@ -801,7 +833,7 @@ body::before {
           toast.remove();
         }, 300);
       });
-      
+
       // Auto-dismiss after duration
       setTimeout(() => {
         toast.classList.remove('show');
@@ -812,47 +844,47 @@ body::before {
         }, 300);
       }, duration);
     }
-    
+
     // Debounce function for airport search
     function debounce(func, wait) {
       let timeout;
-      return function(...args) {
+      return function (...args) {
         clearTimeout(timeout);
         timeout = setTimeout(() => func.apply(this, args), wait);
       };
     }
-    
+
     // Search airports with debounce
-    const searchAirports = debounce(function(query, containerId) {
-    if (query.length < 2) {
+    const searchAirports = debounce(function (query, containerId) {
+      if (query.length < 2) {
         document.getElementById(containerId).style.display = 'none';
         return;
-    }
-    
-    // Use only AIRPORT and CITY, not COUNTRY
-    fetch(`/api/flights/locations/search?keyword=${encodeURIComponent(query)}&subType=AIRPORT,CITY`)
+      }
+
+
+      fetch(`/api/flights/locations/search?keyword=${encodeURIComponent(query)}&subType=AIRPORT,CITY`)
         .then(response => response.json())
         .then(data => {
-        const container = document.getElementById(containerId);
-        
-        if (data.status === 'OK' && data.results && data.results.length > 0) {
+          const container = document.getElementById(containerId);
+
+          if (data.status === 'OK' && data.results && data.results.length > 0) {
             container.innerHTML = '';
-            
+
             data.results.forEach(location => {
-            const item = document.createElement('div');
-            item.className = 'suggestion-item';
-            
-            // Handle city names with fallbacks
-            const cityName = location.address?.cityName || location.name || '';
-            // Get country name if available
-            const countryName = location.address?.countryName || '';
-            // Get the IATA code
-            const iataCode = location.iataCode || '';
-            // Get location type
-            const locationType = location.subType || '';
-            
-            // Only show items with IATA codes
-            if (iataCode) {
+              const item = document.createElement('div');
+              item.className = 'suggestion-item';
+
+              // Handle city names with fallbacks
+              const cityName = location.address?.cityName || location.name || '';
+              // Get country name if available
+              const countryName = location.address?.countryName || '';
+              // Get the IATA code
+              const iataCode = location.iataCode || '';
+              // Get location type
+              const locationType = location.subType || '';
+
+              // Only show items with IATA codes
+              if (iataCode) {
                 item.innerHTML = `
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -862,43 +894,43 @@ body::before {
                     <span class="suggestion-code">${iataCode}</span>
                 </div>
                 `;
-                
-                item.addEventListener('click', function() {
-                const inputId = containerId === 'origin-suggestions' ? 'origin' : 'destination';
-                const codeId = containerId === 'origin-suggestions' ? 'origin-code' : 'destination-code';
-                
-                document.getElementById(inputId).value = `${cityName} (${iataCode})`;
-                document.getElementById(codeId).value = iataCode;
-                container.style.display = 'none';
+
+                item.addEventListener('click', function () {
+                  const inputId = containerId === 'origin-suggestions' ? 'origin' : 'destination';
+                  const codeId = containerId === 'origin-suggestions' ? 'origin-code' : 'destination-code';
+
+                  document.getElementById(inputId).value = `${cityName} (${iataCode})`;
+                  document.getElementById(codeId).value = iataCode;
+                  container.style.display = 'none';
                 });
-                
+
                 container.appendChild(item);
-            }
+              }
             });
-            
+
             // If no locations with IATA codes were found
             if (container.children.length === 0) {
-            container.innerHTML = '<div class="suggestion-item">No airports found with code</div>';
+              container.innerHTML = '<div class="suggestion-item">No airports found with code</div>';
             }
-            
+
             container.style.display = 'block';
-        } else {
+          } else {
             container.innerHTML = '<div class="suggestion-item">No airports found</div>';
             container.style.display = 'block';
-        }
+          }
         })
         .catch(error => {
-        console.error('Error searching airports:', error);
-        const container = document.getElementById(containerId);
-        container.innerHTML = '<div class="suggestion-item">Error searching airports</div>';
-        container.style.display = 'block';
+          console.error('Error searching airports:', error);
+          const container = document.getElementById(containerId);
+          container.innerHTML = '<div class="suggestion-item">Error searching airports</div>';
+          container.style.display = 'block';
         });
     }, 300);
-    
+
     // Search flights
     function searchFlights(e) {
       e.preventDefault();
-      
+
       // Get form values
       const originCode = document.getElementById('origin-code').value;
       const destinationCode = document.getElementById('destination-code').value;
@@ -907,13 +939,13 @@ body::before {
       const adults = document.getElementById('adults').value;
       const travelClass = document.getElementById('travel-class').value;
       const nonStop = document.getElementById('non-stop').checked;
-      
+
       // Validate airport codes
       if (!originCode || !destinationCode) {
         alert('Please select valid airports from the suggestions');
         return;
       }
-      
+
       // Save current query parameters
       currentQuery = {
         originCode,
@@ -924,16 +956,16 @@ body::before {
         travelClass,
         nonStop
       };
-      
+
       // Show loading spinner
       document.getElementById('loading-spinner').style.display = 'flex';
       document.getElementById('results-tabs').style.display = 'none';
       document.getElementById('no-flights').style.display = 'none';
       document.getElementById('price-analysis').style.display = 'none';
-      
+
       // Format date for display
       document.getElementById('outbound-date').textContent = formatDateForDisplay(departureDate);
-      
+
       // Show/hide return tab based on return date
       if (returnDate) {
         document.getElementById('return-tab-container').style.display = 'block';
@@ -941,48 +973,48 @@ body::before {
       } else {
         document.getElementById('return-tab-container').style.display = 'none';
       }
-      
+
       // Build query string
       let queryString = `originLocationCode=${originCode}&destinationLocationCode=${destinationCode}&departureDate=${departureDate}&adults=${adults}&travelClass=${travelClass}&nonStop=${nonStop}`;
-      
+
       if (returnDate) {
         queryString += `&returnDate=${returnDate}`;
       }
-      
+
       // Fetch flights
       fetch(`/api/flights/search?${queryString}`)
         .then(response => response.json())
         .then(data => {
           // Hide loading spinner
           document.getElementById('loading-spinner').style.display = 'none';
-          
+
           if (data.status === 'OK' && data.results && data.results.length > 0) {
             // Store results
             flightResults = data.results;
-            
+
             // Show results tabs
             document.getElementById('results-tabs').style.display = 'block';
-            
+
             // Separate outbound and return flights
             const outboundFlights = document.getElementById('outbound-flights');
             const returnFlights = document.getElementById('return-flights');
-            
+
             outboundFlights.innerHTML = '';
             returnFlights.innerHTML = '';
-            
+
             // Display flights
             flightResults.forEach((flight, index) => {
               // Create flight card for outbound
               const outboundCard = createFlightCard(flight, 0, index);
               outboundFlights.appendChild(outboundCard);
-              
+
               // Create flight card for return if exists
               if (returnDate && flight.itineraries.length > 1) {
                 const returnCard = createFlightCard(flight, 1, index);
                 returnFlights.appendChild(returnCard);
               }
             });
-            
+
             // Fetch price analysis
             fetchPriceAnalysis(originCode, destinationCode, departureDate);
           } else {
@@ -996,40 +1028,40 @@ body::before {
           document.getElementById('no-flights').style.display = 'block';
         });
     }
-    
+
     // Format date for display
     function formatDateForDisplay(dateString) {
       const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', { 
-        weekday: 'short', 
-        month: 'short', 
-        day: 'numeric' 
+      return date.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric'
       });
     }
-    
+
     // Create flight card
     function createFlightCard(flight, itineraryIndex, flightIndex) {
       const itinerary = flight.itineraries[itineraryIndex];
       const segments = itinerary.segments;
       const firstSegment = segments[0];
       const lastSegment = segments[segments.length - 1];
-      
+
       const departureTime = new Date(firstSegment.departure.at);
       const arrivalTime = new Date(lastSegment.arrival.at);
-      
+
       // Calculate total duration in minutes
       const durationMs = arrivalTime - departureTime;
       const durationMinutes = Math.floor(durationMs / 60000);
       const hours = Math.floor(durationMinutes / 60);
       const minutes = durationMinutes % 60;
-      
+
       // Format duration
       const formattedDuration = `${hours}h ${minutes}m`;
-      
+
       // Format times
       const formattedDepartureTime = departureTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
       const formattedArrivalTime = arrivalTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-      
+
       // Create flight card
       const card = document.createElement('div');
       card.className = 'flight-card mb-3';
@@ -1069,59 +1101,59 @@ body::before {
           </button>
         </div>
       `;
-      
+
       // Add event listener to view details button
-      card.querySelector('.view-details-btn').addEventListener('click', function() {
+      card.querySelector('.view-details-btn').addEventListener('click', function () {
         const flightIndex = this.getAttribute('data-flight-index');
         const itineraryIndex = this.getAttribute('data-itinerary-index');
         showFlightDetails(flightIndex, itineraryIndex);
       });
-      
+
       return card;
     }
-    
+
     // Show flight details in modal
     function showFlightDetails(flightIndex, itineraryIndex) {
-    // Convert string values to integers
-    flightIndex = parseInt(flightIndex);
-    itineraryIndex = parseInt(itineraryIndex);
-    
-    console.log("Showing details for flight:", flightIndex, "itinerary:", itineraryIndex);
-    console.log("Flight results array length:", flightResults.length);
-    
-    // Check if indices are valid
-    if (flightResults.length <= flightIndex || flightIndex < 0) {
+      // Convert string values to integers
+      flightIndex = parseInt(flightIndex);
+      itineraryIndex = parseInt(itineraryIndex);
+
+      console.log("Showing details for flight:", flightIndex, "itinerary:", itineraryIndex);
+      console.log("Flight results array length:", flightResults.length);
+
+      // Check if indices are valid
+      if (flightResults.length <= flightIndex || flightIndex < 0) {
         console.error("Invalid flight index:", flightIndex);
         alert("Could not display flight details - invalid flight index");
         return;
-    }
-    
-    const flight = flightResults[flightIndex];
-    console.log("Selected flight:", flight);
-    
-    if (!flight.itineraries || flight.itineraries.length <= itineraryIndex) {
+      }
+
+      const flight = flightResults[flightIndex];
+      console.log("Selected flight:", flight);
+
+      if (!flight.itineraries || flight.itineraries.length <= itineraryIndex) {
         console.error("Invalid itinerary index or missing itineraries:", itineraryIndex);
         alert("Could not display flight details - invalid itinerary data");
         return;
-    }
-    
-    const itinerary = flight.itineraries[itineraryIndex];
-    selectedFlight = { flight, itineraryIndex };
-    
-    console.log("Selected itinerary:", itinerary);
-    
-    const modalBody = document.getElementById('flight-modal-body');
-    
-    // Check if we have the necessary data
-    if (!itinerary.segments || itinerary.segments.length === 0) {
+      }
+
+      const itinerary = flight.itineraries[itineraryIndex];
+      selectedFlight = { flight, itineraryIndex };
+
+      console.log("Selected itinerary:", itinerary);
+
+      const modalBody = document.getElementById('flight-modal-body');
+
+      // Check if we have the necessary data
+      if (!itinerary.segments || itinerary.segments.length === 0) {
         modalBody.innerHTML = '<div class="alert alert-warning">No flight segments found in the selected itinerary.</div>';
         const flightModal = new bootstrap.Modal(document.getElementById('flightModal'));
         flightModal.show();
         return;
-    }
-    
-    // Regular render code follows...
-    modalBody.innerHTML = `
+      }
+
+      // Regular render code follows...
+      modalBody.innerHTML = `
         <div class="card">
         <div class="card-header bg-primary text-white">
             <div class="d-flex justify-content-between align-items-center">
@@ -1155,25 +1187,25 @@ body::before {
         </div>
         </div>
     `;
-    
-    // Show modal
-    const flightModal = new bootstrap.Modal(document.getElementById('flightModal'));
-    flightModal.show();
+
+      // Show modal
+      const flightModal = new bootstrap.Modal(document.getElementById('flightModal'));
+      flightModal.show();
     }
-    
+
     // Render flight segments
     function renderSegments(segments) {
       let html = '';
-      
+
       segments.forEach((segment, index) => {
         const departureTime = new Date(segment.departure.at);
         const arrivalTime = new Date(segment.arrival.at);
-        
+
         // Calculate duration in minutes
         const durationMinutes = segment.duration.replace('PT', '')
           .replace('H', ' hours ')
           .replace('M', ' minutes');
-        
+
         html += `
           <div class="flight-segment">
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -1204,7 +1236,7 @@ body::before {
             </div>
           </div>
         `;
-        
+
         // Add connection information if not the last segment
         if (index < segments.length - 1) {
           const currentArrival = new Date(segment.arrival.at);
@@ -1212,7 +1244,7 @@ body::before {
           const connectionMinutes = Math.floor((nextDeparture - currentArrival) / 60000);
           const connectionHours = Math.floor(connectionMinutes / 60);
           const connectionMins = connectionMinutes % 60;
-          
+
           html += `
             <div class="connection-info text-center py-2 mb-3 bg-light">
               <i class="bi bi-arrow-down"></i>
@@ -1221,10 +1253,10 @@ body::before {
           `;
         }
       });
-      
+
       return html;
     }
-    
+
     // Fetch price analysis
     function fetchPriceAnalysis(originCode, destinationCode, departureDate) {
       fetch(`/api/flights/prices/analysis?originIataCode=${originCode}&destinationIataCode=${destinationCode}&departureDate=${departureDate}`)
@@ -1233,13 +1265,13 @@ body::before {
           if (data.status === 'OK' && data.results) {
             const priceAnalysis = document.getElementById('price-analysis');
             const priceStats = document.getElementById('price-stats');
-            
+
             // Format currency
             const currencyFormat = new Intl.NumberFormat('en-US', {
               style: 'currency',
               currency: data.results.currencyCode || 'USD'
             });
-            
+
             // Update price stats
             priceStats.innerHTML = `
               <div class="price-stat">
@@ -1263,19 +1295,19 @@ body::before {
                 <div class="price-label">Maximum</div>
               </div>
             `;
-            
+
             // Create price chart
             const ctx = document.getElementById('price-chart').getContext('2d');
-            
+
             // Destroy previous chart if exists
             if (window.priceChart) {
               window.priceChart.destroy();
             }
-            
+
             // Create data for chart
             const labels = ['Min', 'Q1', 'Median', 'Q3', 'Max'];
             const values = data.results.priceMetrics.map(metric => metric.amount);
-            
+
             window.priceChart = new Chart(ctx, {
               type: 'bar',
               data: {
@@ -1306,7 +1338,7 @@ body::before {
                   y: {
                     beginAtZero: true,
                     ticks: {
-                      callback: function(value) {
+                      callback: function (value) {
                         return currencyFormat.format(value);
                       }
                     }
@@ -1315,7 +1347,7 @@ body::before {
                 plugins: {
                   tooltip: {
                     callbacks: {
-                      label: function(context) {
+                      label: function (context) {
                         return currencyFormat.format(context.raw);
                       }
                     }
@@ -1323,7 +1355,7 @@ body::before {
                 }
               }
             });
-            
+
             // Show price analysis
             priceAnalysis.style.display = 'block';
           }
@@ -1332,27 +1364,27 @@ body::before {
           console.error('Error fetching price analysis:', error);
         });
     }
-    
+
     // Save flight to itinerary
     function saveFlight() {
       if (!selectedFlight) {
         return;
       }
-      
+
       // Check if user is authenticated
       const authUser = localStorage.getItem('authUser');
-      
+
       if (!authUser) {
         // Show login required modal
         const loginModal = new bootstrap.Modal(document.getElementById('loginRequiredModal'));
         loginModal.show();
         return;
       }
-      
+
       const flight = selectedFlight.flight;
       const itinerary = flight.itineraries[selectedFlight.itineraryIndex];
       const segments = itinerary.segments;
-      
+
       // Create flight data for saving
       const flightData = {
         id: flight.id,
@@ -1367,7 +1399,7 @@ body::before {
         class: flight.travelerPricings[0].fareDetailsBySegment[0].cabin,
         addedAt: new Date().toISOString()
       };
-      
+
       // Save to itinerary
       fetch('/api/plan/flights', {
         method: 'POST',
@@ -1379,37 +1411,37 @@ body::before {
           notes: ''
         }),
       })
-      .then(response => response.json())
-      .then(data => {
-        // Close modal
-        const flightModal = bootstrap.Modal.getInstance(document.getElementById('flightModal'));
-        flightModal.hide();
-        
-        // Show success message
-        const alertContainer = document.createElement('div');
-        alertContainer.className = 'position-fixed top-0 start-0 end-0 p-3 text-center';
-        alertContainer.style.zIndex = '5000';
-        alertContainer.innerHTML = `
+        .then(response => response.json())
+        .then(data => {
+          // Close modal
+          const flightModal = bootstrap.Modal.getInstance(document.getElementById('flightModal'));
+          flightModal.hide();
+
+          // Show success message
+          const alertContainer = document.createElement('div');
+          alertContainer.className = 'position-fixed top-0 start-0 end-0 p-3 text-center';
+          alertContainer.style.zIndex = '5000';
+          alertContainer.innerHTML = `
           <div class="alert alert-success alert-dismissible fade show" role="alert">
             <strong>Success!</strong> Flight added to your itinerary!
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>
         `;
-        
-        document.body.appendChild(alertContainer);
-        
-        // Remove after 3 seconds
-        setTimeout(() => {
-          if (alertContainer.parentNode) {
-            alertContainer.querySelector('.alert').classList.remove('show');
-            setTimeout(() => alertContainer.remove(), 300);
-          }
-        }, 3000);
-      })
-      .catch(error => {
-        console.error('Error saving flight:', error);
-        alert('Error saving to itinerary. Please try again.');
-      });
+
+          document.body.appendChild(alertContainer);
+
+          // Remove after 3 seconds
+          setTimeout(() => {
+            if (alertContainer.parentNode) {
+              alertContainer.querySelector('.alert').classList.remove('show');
+              setTimeout(() => alertContainer.remove(), 300);
+            }
+          }, 3000);
+        })
+        .catch(error => {
+          console.error('Error saving flight:', error);
+          alert('Error saving to itinerary. Please try again.');
+        });
     }
 
     // Typewriter effect for page title
@@ -1424,7 +1456,8 @@ body::before {
     }
     window.addEventListener("DOMContentLoaded", typeWriterEffect);
   </script>
-  
+
   <script src="/js/auth.js"></script>
 </body>
+
 </html>

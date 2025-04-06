@@ -71,7 +71,7 @@ const FATAL_ERROR_CODES = [
         ignorable: []  // Soft errors like no rooms available
       };
       
-      // Reduced batch size to minimize complete batch failures
+      // Reduced batch size to minimize batch failures
       const BATCH_SIZE = 10; 
       
       // If search dates are provided, search for offers in batches
@@ -107,7 +107,6 @@ const FATAL_ERROR_CODES = [
               processedHotels.push(...batchOffersResponse.data);
             }
           } catch (batchError) {
-            // Sophisticated error handling
             if (batchError.response && batchError.response.result && batchError.response.result.errors) {
               const { 
                 fatalErrors, 
