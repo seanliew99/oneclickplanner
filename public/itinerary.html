@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+w<!DOCTYPE html>
 <html lang="en">
 <head>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -2040,62 +2040,73 @@ body::before {
   a.download = 'itinerary.ics';
   a.click();
 }
-
+// Converts a JavaScript Date to iCalendar (ICS) format: YYYYMMDDTHHMMSSZ
 function formatICSDate(date) {
   return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 }
 
-    
-    // Export via Email
-  function exportEmail() {
-    const subject = 'My Travel Itinerary';
-    const body = encodeURIComponent(generatePlainTextItinerary(currentPlan));
+// ====================
+// Export Functions
+// ====================
 
-    window.location.href = `mailto:?subject=${subject}&body=${body}`;
-  }
+// Exports the current itinerary by composing an email with a prefilled subject and body
+function exportEmail() {
+  const subject = 'My Travel Itinerary';
+  const body = encodeURIComponent(generatePlainTextItinerary(currentPlan));
 
-  function clearPlan() {
-    // Use our custom confirm dialog instead of the browser's default
-    showCustomConfirmDialog('Are you sure you want to clear your current trip plan?', function(confirmed) {
-      if (confirmed) {
-        // Use a much simpler request format - exactly matching the index.html implementation
-        fetch('/api/plan', {
-          method: 'DELETE',
-        })
-        .then(response => {
-          if (response.ok) {
-            // Successfully cleared - redirect to home
-            window.location.href = '/';
-          } else {
-            // If DELETE failed, try the POST approach as fallback
-            return fetch('/api/plan', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                destination: '',
-                startDate: '',
-                endDate: '',
-              }),
-            });
-          }
-        })
-        .then(response => {
-          if (response && response.ok) {
-            // Successfully cleared with POST approach - redirect to home
-            window.location.href = '/';
-          } else if (response) {
-            throw new Error('Failed to clear plan with both methods');
-          }
-        })
-        .catch(error => {
-          console.error('Error clearing plan:', error);
-          alert('Could not clear the plan. Please try again or return to the home page.');
-        });
-      }
-    });
-  }
+  // Opens the default mail client with the itinerary in the body
+  window.location.href = `mailto:?subject=${subject}&body=${body}`;
+}
+
+// ====================
+// Clear Plan Function
+// ====================
+
+// Clears the current trip plan after confirming with the user
+function clearPlan() {
+  // Use a custom confirm dialog instead of the browser's default
+  showCustomConfirmDialog('Are you sure you want to clear your current trip plan?', function(confirmed) {
+    if (confirmed) {
+      // First attempt: send DELETE request to clear the plan
+      fetch('/api/plan', {
+        method: 'DELETE',
+      })
+      .then(response => {
+        if (response.ok) {
+          // Successfully cleared — redirect to home
+          window.location.href = '/';
+        } else {
+          // Fallback approach: send POST with empty data to clear the plan
+          return fetch('/api/plan', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              destination: '',
+              startDate: '',
+              endDate: '',
+            }),
+          });
+        }
+      })
+      .then(response => {
+        if (response && response.ok) {
+          // Successfully cleared using POST fallback — redirect to home
+          window.location.href = '/';
+        } else if (response) {
+          throw new Error('Failed to clear plan with both methods');
+        }
+      })
+      .catch(error => {
+        // Handle and log errors gracefully
+        console.error('Error clearing plan:', error);
+        alert('Could not clear the plan. Please try again or return to the home page.');
+      });
+    }
+  });
+}
+
 
   function showCustomConfirmDialog(message, callback) {
     // Create modal backdrop
@@ -2377,61 +2388,79 @@ function handleFileSelection(event) {
     });
   }
 }
+// =============================
+// Handle Drag-and-Drop File Upload
+// =============================
 
-// Handle file drop
+// Triggered when a file is dropped into the drop zone
 function handleDrop(event) {
   const dt = event.dataTransfer;
   const file = dt.files[0];
-  
+
+  // Check if the file exists and is a JSON file
   if (file && file.type === 'application/json') {
-    displayFileInfo(file);
-    
-    // Store file reference for later use
+    displayFileInfo(file); // Show file info in the UI
+
+    // Bind import action to the selected file
     document.getElementById('btn-import').addEventListener('click', () => {
       processImport(file);
     });
   } else {
+    // Show error if invalid file type
     showToast('error', 'Please select a valid JSON file.');
   }
 }
 
-// Display selected file information
+// =============================
+// Display Selected File Info
+// =============================
+
+// Displays file name and size in the UI after selection
 function displayFileInfo(file) {
   const selectedFile = document.getElementById('selected-file');
   const fileName = selectedFile.querySelector('.file-name');
   const fileSize = selectedFile.querySelector('.file-size');
   const importBtn = document.getElementById('btn-import');
-  
+
+  // Update UI elements
   fileName.textContent = file.name;
   fileSize.textContent = formatFileSize(file.size);
   selectedFile.classList.add('show');
   importBtn.disabled = false;
-  
-  // Add event listener to clear button
+
+  // Enable clear/reset functionality
   document.getElementById('file-clear').addEventListener('click', clearFileSelection);
 }
 
-// Format file size
+// =============================
+// Format File Size
+// =============================
+
+// Converts file size in bytes to human-readable format
 function formatFileSize(bytes) {
   if (bytes === 0) return '0 Bytes';
-  
+
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
+
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-// Clear file selection
+// =============================
+// Clear Selected File
+// =============================
+
+// Resets the file input and UI when user clears the selected file
 function clearFileSelection() {
   const selectedFile = document.getElementById('selected-file');
   const fileInput = document.getElementById('file-input');
   const importBtn = document.getElementById('btn-import');
-  
+
   selectedFile.classList.remove('show');
-  fileInput.value = '';
-  importBtn.disabled = true;
-  importBtn.file = null;
+  fileInput.value = '';         // Reset file input
+  importBtn.disabled = true;    // Disable import button
+  importBtn.file = null;        // Clear any stored file reference
 }
 
 // Process the import operation with confirmation
@@ -2910,7 +2939,7 @@ accordionItem.innerHTML = `
       list.appendChild(item);
     });
 
-      // ✅ 👉 ADD THIS HERE (Step 2)
+     
       const toggleButtons = accordionItem.querySelectorAll('.toggle-note-btn');
 toggleButtons.forEach(btn => {
   const noteId = btn.dataset.noteId;
@@ -2923,7 +2952,7 @@ toggleButtons.forEach(btn => {
   const savedNote = localStorage.getItem('note-' + noteId);
   textarea.value = savedNote || '';
 
-  // Show 📌 indicator if note exists
+  // Show  indicator if note exists
   if (savedNote && indicator) {
     indicator.style.display = 'inline';
   }
@@ -2938,7 +2967,7 @@ toggleButtons.forEach(btn => {
     const value = textarea.value;
     localStorage.setItem('note-' + noteId, value);
 
-    // Toggle 📌
+    // Toggle 
     if (value.trim()) {
       indicator.style.display = 'inline';
     } else {
