@@ -31,12 +31,12 @@ body::before {
   filter: blur(4px);
 }
 
-    .main-content {
-      flex: 1;
-    }
+.main-content {
+  flex: 1;
+}
 
-    .navbar {
-      position: sticky;
+.navbar {
+  position: sticky;
   top: 0;
   z-index: 1000;
   background-color: rgba(15, 15, 20, 0.6) !important;
@@ -45,6 +45,7 @@ body::before {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
   transition: background-color 0.4s ease;
 }
+
 .nav-tabs .nav-link {
   background-color: transparent;
   color: white;
@@ -78,7 +79,6 @@ body::before {
  
 }
 
-    
 .navbar-brand {
   font-size: 2rem;
   font-weight: 700;
@@ -86,12 +86,10 @@ body::before {
   text-shadow: 0 0 10px #4db8ff88;
 }
 
-
 .nav-link:hover {
   color: #ff1f4b !important;
   text-shadow: 0 0 10px #ff1f4b88;
 }
-
 
 .nav-tabs .nav-link.active,
 .nav-tabs .nav-link:focus,
@@ -120,16 +118,16 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
   color: white !important;
 }
 
-    .page-header {
-      background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://source.unsplash.com/1600x900/?landmark,attraction');
-      background-size: cover;
-      background-position: center;
-      color: white;
-      padding: 60px 0;
-      margin-bottom: 30px;
-    }
+.page-header {
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://source.unsplash.com/1600x900/?landmark,attraction');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  padding: 60px 0;
+  margin-bottom: 30px;
+}
     
-    .search-container {
+.search-container {
   background-color: rgba(255, 255, 255, 0.05);
   color: white;
   backdrop-filter: blur(12px);
@@ -156,14 +154,14 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
 
 
     
-    #map {
-      height: 400px;
-      width: 100%;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
+#map {
+  height: 400px;
+  width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
     
-    .attraction-card {
+.attraction-card {
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   border: none;
@@ -181,61 +179,61 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
 }
 
     
-    .attraction-image {
-      height: 180px;
-      background-size: cover;
-      background-position: center;
-    }
-    
-    .rating {
-      color: #ffc107;
-    }
-    
-    .no-plan-alert {
-      margin-bottom: 30px;
-    }
-    
-    .modal-body {
-      max-height: 70vh;
-      overflow-y: auto;
-    }
-    
-    .place-photo {
-      width: 100%;
-      border-radius: 5px;
-      margin-bottom: 15px;
-    }
-    
-    footer {
-      background-color: #343a40;
-      color: white;
-      padding: 20px 0;
-      margin-top: auto;
-    }
-    
-    .result-count {
-      font-weight: 600;
-      color: #6c757d;
-      margin-bottom: 20px;
-    }
-    
-    .spinner-container {
-      display: flex;
-      justify-content: center;
-      margin: 50px 0;
-    }
-    
-    .btn-save {
-      background-color: #28a745;
-      color: white;
-    }
-    
-    .btn-save:hover {
-      background-color: #218838;
-      color: white;
-    }
+.attraction-image {
+  height: 180px;
+  background-size: cover;
+  background-position: center;
+}
 
-    .tab-pane .card {
+.rating {
+  color: #ffc107;
+}
+
+.no-plan-alert {
+  margin-bottom: 30px;
+}
+
+.modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.place-photo {
+  width: 100%;
+  border-radius: 5px;
+  margin-bottom: 15px;
+}
+
+footer {
+  background-color: #343a40;
+  color: white;
+  padding: 20px 0;
+  margin-top: auto;
+}
+
+.result-count {
+  font-weight: 600;
+  color: #6c757d;
+  margin-bottom: 20px;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  margin: 50px 0;
+}
+
+.btn-save {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-save:hover {
+  background-color: #218838;
+  color: white;
+}
+
+.tab-pane .card {
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   border: none;
@@ -339,7 +337,6 @@ body, h1, h2, h3, h4, h5, h6, p, label, .form-label, .card-title, .card-text, .n
 }
 
 
-
 img[src="/Logo.png"] {
   background-color: black;
   padding: 8px;
@@ -352,6 +349,7 @@ img[src="/Logo.png"] {
 </head>
 
 <script>
+  // To highlight active page in navbar
   document.addEventListener("DOMContentLoaded", function () {
     const currentPath = window.location.pathname;
 
@@ -536,14 +534,14 @@ fetch('/api/config')
   .then(res => res.json())
   .then(config => {
     apiKey = config.apiKey;
-    console.log("✅ API Key Loaded:", apiKey);
+    console.log("API Key Loaded:", apiKey);
     // Load the Google Maps script with the API key
     loadGoogleMapsScript(apiKey);
 
     loadCurrentPlan();  
   })
   .catch(err => {
-    console.error("❌ Failed to load API key:", err);
+    console.error("Failed to load API key:", err);
   });
 
     let map;
@@ -563,6 +561,7 @@ fetch('/api/config')
     const removedAttractions = new Set();
     const attractionModal = new bootstrap.Modal(document.getElementById('attractionModal'));
 
+    // Compute the distance
     function haversineDistance(a, b) {
       const latA = typeof a.lat === 'function' ? a.lat() : a.lat;
       const lngA = typeof a.lng === 'function' ? a.lng() : a.lng;
@@ -602,7 +601,7 @@ fetch('/api/config')
       return bestCluster.slice(0, maxCount);
     }
 
-
+    // Format dates
     function formatDateRange(startDate, endDate) {
       if (!startDate && !endDate) return 'Dates not specified';
       if (!startDate) return `Until ${new Date(endDate).toLocaleDateString()}`;
@@ -610,6 +609,7 @@ fetch('/api/config')
       return `${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}`;
     }
 
+    // Initializes the Google Map, sets up controls, listeners, and loads the current plan.
     function initMap() {
       const defaultLocation = { lat: 0, lng: 0 };
       map = new google.maps.Map(document.getElementById("map"), {
@@ -636,11 +636,13 @@ fetch('/api/config')
       loadCurrentPlan();
     }
 
+    // Delays the search function to avoid rapid calls when map is dragged or zoomed.
     function debouncedSearchByMapBounds() {
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(searchAttractionsByMapBounds, 500);
     }
 
+    // Gets the map center, reverse geocodes it to a location name, updates the UI, and searches for attractions in that area.
     function searchAttractionsByMapBounds() {
       const bounds = map.getBounds();
       if (!bounds) return;
@@ -682,6 +684,7 @@ fetch('/api/config')
       });
     }
 
+     // Searches for attractions based on a given location and keyword, then displays the results or error messages acrcordingly
     function searchAttractionsByLocation(location) {
       clearSearchMarkers();
       document.getElementById('spinner').style.display = 'flex';
@@ -714,6 +717,7 @@ fetch('/api/config')
         });
     }
 
+    // Searches for attractions using the current plan's destination or a provided override, cleans the location, and fits results on the map
     function originalSearchAttractions(keyword, locationOverride) {
       if (!currentPlan || !currentPlan.destination) return;
       document.getElementById('spinner').style.display = 'flex';
@@ -765,7 +769,8 @@ fetch('/api/config')
           `;
         });
     }
-
+    
+    // Reset button
     function addResetMapButton() {
       const mapElement = document.getElementById('map');
       const resetButton = document.createElement('button');
@@ -790,6 +795,7 @@ fetch('/api/config')
       mapContainer.appendChild(resetButton);
     }
 
+    // For selecting which day to add a chosen attraction to the itinerary.
     function addDaySelectionModal() {
       if (!document.getElementById('daySelectionModal')) {
         const modalHTML = `
@@ -819,6 +825,7 @@ fetch('/api/config')
       }
     }
 
+    // Centers the map view to fit all recommended markers for the specified day
     function centerMapOnRecommended(dayIndex) {
       // Get all recommended markers that belong to the chosen day
       const bounds = new google.maps.LatLngBounds();
@@ -941,6 +948,7 @@ fetch('/api/config')
       setupAddAllButton();
     }
 
+    // Computes a list of cities assigned to each day of the trip based on the plan city schedule or destination
     function computePerDayCityMap(plan) {
       const perDayCityMap = [];
       if (plan.cities && plan.cities.length > 0) {
@@ -979,7 +987,6 @@ fetch('/api/config')
           }
         }
         
-        // Use the clean destination name for all days
         for (let i = 0; i < totalDays; i++) {
           perDayCityMap.push(destinationName);
         }
@@ -987,6 +994,7 @@ fetch('/api/config')
       return perDayCityMap;
     }
 
+    // Attaches click handlers to buttons for each recommended place
     function setupRecommendedButtons() {
       const buttons = document.querySelectorAll('.recommended-add-btn');
       buttons.forEach(button => {
@@ -1044,6 +1052,7 @@ fetch('/api/config')
       });
     }
 
+    // Adds all recommendations to the itinerary
     function addAllRecommendationsToItinerary() {
       // Collect all recommendations
       const allRecommendations = [];
@@ -1073,7 +1082,7 @@ fetch('/api/config')
           // Ensure required fields are present
           if (!place.place_id) {
             console.error('Missing place_id for place:', place);
-            return; // Skip this place
+            return; 
           }
           
           allRecommendations.push({
@@ -1212,7 +1221,7 @@ fetch('/api/config')
       }
     }
 
-
+    // Attaches a click listener to button, checking user login and itinerary state before proceeding
     function setupAddAllButton() {
       const addAllBtn = document.getElementById('add-all-recommendations');
       if (!addAllBtn) return;
@@ -1237,6 +1246,7 @@ fetch('/api/config')
       });
     }
 
+    // Fetches the current itinerary and checks whether any attractions are already present
     function checkItineraryStatus() {
       return fetch('/api/plan')
         .then(response => response.json())
@@ -1246,6 +1256,7 @@ fetch('/api/config')
         });
     }
 
+     // Displays a modal asking the user whether to overwrite or append recommendations to the existing itinerary
     function showOverwriteConfirmationModal() {
       if (!document.getElementById('overwriteConfirmationModal')) {
         const modalHTML = `
@@ -1290,6 +1301,7 @@ fetch('/api/config')
       overwriteModal.show();
     }
 
+    // Clears all existing attractions from the itinerary and then adds all recommended ones
     function clearItineraryAndAddAll() {
       const loadingNotification = createNotification('info', 'Preparing to update your itinerary...');
       const progressBar = document.createElement('div');
@@ -1386,6 +1398,7 @@ fetch('/api/config')
         });
     }
 
+    // Deletes attractions one by one with progress feedback, then adds all recommendations when done
     function deleteAttractionsSequentially(attractions, index, total, progressBar, notification) {
       if (!attractions || index >= attractions.length) {
         console.log('Finished deleting all attractions sequentially');
@@ -1430,6 +1443,7 @@ fetch('/api/config')
       });
     }
 
+    // Updates the visual progress bar
     function updateProgress(progressBar, current, total) {
       const percentage = Math.round((current / total) * 100);
       const progressElement = progressBar.querySelector('.progress-bar');
@@ -1438,6 +1452,7 @@ fetch('/api/config')
       progressElement.textContent = `${percentage}%`;
     }
 
+    // Creates and displays an alert with an icon and message
     function createNotification(type, message) {
       const alertClass = {
         'success': 'alert-success',
@@ -1465,6 +1480,7 @@ fetch('/api/config')
       return alertContainer;
     }
 
+    // Updates a notification message and removes its progress bar
     function updateNotificationMessage(notificationElement, type, message, progressBar) {
       const alertClass = {
         'success': 'alert-success',
@@ -1498,6 +1514,7 @@ fetch('/api/config')
       }
     }
 
+    // Updates notification
     function updateNotificationWithResult(notificationElement, type, message) {
       const alertClass = {
         'success': 'alert-success',
@@ -1533,6 +1550,7 @@ fetch('/api/config')
       }
     }
 
+    // Shows notification
     function showNotification(type, message) {
       const alertClass = {
         'success': 'alert-success',
@@ -1571,6 +1589,7 @@ fetch('/api/config')
       }, timeout);
     }
 
+    // Searches through recommendations and returns the place that matches the given place ID.
     function findPlaceInRecommendations(placeId) {
       for (const dayIndex in itineraryRecommendations) {
         for (const place of itineraryRecommendations[dayIndex]) {
@@ -1582,6 +1601,7 @@ fetch('/api/config')
       return null;
     }
 
+    // Adds a selected place to the user itinerary
     function addToItineraryForDay(place, dayIndex) {
       const payload = {
         placeId: place.placeId,
@@ -1608,6 +1628,7 @@ fetch('/api/config')
       });
     }
 
+    // Adds a selected place to the itinerary without assigning it to a specific day
     function addToItineraryWithoutDay(place) {
       fetch('/api/plan/places', {
         method: 'POST',
@@ -1631,6 +1652,7 @@ fetch('/api/config')
       });
     }
 
+    // Shows a success or warning alert when a place is added to the itinerary
     function showResultNotification(data, placeName, dayIndex) {
       let alertClass = 'alert-success';
       let dayMessage = dayIndex !== undefined ? ` for Day ${dayIndex + 1}` : '';
@@ -1662,6 +1684,7 @@ fetch('/api/config')
       }, 3000);
     }
 
+    // Adds a place to the itinerary using its ID and day index
     function addToItinerary(placeId, dayIndex) {
       const place = itineraryRecommendations[dayIndex].find(p => p.place_id === placeId);
       if (!place) return;
@@ -1689,6 +1712,7 @@ fetch('/api/config')
       });
     }
 
+     // Dynamically loads the Google Maps API script
     function loadGoogleMapsScript(apiKey) {
       // Create the script element
       const script = document.createElement('script');
@@ -1700,6 +1724,7 @@ fetch('/api/config')
       document.body.appendChild(script);
     }
 
+    // Loads the user current trip plan
     function loadCurrentPlan() {
       fetch('/api/plan')
         .then(response => response.json())
@@ -1775,6 +1800,7 @@ fetch('/api/config')
         });
     }
 
+    // Checks if the user is logged in before allowing them to add an attraction to their itinerary
     function checkAuthBeforeAddToItinerary(placeData) {
       const authUser = localStorage.getItem('authUser');
       if (!authUser) {
@@ -1784,6 +1810,7 @@ fetch('/api/config')
       return true;
     }
 
+    // Displays a warning alert prompting the user to log in before accessing features like adding attractions
     function showLoginRequiredModal() {
       const notificationHtml = `
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
@@ -1838,6 +1865,7 @@ fetch('/api/config')
       }, 500);
     }
 
+    // Clears old markers and adds blue map markers for each day's recommended attractions
     function createRecommendedMarkers() {
       // Remove old recommended markers
       recommendedMarkers.forEach(obj => obj.marker.setMap(null));
@@ -1871,175 +1899,177 @@ fetch('/api/config')
       }
     }
 
+    // Displays a list of attraction cards with images and markers for non-recommended places
     function displayResults(places) {
-  const resultsContainer = document.getElementById('results-container');
-  resultsContainer.innerHTML = '';
+      const resultsContainer = document.getElementById('results-container');
+        resultsContainer.innerHTML = '';
 
-  places.forEach((place) => {
-    // Add map marker if not a recommended place
-    if (!recommendedPlaceIds.has(place.place_id)) {
-      const marker = new google.maps.Marker({
-        position: place.geometry.location,
-        map: map,
-        title: place.name,
-        animation: google.maps.Animation.DROP
+        places.forEach((place) => {
+          // Add map marker if not a recommended place
+          if (!recommendedPlaceIds.has(place.place_id)) {
+            const marker = new google.maps.Marker({
+              position: place.geometry.location,
+              map: map,
+              title: place.name,
+              animation: google.maps.Animation.DROP
+            });
+            searchMarkers.push(marker);
+            marker.addListener('click', () => showPlaceDetails(place));
+        }
+
+        // Use Google photo if available
+        let photoUrl;
+        if (place.photos && place.photos.length > 0) {
+          const photoName = place.photos[0].name;
+          photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${apiKey}&maxWidthPx=600`;
+        } 
+        else {
+          photoUrl = '/Logo.png';
+        }
+
+        const col = document.createElement('div');
+        col.className = 'col-md-6 col-lg-4';
+        col.style.opacity = 0;
+        col.style.transition = 'opacity 0.3s ease-in-out';
+
+        const card = document.createElement('div');
+        card.className = 'card attraction-card h-100';
+
+        card.innerHTML = `
+          <div class="card-body">
+            <h5 class="card-title">${place.name}</h5>
+            <p class="card-text">
+              ${place.rating ? `<span class="rating">★ ${place.rating}</span>` : ''}
+            </p>
+            <p class="card-text text-truncate">${place.formatted_address || ''}</p>
+            <button class="btn btn-sm btn-outline-primary view-details-btn">View Details</button>
+          </div>
+        `;
+
+        const image = new Image();
+        image.src = photoUrl;
+        image.alt = place.name;
+        image.className = 'card-img-top attraction-image';
+        image.style.display = 'none';
+
+        // Insert image into card
+        card.insertBefore(image, card.firstChild);
+        col.appendChild(card);
+        resultsContainer.appendChild(col);
+
+        // Image load success
+        image.onload = () => {
+          image.style.display = 'block';
+          setTimeout(() => col.style.opacity = 1, 10);
+        };
+
+        // Image failed to load
+        image.onerror = (e) => {
+          console.warn(`⚠️ Failed to load image for "${place.name}" (Place ID: ${place.place_id})`);
+          console.warn('Error event:', e);
+          console.warn('Attempted image URL:', image.src);
+
+          // Fallback to default image
+          image.src = '/Logo.png';
+          image.onload = () => {
+            image.style.display = 'block';
+            setTimeout(() => col.style.opacity = 1, 10);
+          };
+        };
+
+        // Button click
+        card.querySelector('.view-details-btn').addEventListener('click', () => {
+          showPlaceDetails(place);
+        });
       });
-      searchMarkers.push(marker);
-      marker.addListener('click', () => showPlaceDetails(place));
     }
 
-    // Use Google photo if available
-    let photoUrl;
-    if (place.photos && place.photos.length > 0) {
-      const photoName = place.photos[0].name;
-      photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${apiKey}&maxWidthPx=600`;
-    } else {
-      photoUrl = '/Logo.png';
-    }
 
-    const col = document.createElement('div');
-    col.className = 'col-md-6 col-lg-4';
-    col.style.opacity = 0;
-    col.style.transition = 'opacity 0.3s ease-in-out';
-
-    const card = document.createElement('div');
-    card.className = 'card attraction-card h-100';
-
-    card.innerHTML = `
-      <div class="card-body">
-        <h5 class="card-title">${place.name}</h5>
-        <p class="card-text">
-          ${place.rating ? `<span class="rating">★ ${place.rating}</span>` : ''}
-        </p>
-        <p class="card-text text-truncate">${place.formatted_address || ''}</p>
-        <button class="btn btn-sm btn-outline-primary view-details-btn">View Details</button>
-      </div>
-    `;
-
-    const image = new Image();
-    image.src = photoUrl;
-    image.alt = place.name;
-    image.className = 'card-img-top attraction-image';
-    image.style.display = 'none';
-
-    // Insert image into card
-    card.insertBefore(image, card.firstChild);
-    col.appendChild(card);
-    resultsContainer.appendChild(col);
-
-    // Image load success
-    image.onload = () => {
-      image.style.display = 'block';
-      setTimeout(() => col.style.opacity = 1, 10);
-    };
-
-    // Image failed to load
-    image.onerror = (e) => {
-      console.warn(`⚠️ Failed to load image for "${place.name}" (Place ID: ${place.place_id})`);
-      console.warn('Error event:', e);
-      console.warn('Attempted image URL:', image.src);
-
-      // Fallback to default image
-      image.src = '/Logo.png';
-      image.onload = () => {
-        image.style.display = 'block';
-        setTimeout(() => col.style.opacity = 1, 10);
-      };
-    };
-
-    // Button click
-    card.querySelector('.view-details-btn').addEventListener('click', () => {
-      showPlaceDetails(place);
-    });
-  });
-}
-
-
-
-function showPlaceDetails(place) {
-  selectedPlace = place;
-  document.getElementById('modal-title').textContent = place.name;
-  document.getElementById('modal-body').innerHTML = `
-    <div class="text-center my-4">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
-      <p class="mt-2">Loading details...</p>
-    </div>
-  `;
-  attractionModal.show();
-
-  fetch(`/api/places/${place.place_id}`)
-    .then(response => response.json())
-    .then(data => {
-      let photoUrl;
-
-      if (place.photos && place.photos.length > 0) {
-        const photoName = place.photos[0].name;
-        photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${apiKey}&maxWidthPx=600`;
-      } else {
-        photoUrl = `https://source.unsplash.com/600x400/?${encodeURIComponent(place.name)}`;
-      }
-
-      if (data.status === 'OK' && data.result) {
-        const details = data.result;
-
-        document.getElementById('modal-body').innerHTML = `
-          <img src="${photoUrl}" alt="${place.name}" class="img-fluid rounded mb-3" style="max-height: 300px; object-fit: cover; width: 100%;">
-          <div class="mb-4">
-            <h4>${details.name}</h4>
-            <p>${details.rating ? `<span class="rating">★ ${details.rating}</span>` : ''}</p>
-            <p>${details.formatted_address || ''}</p>
-            ${details.formatted_phone_number ? `<p><strong>Phone:</strong> ${details.formatted_phone_number}</p>` : ''}
-            ${details.website ? `<p><strong>Website:</strong> <a href="${details.website}" target="_blank">${details.website}</a></p>` : ''}
-          </div>
-          ${details.description ? `
-            <div class="mb-4">
-              <h5>About</h5>
-              <p>${details.description}</p>
-            </div>
-          ` : ''}
-          ${details.opening_hours && details.opening_hours.weekday_text ? `
-            <div class="mb-4">
-              <h5>Opening Hours</h5>
-              <ul class="list-unstyled">
-                ${details.opening_hours.weekday_text.map(day => `<li>${day}</li>`).join('')}
-              </ul>
-            </div>
-          ` : ''}
-          <div class="mb-3">
-            <h5>Add Notes</h5>
-            <textarea id="place-notes" class="form-control" rows="3" placeholder="Add any notes about this place..."></textarea>
-          </div>
-        `;
-      } else {
-        document.getElementById('modal-body').innerHTML = `
-          <div class="alert alert-warning">
-            Could not load detailed information for this place.
-          </div>
-          <img src="${photoUrl}" alt="${place.name}" class="img-fluid rounded mb-3" style="max-height: 300px; object-fit: cover; width: 100%;">
-          <div class="mb-3">
-            <h4>${place.name}</h4>
-            <p>${place.formatted_address || ''}</p>
-          </div>
-          <div class="mb-3">
-            <h5>Add Notes</h5>
-            <textarea id="place-notes" class="form-control" rows="3" placeholder="Add any notes about this place..."></textarea>
-          </div>
-        `;
-      }
-    })
-    .catch(error => {
-      console.error('Error fetching place details:', error);
+    // Loads and displays detailed information for a selected place
+    function showPlaceDetails(place) {
+      selectedPlace = place;
+      document.getElementById('modal-title').textContent = place.name;
       document.getElementById('modal-body').innerHTML = `
-        <div class="alert alert-danger">
-          Error loading place details. Please try again later.
+        <div class="text-center my-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-2">Loading details...</p>
         </div>
       `;
-    });
-}
+      attractionModal.show();
 
+      fetch(`/api/places/${place.place_id}`)
+        .then(response => response.json())
+        .then(data => {
+          let photoUrl;
 
+        if (place.photos && place.photos.length > 0) {
+          const photoName = place.photos[0].name;
+          photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${apiKey}&maxWidthPx=600`;
+        } else {
+          photoUrl = `https://source.unsplash.com/600x400/?${encodeURIComponent(place.name)}`;
+        }
+
+        if (data.status === 'OK' && data.result) {
+          const details = data.result;
+
+          document.getElementById('modal-body').innerHTML = `
+            <img src="${photoUrl}" alt="${place.name}" class="img-fluid rounded mb-3" style="max-height: 300px; object-fit: cover; width: 100%;">
+            <div class="mb-4">
+              <h4>${details.name}</h4>
+              <p>${details.rating ? `<span class="rating">★ ${details.rating}</span>` : ''}</p>
+              <p>${details.formatted_address || ''}</p>
+              ${details.formatted_phone_number ? `<p><strong>Phone:</strong> ${details.formatted_phone_number}</p>` : ''}
+              ${details.website ? `<p><strong>Website:</strong> <a href="${details.website}" target="_blank">${details.website}</a></p>` : ''}
+            </div>
+            ${details.description ? `
+              <div class="mb-4">
+                <h5>About</h5>
+                <p>${details.description}</p>
+              </div>
+            ` : ''}
+            ${details.opening_hours && details.opening_hours.weekday_text ? `
+              <div class="mb-4">
+                <h5>Opening Hours</h5>
+                <ul class="list-unstyled">
+                  ${details.opening_hours.weekday_text.map(day => `<li>${day}</li>`).join('')}
+                </ul>
+              </div>
+            ` : ''}
+            <div class="mb-3">
+              <h5>Add Notes</h5>
+              <textarea id="place-notes" class="form-control" rows="3" placeholder="Add any notes about this place..."></textarea>
+            </div>
+          `;
+        } else {
+          document.getElementById('modal-body').innerHTML = `
+            <div class="alert alert-warning">
+              Could not load detailed information for this place.
+            </div>
+            <img src="${photoUrl}" alt="${place.name}" class="img-fluid rounded mb-3" style="max-height: 300px; object-fit: cover; width: 100%;">
+            <div class="mb-3">
+              <h4>${place.name}</h4>
+              <p>${place.formatted_address || ''}</p>
+            </div>
+            <div class="mb-3">
+              <h5>Add Notes</h5>
+              <textarea id="place-notes" class="form-control" rows="3" placeholder="Add any notes about this place..."></textarea>
+            </div>
+          `;
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching place details:', error);
+        document.getElementById('modal-body').innerHTML = `
+          <div class="alert alert-danger">
+            Error loading place details. Please try again later.
+          </div>
+        `;
+      });
+    }
+
+    // Removes all temporary search markers from the map
     function clearSearchMarkers() {
       // Only clear the found markers, not the recommended ones
       searchMarkers.forEach(marker => marker.setMap(null));
